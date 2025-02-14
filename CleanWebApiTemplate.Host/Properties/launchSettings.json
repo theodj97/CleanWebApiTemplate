@@ -1,0 +1,45 @@
+﻿{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "Kestrel - Development": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      //"applicationUrl": "{ApplicationHttpUrl}",
+      "applicationUrl": "http://localhost:7210",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "DEVELOPMENT"
+      }
+    },
+    "Kestrel - Integration": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "{ApplicationHttpUrl}",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "INTEGRATION"
+      }
+    },
+    "Kestrel - Staging": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "{ApplicationHttpUrl}",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "STAGING"
+      }
+    },
+    "Kestrel - Production": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "{ApplicationHttpUrl}",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "PRODUCTION"
+      }
+    }
+  }
+}

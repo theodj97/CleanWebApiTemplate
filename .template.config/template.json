@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Theo Delvas Játiva",
+  "repository": {
+    "url": "https://github.com/theodj97/CleanWebApiTemplate",
+    "type": "GitHub"
+  },
+  "classifications": ["WebApi", "CleanArchitecture"],
+  "identity": "CleanWebApiTemplate",
+  "name": "Clean architecture DotnetV9 minimal WebApi Template",
+  "description": ".NET Core Web Api v9 application, minimal api, clean architecture and CQRS with MediatR, and libraries like TestContainers, FluentValidation, FluentAssertion, XUnit, AutoMapper.",
+  "shortName": "CleanWebApiTemplate",
+  "sourceName": "CleanWebApiTemplate",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "preferNameDirectory": true,
+  "symbols": {
+    "AddHealthCheck": {
+      "type": "parameter",
+      "description": "Add HealthCheck endpoint",
+      "datatype": "bool",
+      "defaultValue": "true"
+    },
+    "DatabaseType": {
+      "type": "parameter",
+      "description": "Select the DB to consume in your project",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "SQLServer"
+        },
+        {
+          "choice": "MongoDB"
+        }
+      ],
+      "defaultValue": "SQLServer"
+    },
+    "IsSQLServer": {
+      "type": "computed",
+      "value": "(DatabaseType == \"SQLServer\")"
+    },
+    "IsMongoDB": {
+      "type": "computed",
+      "value": "(DatabaseType == \"MongoDB\")"
+    },
+    "ApplicationHttpUrl": {
+      "type": "parameter",
+      "datatype": "text",
+      "description": "Specify the app URL, by default http://localhost:7210",
+      "replaces": "{ApplicationHttpUrl}",
+      "defaultValue": "http://localhost:7210"
+    }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        { "exclude": [".git/**", ".gitignore", ".vs/**", "README.md"] },
+        {
+          "condition": "IsSQLServer",
+          "exclude": [
+            "src/CleanWebApiTemplate.Infrastructure/Context/MongoDbContext.cs",
+            "src/CleanWebApiTemplate.Domain/Attributes/BsonCollectionAttribute.cs"
+          ]
+        },
+        {
+          "condition": "IsMongoDB",
+          "exclude": [
+            "src/CleanWebApiTemplate.Infrastructure/Context/SqlServerContext.cs",
+            "src/CleanWebApiTemplate.Infrastructure/Migrations/**",
+            "tests/CleanWebApiTemplate.Tests/SeedWork/DatabaseReseeder.cs"
+          ]
+        }
+      ]
+    }
+  ]
+}
