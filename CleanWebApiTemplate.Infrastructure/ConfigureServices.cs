@@ -14,18 +14,25 @@ public static class ConfigureServices
                                                                string sqlServerCnnStrings,
                                                                MongoUrl mongoDbCnnStrings)
     {
+        var assembly = typeof(ConfigureServices).Assembly;
+
+        //services.AddDbContext<SqlDbContext>(options =>
+        //    options.UseSqlServer(sqlServerCnnStrings, b => b.MigrationsAssembly(assembly)), ServiceLifetime.Scoped);
+
         services.AddDbContextPool<SqlDbContext>(options =>
             options.UseSqlServer(sqlServerCnnStrings,
-            b => b.MigrationsAssembly(Assembly.GetExecutingAssembly())
+                b => b.MigrationsAssembly(assembly)
             ));
 
-        services.AddDbContextPool<MongoDbContext>(options =>
+        services.AddDbContext<MongoDbContext>(options =>
             options.UseMongoDB(mongoDbCnnStrings.ToString(), mongoDbCnnStrings.DatabaseName));
 
-        services.AddTransient(typeof(BaseSqlRepository<>));
-        services.AddTransient(typeof(BaseMongoRepository<>));
+        //services.AddTransient(typeof(BaseSqlRepository<>));
+        //services.AddTransient(typeof(BaseMongoRepository<>));
 
-        services.AddTransient(typeof(IBaseRepository<>), typeof(BaseRepositoryDispatcher<>));
+        //services.AddTransient(typeof(IBaseRepository<>), typeof(BaseRepositoryDispatcher<>));
+        services.AddTransient(typeof(IBaseRepository<>), typeof(BaseSqlRepository<>));
+
 
         return services;
     }

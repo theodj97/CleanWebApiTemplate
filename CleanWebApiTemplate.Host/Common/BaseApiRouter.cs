@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using MediatR;
+using System.Security.Claims;
 
 namespace CleanWebApiTemplate.Host.Common;
 
@@ -9,6 +10,8 @@ public class BaseApiRouter
     public string Role => contextAccessor.HttpContext!.User.Claims.First(x => x.Type == ClaimTypes.Role).Value;
     public string RouteName { get; private set; }
     private const string ROUTE_TERMINATION_NAME = "Routes";
+    protected IMediator Mediator => contextAccessor.HttpContext!.RequestServices.GetRequiredService<IMediator>()
+        ?? throw new Exception("Unable finding IMediator service");
 
     public BaseApiRouter(IHttpContextAccessor contextAccessor)
     {

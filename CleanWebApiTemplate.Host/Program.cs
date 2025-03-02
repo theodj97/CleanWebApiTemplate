@@ -67,9 +67,14 @@ class Program
             Predicate = check => check.Tags.Contains("api")
         });
 
-        app.MapHealthChecks("/health/db", new HealthCheckOptions
+        app.MapHealthChecks("/health/sqlServerDb", new HealthCheckOptions
         {
-            Predicate = check => check.Tags.Contains("database")
+            Predicate = check => check.Tags.Contains("sqlServerDb")
+        });
+
+        app.MapHealthChecks("/health/mongoDb", new HealthCheckOptions
+        {
+            Predicate = check => check.Tags.Contains("mongoDb")
         });
 
         // Configure API routes.

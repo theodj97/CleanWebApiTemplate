@@ -14,7 +14,7 @@ public static class EndpointExtension
                 && !t.IsAbstract);
 
         foreach (var type in endpointTypes)
-            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IGroupMap), type));
+            services.TryAddEnumerable(ServiceDescriptor.Transient(typeof(IGroupMap), type));
 
         return services;
     }

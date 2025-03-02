@@ -12,7 +12,7 @@ public static class ConfigureServices
     {
         var assembly = Assembly.GetExecutingAssembly();
 
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly))
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(ConfigureServices).Assembly))
                 .AddValidatorsFromAssembly(assembly, ServiceLifetime.Transient)
                 .AddTransient(typeof(IPipelineBehavior<,>), typeof(FluentValidationBehavior<,>));
 

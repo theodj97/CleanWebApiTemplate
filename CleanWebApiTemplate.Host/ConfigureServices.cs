@@ -30,11 +30,11 @@ public static class ConfigureServices
                     connectionString: sqlConnectionStrings,
                     name: "sqlserver-check",
                     failureStatus: HealthStatus.Unhealthy,
-                    tags: ["database", "sql"]
+                    tags: ["sqlServerDb", "sql"]
                 ).AddMongoDb(
                     name: "mongodb-check",
                     failureStatus: HealthStatus.Unhealthy,
-                    tags: ["database", "mongodb"]
+                    tags: ["mongoDb", "mongo"]
                 );
 
 
