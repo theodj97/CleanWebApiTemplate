@@ -1,19 +1,19 @@
 ﻿using CleanWebApiTemplate.Domain.Models;
+using CleanWebApiTemplate.Infrastructure.Common;
 using CleanWebApiTemplate.Infrastructure.Context;
-using CleanWebApiTemplate.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace CleanWebApiTemplate.Infrastructure.Repository;
 
-public abstract class BaseSqlRepository<TEntity>(SqlDbContext context) : IBaseRepository<TEntity> where TEntity : BaseEntity
+public sealed class BaseSqlRepository<TEntity>(SqlDbContext context) : IBaseRepository<TEntity> where TEntity : BaseEntity
 {
     private readonly SqlDbContext context = context;
 
-    public async Task<bool> BulkDeleteAsync(IEnumerable<object> ids, CancellationToken cancellationToken = default)
+    public async Task<bool> BulkDeleteAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
     {
         var idsParsed = ids
-            .Select(id => int.TryParse(id.ToString(), out var value) ? value : (int?)null)
+            .Select(id => Ulid.TryParse(id, out var value) ? value : (Ulid?)null)
             .Where(value => value.HasValue)
             .Select(value => value!.Value)
             .ToList();
@@ -50,19 +50,19 @@ public abstract class BaseSqlRepository<TEntity>(SqlDbContext context) : IBaseRe
         return null;
     }
 
-    public bool Delete(object id)
+    public bool Delete(string id)
     {
-        var idParsed = int.TryParse(id.ToString(), out var value) ? value : (int?)null;
-        if (idParsed is not null && idParsed > 0)
+        var idParsed = Ulid.TryParse(id, out var value) ? value : (Ulid?)null;
+        if (idParsed is not null)
             return context.Set<TEntity>().Where(x => x.Id == idParsed).ExecuteDelete() > 0;
 
         return false;
     }
 
-    public async Task<bool> DeleteAsync(object id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-        var idParsed = int.TryParse(id.ToString(), out var value) ? value : (int?)null;
-        if (idParsed is not null && idParsed > 0)
+        var idParsed = Ulid.TryParse(id, out var value) ? value : (Ulid?)null;
+        if (idParsed is not null)
             return await context.Set<TEntity>()
                                 .AsNoTracking()
                                 .Where(x => x.Id == idParsed)
@@ -76,10 +76,10 @@ public abstract class BaseSqlRepository<TEntity>(SqlDbContext context) : IBaseRe
         return await context.Set<TEntity>().AsNoTracking().Where(expression).ToArrayAsync(cancellationToken);
     }
 
-    public Task<TEntity?> GetByIdAsyncANT(object id, CancellationToken cancellationToken = default)
+    public Task<TEntity?> GetByIdAsyncANT(string id, CancellationToken cancellationToken = default)
     {
-        var idParsed = int.TryParse(id.ToString(), out var value) ? value : (int?)null;
-        if (idParsed is not null && idParsed > 0)
+        var idParsed = Ulid.TryParse(id, out var value) ? value : (Ulid?)null;
+        if (idParsed is not null)
             return context.Set<TEntity>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == idParsed, cancellationToken);
 
         return Task.FromResult<TEntity?>(null);

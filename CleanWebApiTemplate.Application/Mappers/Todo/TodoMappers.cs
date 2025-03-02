@@ -29,7 +29,7 @@ public static class TodoMappers
     {
         return new TodoEntity
         {
-            Id = 0,
+            Id = Ulid.NewUlid(),
             Title = command.Title,
             Description = command.Description,
             CreatedBy = command.CreatedBy,

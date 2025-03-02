@@ -4,17 +4,14 @@ namespace CleanWebApiTemplate.Host;
 
 public static class ConfigureApplication
 {
-    public static IApplicationBuilder ConfigureHostApplication(this IApplicationBuilder app, string environment)
+    public static IApplicationBuilder ConfigureHostApplication(this IApplicationBuilder app)
     {
         app.UseExceptionHandler();
         app.UseResponseCompression();
         app.UseHttpsRedirection();
 
-        if (environment is not Constants.DEV_ENVIRONMNET)
-        {
-            app.UseAuthentication();
-            app.UseAuthorization();
-        }
+        app.UseAuthentication();
+        app.UseAuthorization();
 
         return app;
     }

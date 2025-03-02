@@ -1,9 +1,14 @@
 ﻿using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Host.Configuration;
+using CleanWebApiTemplate.Host.Helpers;
+using CleanWebApiTemplate.Host.Routes;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver;
+using System.Reflection;
 using System.Text;
 
 namespace CleanWebApiTemplate.Host;
@@ -15,16 +20,22 @@ public static class ConfigureServices
                                                      string environment,
                                                      string[]? corsAllow,
                                                      string[]? validIssuers,
-                                                     string sqlConnectionStrings)
+                                                     string sqlConnectionStrings,
+                                                     MongoUrl mongoDbConnectionStrings)
     {
-        services.AddHealthChecks()
-            .AddCheck("api-health-check", () => HealthCheckResult.Healthy("API is up and running"), tags: ["api"])
-            .AddSqlServer(
-                connectionString: sqlConnectionStrings,
-                name: "sqlserver-check",
-                failureStatus: HealthStatus.Unhealthy,
-                tags: ["database"]
-            );
+        services.AddSingleton(new MongoClient(mongoDbConnectionStrings))
+                .AddHealthChecks()
+                .AddCheck("api-health-check", () => HealthCheckResult.Healthy("API is up and running"), tags: ["api"])
+                .AddSqlServer(
+                    connectionString: sqlConnectionStrings,
+                    name: "sqlserver-check",
+                    failureStatus: HealthStatus.Unhealthy,
+                    tags: ["database", "sql"]
+                ).AddMongoDb(
+                    name: "mongodb-check",
+                    failureStatus: HealthStatus.Unhealthy,
+                    tags: ["database", "mongodb"]
+                );
 
 
         services.ConfigureCors(environment, corsAllow);
@@ -45,6 +56,8 @@ public static class ConfigureServices
         //services.AddGrpc();
 
         services.AddHttpContextAccessor();
+
+        services.AddEndpoints(Assembly.GetExecutingAssembly());
 
         return services;
     }
@@ -89,8 +102,20 @@ public static class ConfigureServices
                                                     string[]? validIssuers,
                                                     IConfiguration configuration)
     {
+
+        services.AddAuthorizationBuilder()
+            .AddPolicy(Constants.ADMIN_POLICY, policy => policy.RequireRole(Constants.ADMIN_POLICY))
+            .AddPolicy(Constants.OPERATOR_POLICY, policy => policy.RequireRole(Constants.OPERATOR_POLICY))
+            .AddPolicy(Constants.USER_POLICY, policy => policy.RequireRole(Constants.USER_POLICY))
+            .AddPolicy(Constants.EXTERNAL_POLICY, policy => policy.RequireRole(Constants.EXTERNAL_POLICY));
+
         if (environment is Constants.DEV_ENVIRONMNET)
+        {
+            services.AddAuthentication(DevAuthHandler.SCHEME_NAME)
+                .AddScheme<AuthenticationSchemeOptions, DevAuthHandler>(DevAuthHandler.SCHEME_NAME, null);
+
             return services;
+        }
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -109,12 +134,6 @@ public static class ConfigureServices
                     ?? throw new Exception("No API KEY environmnet variable found")))
                 };
             });
-
-        services.AddAuthorizationBuilder()
-            .AddPolicy(Constants.ADMIN_POLICY, policy => policy.RequireRole("Admin"))
-            .AddPolicy(Constants.OPERATOR_POLICY, policy => policy.RequireRole("Operator"))
-            .AddPolicy(Constants.USER_POLICY, policy => policy.RequireRole("User"))
-            .AddPolicy(Constants.EXTERNAL_POLICY, policy => policy.RequireRole("External"));
 
         return services;
     }

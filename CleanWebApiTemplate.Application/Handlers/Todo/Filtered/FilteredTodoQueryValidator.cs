@@ -8,6 +8,8 @@ public class FilteredTodoQueryValidator : TodoValidator<FilteredTodoQuery>
     {
         ClassLevelCascadeMode = CascadeMode.Continue;
 
+        ValidateUlidCollection(x => x.Ids);
+
         RuleFor(x => x.Title)
             .Must(titles => titles!.Contains(string.Empty) is false)
             .WithMessage("Title fields can't contain null or be empty.")

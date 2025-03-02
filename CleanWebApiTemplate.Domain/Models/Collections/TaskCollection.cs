@@ -9,11 +9,11 @@ public class TaskCollection : BaseCollection
     [BsonElement("description")]
     public string? Description { get; set; }
     [BsonElement("createdAt")]
-    public DateTime CreatedAt { get; set; }
+    public required DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     [BsonElement("updatedAt")]
-    public DateTime UpdatedAt { get; set; }
+    public required DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     [BsonElement("status")]
-    public int Status { get; set; }
+    public required int Status { get; set; } = 1;
     [BsonElement("createdBy")]
     public required string CreatedBy { get; set; }
 }

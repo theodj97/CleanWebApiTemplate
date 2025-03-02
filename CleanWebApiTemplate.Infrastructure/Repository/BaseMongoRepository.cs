@@ -1,20 +1,20 @@
 ﻿using CleanWebApiTemplate.Domain.Models;
+using CleanWebApiTemplate.Infrastructure.Common;
 using CleanWebApiTemplate.Infrastructure.Context;
-using CleanWebApiTemplate.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Bson;
 using System.Linq.Expressions;
 
 namespace CleanWebApiTemplate.Infrastructure.Repository;
 
-public class BaseMongoRepository<TDocument>(MongoDbContext context) : IBaseRepository<TDocument> where TDocument : BaseCollection
+public sealed class BaseMongoRepository<TDocument>(MongoDbContext context) : IBaseRepository<TDocument> where TDocument : BaseCollection
 {
     private readonly MongoDbContext context = context;
 
-    public async Task<bool> BulkDeleteAsync(IEnumerable<object> ids, CancellationToken cancellationToken = default)
+    public async Task<bool> BulkDeleteAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
     {
         var idsParsed = ids
-            .Select(id => ObjectId.TryParse(id.ToString(), out var value) ? value : (ObjectId?)null)
+            .Select(id => ObjectId.TryParse(id, out var value) ? value : (ObjectId?)null)
             .Where(value => value.HasValue)
             .Select(value => value!.Value)
             .ToList();
@@ -51,18 +51,18 @@ public class BaseMongoRepository<TDocument>(MongoDbContext context) : IBaseRepos
         return null;
     }
 
-    public bool Delete(object id)
+    public bool Delete(string id)
     {
-        var idParsed = ObjectId.TryParse(id.ToString(), out var value) ? value : (ObjectId?)null;
+        var idParsed = ObjectId.TryParse(id, out var value) ? value : (ObjectId?)null;
         if (idParsed is not null)
             return context.Set<TDocument>().Where(x => x.Id == idParsed).ExecuteDelete() > 0;
 
         return false;
     }
 
-    public async Task<bool> DeleteAsync(object id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-        var idParsed = ObjectId.TryParse(id.ToString(), out var value) ? value : (ObjectId?)null;
+        var idParsed = ObjectId.TryParse(id, out var value) ? value : (ObjectId?)null;
         if (idParsed is not null)
             return await context.Set<TDocument>()
                                 .AsNoTracking()
@@ -77,9 +77,9 @@ public class BaseMongoRepository<TDocument>(MongoDbContext context) : IBaseRepos
         return await context.Set<TDocument>().AsNoTracking().Where(expression).ToArrayAsync(cancellationToken);
     }
 
-    public Task<TDocument?> GetByIdAsyncANT(object id, CancellationToken cancellationToken = default)
+    public Task<TDocument?> GetByIdAsyncANT(string id, CancellationToken cancellationToken = default)
     {
-        var idParsed = ObjectId.TryParse(id.ToString(), out var value) ? value : (ObjectId?)null;
+        var idParsed = ObjectId.TryParse(id, out var value) ? value : (ObjectId?)null;
         if (idParsed is not null)
             return context.Set<TDocument>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == idParsed, cancellationToken);
 

@@ -1,13 +1,10 @@
-﻿namespace CleanWebApiTemplate.Domain.Configuration;
+﻿using MongoDB.Driver;
+
+namespace CleanWebApiTemplate.Domain.Configuration;
 
 public record ConnectionStrings
 {
     public const string SECTION_NAME = "ConnectionStrings";
     public required string SqlServer { get; set; }
-
-    //#if IsSQLServer
-    //    public required string SqlServer { get; set; }
-    //#elif IsMongoDB
-    //    public required string MongoDb { get; set; }
-    //#endif
+    public required MongoUrl MongoDb { get; set; }
 }

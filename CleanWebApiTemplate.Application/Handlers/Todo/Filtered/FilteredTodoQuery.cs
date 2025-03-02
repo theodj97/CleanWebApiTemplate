@@ -2,7 +2,7 @@
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.Models.Responses;
 using CleanWebApiTemplate.Domain.ResultModel;
-using CleanWebApiTemplate.Infrastructure.Helpers;
+using CleanWebApiTemplate.Infrastructure.Common;
 using MediatR;
 using System.Linq.Expressions;
 
@@ -10,6 +10,7 @@ namespace CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
 
 public class FilteredTodoQuery : IRequest<Result<IEnumerable<TodoResponse>>>
 {
+    public IEnumerable<string>? Ids { get; set; }
     public IEnumerable<string>? Title { get; set; }
     public IEnumerable<int>? Status { get; set; }
     public IEnumerable<string>? CreatedBy { get; set; }
@@ -23,6 +24,14 @@ internal class FilteredTodoQueryHandler(IBaseRepository<TodoEntity> repository) 
         Expression<Func<TodoEntity, bool>> filter = x => true;
         var queryBody = filter.Body;
         var parameter = filter.Parameters[0];
+
+        if (request.Ids is not null && request.Ids.Any())
+        {
+            var idsParsed = request.Ids.Select(x => Ulid.Parse(x));
+
+            Expression<Func<TodoEntity, bool>> idFilter = x => idsParsed.Contains(x.Id);
+            queryBody = Expression.AndAlso(queryBody, idFilter.Body);
+        }
 
         if (request.Title is not null && request.Title.Any())
         {

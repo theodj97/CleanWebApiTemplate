@@ -1,12 +1,10 @@
-﻿using CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
-using CleanWebApiTemplate.Application.Handlers.Todo.GetById;
+﻿using CleanWebApiTemplate.Application.Handlers.Todo.GetById;
 using CleanWebApiTemplate.Host.Common;
 using CleanWebApiTemplate.Host.Helpers;
 using CleanWebApiTemplate.Host.Routes.Todo.Create;
 using CleanWebApiTemplate.Host.Routes.Todo.Filter;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading;
 
 namespace CleanWebApiTemplate.Host.Routes.Todo;
 

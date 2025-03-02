@@ -2,7 +2,7 @@
 
 public record TodoResponse
 {
-    public required int Id { get; set; }
+    public required Ulid Id { get; set; }
     public required string Title { get; set; }
     public string? Description { get; set; }
     public required DateTime CreatedAt { get; set; }

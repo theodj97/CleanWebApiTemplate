@@ -11,6 +11,7 @@ public record Constants
     // Envs variables
     public const string API_KEY = "ApiKey";
     public const string SQLSERVER_CNNSTRING = "SqlServerCnnString";
+    public const string MONGODB_CNNSTRING = "MongoDbCnnString";
 
     public const string DEFAULT_CORS_POLICY_NAME = "DefaultCorsPolicy";
 

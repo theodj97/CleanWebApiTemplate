@@ -2,7 +2,7 @@
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.Models.Responses;
 using CleanWebApiTemplate.Domain.ResultModel;
-using CleanWebApiTemplate.Infrastructure.Helpers;
+using CleanWebApiTemplate.Infrastructure.Common;
 using MediatR;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.GetById;
@@ -18,9 +18,7 @@ internal class GetTodoByIdQueryHandler(IBaseRepository<TodoEntity> repository) :
 
     public async Task<Result<TodoResponse>> Handle(GetTodoByIdQuery request, CancellationToken cancellationToken)
     {
-        var id = int.Parse(request.Id);
-
-        var todoDb = await repository.GetByIdAsyncANT(id, cancellationToken);
+        var todoDb = await repository.GetByIdAsyncANT(request.Id, cancellationToken);
         if (todoDb is null)
             return Result<TodoResponse>.NoContent();
 

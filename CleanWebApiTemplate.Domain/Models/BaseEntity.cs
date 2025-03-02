@@ -2,5 +2,5 @@
 
 public abstract class BaseEntity
 {
-    public required int Id { get; set; }
+    public required Ulid Id { get; set; } = Ulid.NewUlid();
 }

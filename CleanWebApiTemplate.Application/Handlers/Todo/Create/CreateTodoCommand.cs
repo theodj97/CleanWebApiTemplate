@@ -2,7 +2,7 @@
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.Models.Responses;
 using CleanWebApiTemplate.Domain.ResultModel;
-using CleanWebApiTemplate.Infrastructure.Helpers;
+using CleanWebApiTemplate.Infrastructure.Common;
 using MediatR;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Create;

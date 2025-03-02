@@ -1,18 +1,18 @@
-﻿using CleanWebApiTemplate.Infrastructure.Context;
-using CleanWebApiTemplate.Infrastructure.Helpers;
+﻿using CleanWebApiTemplate.Infrastructure.Common;
+using CleanWebApiTemplate.Infrastructure.Context;
 using CleanWebApiTemplate.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Driver;
 using System.Reflection;
 
 namespace CleanWebApiTemplate.Infrastructure;
 
 public static class ConfigureServices
 {
-    public static IServiceCollection ConfigureInfrastructureServices(this IServiceCollection services,
-                                                                     string sqlServerCnnStrings,
-                                                                     string mongoDbCnnStrings,
-                                                                     string mongoDbName)
+    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services,
+                                                               string sqlServerCnnStrings,
+                                                               MongoUrl mongoDbCnnStrings)
     {
         services.AddDbContextPool<SqlDbContext>(options =>
             options.UseSqlServer(sqlServerCnnStrings,
@@ -20,10 +20,12 @@ public static class ConfigureServices
             ));
 
         services.AddDbContextPool<MongoDbContext>(options =>
-            options.UseMongoDB(mongoDbCnnStrings, mongoDbName));
+            options.UseMongoDB(mongoDbCnnStrings.ToString(), mongoDbCnnStrings.DatabaseName));
 
-        services.AddTransient(typeof(IBaseRepository<>), typeof(BaseSqlRepository<>));
-        services.AddTransient(typeof(IBaseRepository<>), typeof(BaseMongoRepository<>));
+        services.AddTransient(typeof(BaseSqlRepository<>));
+        services.AddTransient(typeof(BaseMongoRepository<>));
+
+        services.AddTransient(typeof(IBaseRepository<>), typeof(BaseRepositoryDispatcher<>));
 
         return services;
     }
