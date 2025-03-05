@@ -7,7 +7,7 @@
     }
   },
   "ConnectionStrings": {
-    "SqlServer": "Server=localhost,1433;Database=ToDoDb;User Id=sa;Password=yourStrong(!)Password;Encrypt=False;TrustServerCertificate=True;",
+    "SqlServer": "Server=localhost,1433;Database=Todo;User Id=sa;Password=yourStrong(!)Password;Encrypt=False;TrustServerCertificate=True;",
     "MongoDb": "mongodb://admin:adminpass@localhost:27017/"
   }
 }

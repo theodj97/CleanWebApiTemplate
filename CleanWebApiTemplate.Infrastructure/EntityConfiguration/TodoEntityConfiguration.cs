@@ -11,8 +11,13 @@ public class TodoEntityConfiguration : IEntityTypeConfiguration<TodoEntity>
     {
         builder.ToTable(name: SqlDbConstants.TODO_TABLE, schema: SqlDbConstants.DB_SCHEMA);
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.Id).HasColumnName(nameof(TodoEntity.Id));
-        builder.Property(e => e.Title).HasColumnName(nameof(TodoEntity.Title));
+        builder.Property(e => e.Id)
+            .HasColumnName(nameof(TodoEntity.Id))
+            .HasConversion(
+                ulid => ulid.ToString(),
+                value => Ulid.Parse(value)
+            )
+            .HasMaxLength(26); builder.Property(e => e.Title).HasColumnName(nameof(TodoEntity.Title));
         builder.Property(e => e.Description).HasColumnName(nameof(TodoEntity.Description)).IsRequired(false);
         builder.Property(e => e.CreatedAt).HasColumnType(nameof(TodoEntity.CreatedAt));
         builder.Property(e => e.UpdatedAt).HasColumnType(nameof(TodoEntity.UpdatedAt));
