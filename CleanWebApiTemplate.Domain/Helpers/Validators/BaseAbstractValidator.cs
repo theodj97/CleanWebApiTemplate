@@ -1,58 +1,75 @@
 ﻿using FluentValidation;
-using System.Linq.Expressions;
+using System.Net.Mail;
 
 namespace CleanWebApiTemplate.Domain.Helpers.Validators;
 
-public class BaseAbstractValidator<T> : AbstractValidator<T> where T : class
+public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where TCommand : class
 {
-    /// <summary>
-    /// Validate ULID when its required.
-    /// </summary>
-    /// <param name="propertySelector">Property selector expression, you must select the ID query/command property</param>
-    protected void ValidateRequiredUlid(Expression<Func<T, string>> propertySelector)
+    public BaseAbstractValidator()
     {
-        RuleFor(propertySelector)
-            .NotNull().NotEmpty().WithMessage("ID is required")
-            .Custom(ValidateUlidLogic);
+        ClassLevelCascadeMode = CascadeMode.Continue;
     }
 
     /// <summary>
-    /// Validate ULID when its optional.
+    /// Validate if the property is not null or empty.
     /// </summary>
-    /// <param name="propertySelector">Property selector expression, you must select the ID query/command property</param>
-    protected void ValidateOptionalUlid(Expression<Func<T, string>> propertySelector)
+    /// <param name="property"></param>
+    /// <param name="propertyName"></param>
+    /// <param name="context"></param>
+    protected void NotNullNotEmpty(string property, ValidationContext<TCommand> context)
     {
-        RuleFor(propertySelector)
-            .Custom(ValidateUlidLogic)
-            .When(x => string.IsNullOrEmpty(propertySelector.Compile()(x)) is false);
+        if (string.IsNullOrEmpty(property))
+            AddFailure(context, "Property '{0}' can't be null or empty!");
     }
-
-    /// <summary>
-    /// Validate ULID optional collection.
-    /// </summary>
-    /// <param name="propertySelector"></param>
-    protected void ValidateUlidCollection(Expression<Func<T, IEnumerable<string>?>> propertySelector)
-    {
-        RuleForEach(propertySelector)
-            .NotNull().WithMessage("ID cannot be null")
-            .NotEmpty().WithMessage("ID cannot be empty")
-            .Custom(ValidateUlidLogic)
-            .When(x => propertySelector.Compile()(x) is not null
-            && propertySelector.Compile()(x)!.Any());
-    }
-
 
     /// <summary>
     /// Common ULID validation logic.
     /// </summary>
     /// <param name="id">The ID value to validate</param>
     /// <param name="context">Validation context</param>
-    private static void ValidateUlidLogic(string id, ValidationContext<T> context)
+    protected void ValidateUlid(string id, ValidationContext<TCommand> context)
     {
         if (Ulid.TryParse(id, out _) is false)
-            context.AddFailure("ID must be a valid ULID");
+            AddFailure(context, "Property '{0}' must be a valid ULID");
 
         if (id.Length is not 26)
-            context.AddFailure("ID must have exactly 26 characters");
+            AddFailure(context, "Property '{0}' must have exactly 26 characters");
+    }
+
+    protected void ValidateEmail(string email, ValidationContext<TCommand> context)
+    {
+
+    }
+
+    /// <summary>
+    /// Validate a email.
+    /// </summary>
+    /// <param name="email"></param>
+    /// <returns>True if email is valid, False if unvalid.</returns>
+    protected bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new MailAddress(email);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Extension to add a failure to the context.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="context"></param>
+    /// <param name="errorMessageTemplate"></param>
+    /// <param name="args"></param>
+    protected void AddFailure<T>(ValidationContext<T> context, string errorMessageTemplate, params object[] args)
+    {
+        var propertyName = context.DisplayName.ToLower();
+        var formattedMessage = string.Format(errorMessageTemplate, propertyName, args);
+        context.AddFailure(propertyName, formattedMessage);
     }
 }

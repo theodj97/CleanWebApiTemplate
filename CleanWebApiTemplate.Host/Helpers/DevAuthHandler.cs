@@ -18,7 +18,8 @@ public class DevAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options
         var claims = new[]
         {
             new Claim(ClaimTypes.Name, "DevAuthUser"),
-            new Claim(ClaimTypes.Role, "Admin")
+            new Claim(ClaimTypes.Role, "Admin"),
+            new Claim(ClaimTypes.Email, "devauth@example.com")
         };
 
         var identity = new ClaimsIdentity(claims, Scheme.Name);

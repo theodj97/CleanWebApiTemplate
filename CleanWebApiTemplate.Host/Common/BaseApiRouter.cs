@@ -7,6 +7,7 @@ public class BaseApiRouter
 {
     private readonly IHttpContextAccessor contextAccessor;
     public string UserName => contextAccessor.HttpContext!.User.Claims.First(x => x.Type == ClaimTypes.Name).Value;
+    public string UserEmail => contextAccessor.HttpContext!.User.Claims.First(x => x.Type == ClaimTypes.Email).Value;
     public string Role => contextAccessor.HttpContext!.User.Claims.First(x => x.Type == ClaimTypes.Role).Value;
     public string RouteName { get; private set; }
     private const string ROUTE_TERMINATION_NAME = "Routes";

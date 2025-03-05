@@ -31,8 +31,8 @@ public class Result<T>
     }
 
     public static Result<T> Success(T value) => new(value, true, null);
-    public static Result<T> Failure(Error error) => new(default, false, error);
-    public static Result<T> NoContent() => new(default, true, null, isNoContent: true);
+    public static Result<T> Failure(Error error) => new(default!, false, error);
+    public static Result<T> NoContent() => new(default!, true, null, isNoContent: true);
     public static Result<T> Created(T value) => new(value, true, null, isCreated: true);
 
     public IResult ToResult()

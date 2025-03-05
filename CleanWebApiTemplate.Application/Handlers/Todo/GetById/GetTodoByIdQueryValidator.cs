@@ -1,9 +1,15 @@
-﻿namespace CleanWebApiTemplate.Application.Handlers.Todo.GetById;
+﻿using CleanWebApiTemplate.Domain.Models.Entities;
+using CleanWebApiTemplate.Infrastructure.Common;
+using FluentValidation;
+
+namespace CleanWebApiTemplate.Application.Handlers.Todo.GetById;
 
 public class GetTodoByIdQueryValidator : TodoValidator<GetTodoByIdQuery>
 {
-    public GetTodoByIdQueryValidator()
+    public GetTodoByIdQueryValidator(IBaseRepository<TodoEntity> repository) : base(repository)
     {
-        ValidateRequiredUlid(x => x.Id);
+        RuleFor(x => x.Id)
+            .Custom(NotNullNotEmpty)
+            .Custom(ValidateUlid);
     }
 }

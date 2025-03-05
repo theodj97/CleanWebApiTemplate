@@ -1,5 +1,4 @@
-﻿using CleanWebApiTemplate.Application.Mappers.Todo;
-using CleanWebApiTemplate.Domain.Models.Entities;
+﻿using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.Models.Responses;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Common;
@@ -12,7 +11,7 @@ public class FilteredTodoQuery : IRequest<Result<IEnumerable<TodoResponse>>>
 {
     public IEnumerable<string>? Ids { get; set; }
     public IEnumerable<string>? Title { get; set; }
-    public IEnumerable<int>? Status { get; set; }
+    public IEnumerable<byte>? Status { get; set; }
     public IEnumerable<string>? CreatedBy { get; set; }
 }
 
@@ -41,7 +40,7 @@ internal class FilteredTodoQueryHandler(IBaseRepository<TodoEntity> repository) 
 
         if (request.Status is not null && request.Status.Any())
         {
-            Expression<Func<TodoEntity, bool>> statusFilter = x => request.Status.Contains((int)x.Status);
+            Expression<Func<TodoEntity, bool>> statusFilter = x => request.Status.Contains(x.Status);
             queryBody = Expression.AndAlso(queryBody, statusFilter.Body);
         }
 

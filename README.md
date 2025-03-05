@@ -17,6 +17,7 @@ This template adheres to the principles of Clean Architecture, ensuring separati
 - **JWT Auth (Soon)**: Authentication and authorization already configured for the project, just need to set up environment vars on your machine.
 - **Functional, Integration & Unitary Testing**: Robust testing setup to ensure code reliability and ease of maintenance.
 - **Migrations**: Code first implementation in the SQL Server variant of this template, used Migrations also in functional testing.
+- **ULID Sql**: ULID Id to provide faster, non sequential and fragmentation preventive implementation.
 
 ### Libraries and Frameworks
 

@@ -1,5 +1,4 @@
-﻿using CleanWebApiTemplate.Application.Mappers.Todo;
-using CleanWebApiTemplate.Domain.Models.Entities;
+﻿using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.Models.Responses;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Common;

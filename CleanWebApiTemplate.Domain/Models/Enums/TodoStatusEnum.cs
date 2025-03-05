@@ -1,9 +1,9 @@
 ﻿namespace CleanWebApiTemplate.Domain.Models.Enums;
 
-public enum TodoStatusEnum
+public enum TodoStatusEnum : byte
 {
-    Draft = 1,
-    OnGoing = 2,
-    Done = 3,
-    Deleted = 99
+    Pending = 1,
+    InProgress = 2,
+    Completed = 3,
+    Cancelled = 4
 }

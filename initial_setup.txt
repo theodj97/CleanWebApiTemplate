@@ -1,3 +1,6 @@
+USER SECRETS
+---------------------------------
+
 {
   "Logging": {
     "LogLevel": {
@@ -11,3 +14,28 @@
     "MongoDb": "mongodb://admin:adminpass@localhost:27017/"
   }
 }
+
+--------------------------------
+
+SQL SERVER SCRIPTS
+
+--------------------------------
+
+IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'db')
+BEGIN
+    EXEC('CREATE SCHEMA [db]')
+END
+GO
+
+CREATE TABLE [db].[Todo] (
+    [Id] BINARY(16) NOT NULL,          
+    [Title] NVARCHAR(200) NOT NULL,    
+    [Description] NVARCHAR(MAX) NULL,  
+    [CreatedAt] DATETIME2 NOT NULL,    
+    [UpdatedAt] DATETIME2 NOT NULL,    
+    [Status] INT NOT NULL,            
+    [CreatedBy] NVARCHAR(100) NOT NULL,
+    [UpdatedBy] NVARCHAR(100) NOT NULL,
+    CONSTRAINT [PK_Todo] PRIMARY KEY ([Id])
+);
+GO
