@@ -16,15 +16,12 @@ public static class ConfigureServices
     {
         var assembly = typeof(ConfigureServices).Assembly;
 
-        //services.AddDbContext<SqlDbContext>(options =>
-        //    options.UseSqlServer(sqlServerCnnStrings, b => b.MigrationsAssembly(assembly)), ServiceLifetime.Scoped);
-
         services.AddDbContextPool<SqlDbContext>(options =>
             options.UseSqlServer(sqlServerCnnStrings,
                 b => b.MigrationsAssembly(assembly)
             ));
 
-        services.AddDbContext<MongoDbContext>(options =>
+        services.AddDbContextPool<MongoDbContext>(options =>
             options.UseMongoDB(mongoDbCnnStrings.ToString(), mongoDbCnnStrings.DatabaseName));
 
         //services.AddTransient(typeof(BaseSqlRepository<>));
