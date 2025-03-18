@@ -69,6 +69,6 @@ public class TodoValidator<T>(IBaseRepository<TodoEntity> repository) : BaseAbst
         if (string.IsNullOrWhiteSpace(title))
             return true;
 
-        return (await repository.FilterAsyncANT(x => x.Title == title, cancellationToken)).Any() is false;
+        return (await repository.FilterAsyncANT(x => x.Title == title, cancellationToken: cancellationToken)).Any() is false;
     }
 }

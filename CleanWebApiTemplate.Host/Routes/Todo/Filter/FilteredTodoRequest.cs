@@ -2,8 +2,8 @@
 
 public record FilteredTodoRequest
 {
-    public IEnumerable<string>? Ids { get; set; }
-    public IEnumerable<string>? Title { get; set; }
-    public IEnumerable<byte>? Status { get; set; }
-    public IEnumerable<string>? CreatedBy { get; set; }
+    public string[]? Ids { get; set; }
+    public string[]? Title { get; set; }
+    public byte[]? Status { get; set; }
+    public string[]? CreatedBy { get; set; }
 }

@@ -72,7 +72,9 @@ public sealed class BaseMongoRepository<TDocument>(MongoDbContext context) : IBa
         return false;
     }
 
-    public async Task<IEnumerable<TDocument>> FilterAsyncANT(Expression<Func<TDocument, bool>> expression, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<TDocument>> FilterAsyncANT(Expression<Func<TDocument, bool>> expression,
+                                                             Expression<Func<TDocument, TDocument>>? selector = null,
+                                                             CancellationToken cancellationToken = default)
     {
         return await context.Set<TDocument>().AsNoTracking().Where(expression).ToArrayAsync(cancellationToken);
     }

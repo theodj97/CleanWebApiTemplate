@@ -71,9 +71,16 @@ public sealed class BaseSqlRepository<TEntity>(SqlDbContext context) : IBaseRepo
         return false;
     }
 
-    public async Task<IEnumerable<TEntity>> FilterAsyncANT(Expression<Func<TEntity, bool>> expression, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<TEntity>> FilterAsyncANT(Expression<Func<TEntity, bool>> expression,
+                                                           Expression<Func<TEntity, TEntity>>? selector = null,
+                                                           CancellationToken cancellationToken = default)
     {
-        return await context.Set<TEntity>().AsNoTracking().Where(expression).ToArrayAsync(cancellationToken);
+        var query = context.Set<TEntity>().AsNoTracking().Where(expression);
+
+        if (selector is not null)
+            query = query.Select(selector);
+
+        return await query.ToArrayAsync(cancellationToken);
     }
 
     public Task<TEntity?> GetByIdAsyncANT(string id, CancellationToken cancellationToken = default)

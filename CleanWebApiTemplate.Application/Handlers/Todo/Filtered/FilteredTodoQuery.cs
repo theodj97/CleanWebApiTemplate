@@ -29,29 +29,29 @@ internal class FilteredTodoQueryHandler(IBaseRepository<TodoEntity> repository) 
             var idsParsed = request.Ids.Select(x => Ulid.Parse(x));
 
             Expression<Func<TodoEntity, bool>> idFilter = x => idsParsed.Contains(x.Id);
-            queryBody = Expression.AndAlso(queryBody, idFilter.Body);
+            queryBody = Expression.AndAlso(queryBody, Expression.Invoke(idFilter, parameter));
         }
 
         if (request.Title is not null && request.Title.Any())
         {
             Expression<Func<TodoEntity, bool>> titleFilter = x => request.Title.Contains(x.Title);
-            queryBody = Expression.AndAlso(queryBody, titleFilter.Body);
+            queryBody = Expression.AndAlso(queryBody, Expression.Invoke(titleFilter, parameter));
         }
 
         if (request.Status is not null && request.Status.Any())
         {
             Expression<Func<TodoEntity, bool>> statusFilter = x => request.Status.Contains(x.Status);
-            queryBody = Expression.AndAlso(queryBody, statusFilter.Body);
+            queryBody = Expression.AndAlso(queryBody, Expression.Invoke(statusFilter, parameter));
         }
 
         if (request.CreatedBy is not null && request.CreatedBy.Any())
         {
             Expression<Func<TodoEntity, bool>> createdByFilter = x => request.CreatedBy.Contains(x.CreatedBy);
-            queryBody = Expression.AndAlso(queryBody, createdByFilter.Body);
+            queryBody = Expression.AndAlso(queryBody, Expression.Invoke(createdByFilter, parameter));
         }
 
         filter = Expression.Lambda<Func<TodoEntity, bool>>(queryBody, parameter);
-        var todosDb = await repository.FilterAsyncANT(filter, cancellationToken);
+        var todosDb = await repository.FilterAsyncANT(filter, cancellationToken: cancellationToken);
         if (todosDb is null)
             return Result<IEnumerable<TodoResponse>>.NoContent();
 
