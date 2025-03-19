@@ -73,19 +73,53 @@ public sealed class BaseMongoRepository<TDocument>(MongoDbContext context) : IBa
     }
 
     public async Task<IEnumerable<TDocument>> FilterAsyncANT(Expression<Func<TDocument, bool>> expression,
-                                                             Expression<Func<TDocument, TDocument>>? selector = null,
+                                                             int? pageNumber = null,
+                                                             int? pageSize = null,
                                                              CancellationToken cancellationToken = default)
     {
-        return await context.Set<TDocument>().AsNoTracking().Where(expression).ToArrayAsync(cancellationToken);
+        var query = context.Set<TDocument>().AsNoTracking().Where(expression);
+        query = RepositoryHelper.ManagePagination(query, pageNumber, pageSize);
+
+        return await query.ToListAsync(cancellationToken);
     }
 
-    public Task<TDocument?> GetByIdAsyncANT(string id, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<TOutput>> FilterAsyncANT<TOutput>(Expression<Func<TDocument, bool>> expression,
+                                                                    Expression<Func<TDocument, TOutput>> selector,
+                                                                    int? pageNumber = null,
+                                                                    int? pageSize = null,
+                                                                    CancellationToken cancellationToken = default)
+    {
+        var query = context.Set<TDocument>()
+                    .AsNoTracking()
+                    .Where(expression)
+                    .Select(selector);
+        query = RepositoryHelper.ManagePagination(query, pageNumber, pageSize);
+
+        return await query.ToListAsync(cancellationToken);
+    }
+
+    public async Task<TDocument?> GetByIdAsyncANT(string id, CancellationToken cancellationToken = default)
     {
         var idParsed = ObjectId.TryParse(id, out var value) ? value : (ObjectId?)null;
         if (idParsed is not null)
-            return context.Set<TDocument>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == idParsed, cancellationToken);
+            return await context.Set<TDocument>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == idParsed, cancellationToken);
 
-        return Task.FromResult<TDocument?>(null);
+        return await Task.FromResult<TDocument?>(null);
+    }
+
+    public async Task<TOutput?> GetByIdAsyncANT<TOutput>(string id,
+                                                         Expression<Func<TDocument, TOutput>> selector,
+                                                         CancellationToken cancellationToken = default)
+    {
+        var idParsed = ObjectId.TryParse(id, out var value) ? value : (ObjectId?)null;
+        if (idParsed is not null)
+            return await context.Set<TDocument>()
+                .AsNoTracking()
+                .Where(x => x.Id == idParsed)
+                .Select(selector)
+                .FirstOrDefaultAsync(cancellationToken);
+
+        return default;
     }
 
     public async Task<TDocument> UpdateAsync(TDocument entity, CancellationToken cancellationToken = default)

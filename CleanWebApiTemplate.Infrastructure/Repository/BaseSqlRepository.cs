@@ -72,24 +72,51 @@ public sealed class BaseSqlRepository<TEntity>(SqlDbContext context) : IBaseRepo
     }
 
     public async Task<IEnumerable<TEntity>> FilterAsyncANT(Expression<Func<TEntity, bool>> expression,
-                                                           Expression<Func<TEntity, TEntity>>? selector = null,
+                                                           int? pageNumber = null,
+                                                           int? pageSize = null,
                                                            CancellationToken cancellationToken = default)
     {
         var query = context.Set<TEntity>().AsNoTracking().Where(expression);
+        query = RepositoryHelper.ManagePagination(query, pageNumber, pageSize);
 
-        if (selector is not null)
-            query = query.Select(selector);
-
-        return await query.ToArrayAsync(cancellationToken);
+        return await query.ToListAsync(cancellationToken);
     }
 
-    public Task<TEntity?> GetByIdAsyncANT(string id, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<TOutput>> FilterAsyncANT<TOutput>(Expression<Func<TEntity, bool>> expression,
+                                                                    Expression<Func<TEntity, TOutput>> selector,
+                                                                    int? pageNumber = null,
+                                                                    int? pageSize = null,
+                                                                    CancellationToken cancellationToken = default)
+    {
+        var query = context.Set<TEntity>()
+                    .AsNoTracking()
+                    .Where(expression)
+                    .Select(selector);
+        query = RepositoryHelper.ManagePagination(query, pageNumber, pageSize);
+
+        return await query.ToListAsync(cancellationToken);
+    }
+
+    public async Task<TEntity?> GetByIdAsyncANT(string id, CancellationToken cancellationToken = default)
     {
         var idParsed = Ulid.TryParse(id, out var value) ? value : (Ulid?)null;
         if (idParsed is not null)
-            return context.Set<TEntity>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == idParsed, cancellationToken);
+            return await context.Set<TEntity>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == idParsed, cancellationToken);
 
-        return Task.FromResult<TEntity?>(null);
+        return await Task.FromResult<TEntity?>(null);
+    }
+
+    public async Task<TOutput?> GetByIdAsyncANT<TOutput>(string id, Expression<Func<TEntity, TOutput>> selector, CancellationToken cancellationToken = default)
+    {
+        var idParsed = Ulid.TryParse(id, out var value) ? value : (Ulid?)null;
+        if (idParsed is not null)
+            return await context.Set<TEntity>()
+                .AsNoTracking()
+                .Where(x => x.Id == idParsed)
+                .Select(selector)
+                .FirstOrDefaultAsync(cancellationToken);
+
+        return default;
     }
 
     public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)

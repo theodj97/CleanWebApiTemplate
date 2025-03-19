@@ -5,6 +5,7 @@ using CleanWebApiTemplate.Host.Common;
 using CleanWebApiTemplate.Host.Helpers;
 using CleanWebApiTemplate.Host.Routes.Todo.Create;
 using CleanWebApiTemplate.Host.Routes.Todo.Filter;
+using CleanWebApiTemplate.Host.Routes.Todo.Get;
 using CleanWebApiTemplate.Host.Routes.Todo.Update;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -30,6 +31,13 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
             var result = await Mediator.Send(query, cancellationToken);
             return result.ToResult();
         }).Produces<IEnumerable<TodoResponse>>((int)HttpStatusCode.OK);
+
+        group.MapGet("/titles", async ([AsParameters] GetTodoTitlesRequest request, CancellationToken cancellationToken) =>
+        {
+            var query = TodoMappers.FromRequestToQuery(request);
+            var result = await Mediator.Send(query, cancellationToken);
+            return result.ToResult();
+        }).Produces<IEnumerable<TodoTitleResponse>>((int)HttpStatusCode.OK);
 
         group.MapPost("/", async ([FromBody] CreateTodoRequest request, CancellationToken cancellationToken) =>
         {

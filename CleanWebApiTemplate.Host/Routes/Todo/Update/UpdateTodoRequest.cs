@@ -1,6 +1,6 @@
 ﻿namespace CleanWebApiTemplate.Host.Routes.Todo.Update;
 
-public class UpdateTodoRequest
+public struct UpdateTodoRequest
 {
     public string? Title { get; set; }
     public string? Description { get; set; }

@@ -1,6 +1,6 @@
 ﻿namespace CleanWebApiTemplate.Infrastructure.Constants;
 
-public record MongoDbConstants
+public static class MongoDbConstants
 {
     // Collections
     public const string TASK_COLLECTION = "Task";

@@ -1,12 +1,12 @@
 ﻿namespace CleanWebApiTemplate.Domain.Models.Responses;
 
-public record TodoResponse
+public struct TodoResponse
 {
     public required Ulid Id { get; set; }
-    public required string Title { get; set; }
-    public string? Description { get; set; }
-    public required DateTime CreatedAt { get; set; }
-    public required byte Status { get; set; }
-    public required string CreatedBy { get; set; }
-    public required string UpdatedBy { get; set; }
+    public string Title { get; set; }
+    public string Description { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public byte Status { get; set; }
+    public string CreatedBy { get; set; }
+    public string UpdatedBy { get; set; }
 }

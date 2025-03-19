@@ -3,7 +3,7 @@
 public class TodoEntity : BaseEntity
 {
     public required string Title { get; set; }
-    public string? Description { get; set; }
+    public string Description { get; set; } = string.Empty;
     public required DateTime CreatedAt { get; set; }
     public required DateTime UpdatedAt { get; set; }
     public required byte Status { get; set; }

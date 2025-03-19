@@ -1,6 +1,6 @@
 ﻿namespace CleanWebApiTemplate.Domain.Configuration;
 
-public record Constants
+public static class Constants
 {
     // Envs
     public const string DEV_ENVIRONMNET = "DEVELOPMENT";
@@ -28,5 +28,4 @@ public record Constants
         USER_POLICY,
         EXTERNAL_POLICY
     ];
-
 }

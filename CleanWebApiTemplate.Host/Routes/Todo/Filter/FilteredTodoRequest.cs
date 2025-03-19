@@ -1,6 +1,6 @@
 ﻿namespace CleanWebApiTemplate.Host.Routes.Todo.Filter;
 
-public record FilteredTodoRequest
+public struct FilteredTodoRequest
 {
     public string[]? Ids { get; set; }
     public string[]? Title { get; set; }

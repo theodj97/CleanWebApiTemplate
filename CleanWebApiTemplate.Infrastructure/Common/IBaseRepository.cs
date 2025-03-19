@@ -4,14 +4,25 @@ namespace CleanWebApiTemplate.Infrastructure.Common;
 
 public interface IBaseRepository<TEntity> where TEntity : class
 {
-    Task<IEnumerable<TEntity>> FilterAsyncANT(Expression<Func<TEntity, bool>> expression, Expression<Func<TEntity, TEntity>>? selector = null, CancellationToken cancellationToken = default);
-    Task<TEntity?> GetByIdAsyncANT(string id, CancellationToken cancellationToken = default);
-    Task<TEntity?> CreateAsync(TEntity entity, CancellationToken cancellationToken = default);
-    Task<bool> BulkInsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
-    bool BulkInsert(IEnumerable<TEntity> entities);
-    Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
-    Task<bool> BulkUpdateAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
-    Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default);
-    bool Delete(string id);
-    Task<bool> BulkDeleteAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
+    public Task<IEnumerable<TEntity>> FilterAsyncANT(Expression<Func<TEntity, bool>> expression,
+                                                     int? pageNumber = null,
+                                                     int? pageSize = null,
+                                                     CancellationToken cancellationToken = default);
+    public Task<IEnumerable<TOutput>> FilterAsyncANT<TOutput>(Expression<Func<TEntity, bool>> expression,
+                                                              Expression<Func<TEntity, TOutput>> selector,
+                                                              int? pageNumber = null,
+                                                              int? pageSize = null,
+                                                              CancellationToken cancellationToken = default);
+    public Task<TEntity?> GetByIdAsyncANT(string id, CancellationToken cancellationToken = default);
+    public Task<TOutput?> GetByIdAsyncANT<TOutput>(string id,
+                                                   Expression<Func<TEntity, TOutput>> selector,
+                                                   CancellationToken cancellationToken = default);
+    public Task<TEntity?> CreateAsync(TEntity entity, CancellationToken cancellationToken = default);
+    public Task<bool> BulkInsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+    public bool BulkInsert(IEnumerable<TEntity> entities);
+    public Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
+    public Task<bool> BulkUpdateAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+    public Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default);
+    public bool Delete(string id);
+    public Task<bool> BulkDeleteAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
 }

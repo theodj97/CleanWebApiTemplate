@@ -1,6 +1,6 @@
 ﻿namespace CleanWebApiTemplate.Infrastructure.Constants;
 
-public record SqlDbConstants
+public static class SqlDbConstants
 {
     // Schemas
     public const string DB_SCHEMA = "db";
