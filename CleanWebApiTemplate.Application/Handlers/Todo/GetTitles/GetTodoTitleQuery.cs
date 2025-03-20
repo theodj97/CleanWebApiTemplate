@@ -8,8 +8,8 @@ namespace CleanWebApiTemplate.Application.Handlers.Todo.GetTitles;
 
 public class GetTodoTitleQuery : IRequest<Result<IEnumerable<TodoTitleResponse>>>
 {
-    public int PageNumber { get; set; }
-    public int PageSize { get; set; }
+    public byte PageNumber { get; set; }
+    public byte PageSize { get; set; }
 }
 
 internal class GetTodoTitleQueryHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<GetTodoTitleQuery, Result<IEnumerable<TodoTitleResponse>>>

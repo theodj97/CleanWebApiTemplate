@@ -2,6 +2,6 @@ namespace CleanWebApiTemplate.Host.Routes.Todo.Get;
 
 public struct GetTodoTitlesRequest
 {
-    public int PageNumber { get; set; }
-    public int PageSize { get; set; }
+    public byte PageNumber { get; set; }
+    public byte PageSize { get; set; }
 }
