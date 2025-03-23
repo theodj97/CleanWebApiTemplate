@@ -4,7 +4,6 @@ using CleanWebApiTemplate.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
-using System.Reflection;
 
 namespace CleanWebApiTemplate.Infrastructure;
 

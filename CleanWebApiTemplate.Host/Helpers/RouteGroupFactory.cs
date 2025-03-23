@@ -19,10 +19,8 @@ public static class RouteGroupFactory
 
         if (authPolicy is not null)
         {
-            var invalidPolicies = authPolicy.Where(policy => !Constants.AUTHORIZATION_POLICIES.Contains(policy)).ToArray();
-
-            if (invalidPolicies.Length != 0)
-                throw new ArgumentException($"Invalid authPolicy: {string.Join(", ", invalidPolicies)}.");
+            if (authPolicy.Where(policy => !Constants.AUTHORIZATION_POLICIES.Contains(policy)).Any())
+                throw new ArgumentException($"Invalid authPolicy in policies: {string.Join(", ", authPolicy)}.");
 
             routeGroupBuilder.RequireAuthorization(authPolicy);
         }

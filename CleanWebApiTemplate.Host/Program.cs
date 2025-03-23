@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 namespace CleanWebApiTemplate.Host;
 
-class Program
+public class Program
 {
     static void Main(string[] args)
     {
@@ -16,7 +16,7 @@ class Program
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? throw new Exception("No environment variable was setted!");
 
         if (File.Exists(Path.Combine(AppContext.BaseDirectory, $"appsettings.{environment}.json")) is false
-            && environment is not Constants.DEV_ENVIRONMNET)
+            && environment is not Constants.DEV_ENVIRONMNET && environment is not Constants.TEST_ENVIRONMNET)
             throw new Exception($"Warning: appsettings.{environment}.json not found.");
 
         builder.Configuration.SetBasePath(AppContext.BaseDirectory)
@@ -24,7 +24,7 @@ class Program
 
         if (environment is Constants.DEV_ENVIRONMNET)
             builder.Configuration.AddUserSecrets<Program>();
-        else
+        else if (environment is not Constants.TEST_ENVIRONMNET)
             builder.Configuration.AddJsonFile($"appsettings.{environment}.json", optional: false, reloadOnChange: true);
 
         var appSettings = ConfigureAppSettings(builder, environment);
@@ -85,7 +85,8 @@ class Program
     {
         AppSettings appSettings = new();
         builder.Configuration.Bind(appSettings);
-        if (environment is not Constants.DEV_ENVIRONMNET)
+
+        if (environment is not Constants.DEV_ENVIRONMNET && environment is not Constants.TEST_ENVIRONMNET)
             appSettings.ConnectionStrings = new()
             {
                 SqlServer = builder.Configuration[Constants.SQLSERVER_CNNSTRING]

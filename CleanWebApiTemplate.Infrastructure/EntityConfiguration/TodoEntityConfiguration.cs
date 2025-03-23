@@ -18,13 +18,42 @@ public class TodoEntityConfiguration : IEntityTypeConfiguration<TodoEntity>
                   ulid => ulid.ToByteArray(),
                   bytes => new Ulid(bytes)
               );
-        builder.Property(e => e.Title).HasColumnName(nameof(TodoEntity.Title)).HasMaxLength(TitleLenght).IsRequired();
-        builder.Property(e => e.Description).HasColumnName(nameof(TodoEntity.Description)).HasMaxLength(DescriptionLenght).IsRequired(false);
-        builder.Property(e => e.CreatedAt).HasColumnType(nameof(TodoEntity.CreatedAt)).HasColumnType("datetime2").IsRequired();
-        builder.Property(e => e.UpdatedAt).HasColumnType(nameof(TodoEntity.UpdatedAt)).HasColumnType("datetime2");
-        builder.Property(e => e.Status).HasColumnType(nameof(TodoEntity.Status)).HasColumnType("tinyint");
-        builder.Property(e => e.CreatedBy).HasColumnType(nameof(TodoEntity.CreatedBy)).HasMaxLength(CreatedByLenght).IsRequired();
-        builder.Property(e => e.UpdatedBy).HasColumnType(nameof(TodoEntity.UpdatedBy)).HasMaxLength(UpdatedByLenght).IsRequired();
+        builder.Property(e => e.Title)
+            .HasColumnName(nameof(TodoEntity.Title))
+            .HasColumnType("NVARCHAR")
+            .HasMaxLength(TitleLenght)
+            .IsRequired();
+
+        builder.Property(e => e.Description)
+            .HasColumnName(nameof(TodoEntity.Description))
+            .HasColumnType("NVARCHAR")
+            .HasMaxLength(DescriptionLenght)
+            .IsRequired(false);
+
+        builder.Property(e => e.CreatedAt)
+            .HasColumnName(nameof(TodoEntity.CreatedAt))
+            .HasColumnType("datetime2")
+            .IsRequired();
+
+        builder.Property(e => e.UpdatedAt)
+            .HasColumnName(nameof(TodoEntity.UpdatedAt))
+            .HasColumnType("datetime2");
+
+        builder.Property(e => e.Status)
+            .HasColumnName(nameof(TodoEntity.Status))
+            .HasColumnType("tinyint");
+
+        builder.Property(e => e.CreatedBy)
+            .HasColumnName(nameof(TodoEntity.CreatedBy))
+            .HasColumnType("NVARCHAR")
+            .HasMaxLength(CreatedByLenght)
+            .IsRequired();
+
+        builder.Property(e => e.UpdatedBy)
+            .HasColumnName(nameof(TodoEntity.UpdatedBy))
+            .HasColumnType("NVARCHAR")
+            .HasMaxLength(UpdatedByLenght)
+            .IsRequired();
     }
 
     public static byte TitleLenght => 255;

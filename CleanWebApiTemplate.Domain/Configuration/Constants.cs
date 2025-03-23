@@ -7,6 +7,7 @@ public static class Constants
     public const string INTEGRATION_ENVIRONMENT = "INTEGRATION";
     public const string STAGING_ENVIRONMENT = "STAGING";
     public const string PRODUCTION_ENVIRONMENT = "PRODUCTION";
+    public const string TEST_ENVIRONMNET = "TEST";
 
     // Envs variables
     public const string API_KEY = "ApiKey";

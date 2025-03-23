@@ -1,6 +1,4 @@
-﻿using CleanWebApiTemplate.Domain.Configuration;
-
-namespace CleanWebApiTemplate.Host;
+﻿namespace CleanWebApiTemplate.Host;
 
 public static class ConfigureApplication
 {
