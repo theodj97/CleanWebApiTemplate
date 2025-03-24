@@ -6,7 +6,7 @@ public class TodoEntity : BaseEntity
     public string Description { get; set; } = string.Empty;
     public required DateTime CreatedAt { get; set; }
     public required DateTime UpdatedAt { get; set; }
-    public required byte Status { get; set; }
+    public required int Status { get; set; }
     public required string CreatedBy { get; set; }
     public required string UpdatedBy { get; set; }
 }

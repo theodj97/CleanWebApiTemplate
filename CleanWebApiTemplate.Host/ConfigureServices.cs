@@ -105,9 +105,14 @@ public static class ConfigureServices
 
         services.AddAuthorizationBuilder()
             .AddPolicy(Constants.ADMIN_POLICY, policy => policy.RequireRole(Constants.ADMIN_POLICY))
-            .AddPolicy(Constants.OPERATOR_POLICY, policy => policy.RequireRole(Constants.OPERATOR_POLICY))
-            .AddPolicy(Constants.USER_POLICY, policy => policy.RequireRole(Constants.USER_POLICY))
-            .AddPolicy(Constants.EXTERNAL_POLICY, policy => policy.RequireRole(Constants.EXTERNAL_POLICY));
+            .AddPolicy(Constants.OPERATOR_POLICY, policy => policy.RequireRole(Constants.OPERATOR_POLICY,
+                                                                               Constants.ADMIN_POLICY))
+            .AddPolicy(Constants.USER_POLICY, policy => policy.RequireRole(Constants.USER_POLICY,
+                                                                           Constants.ADMIN_POLICY,
+                                                                           Constants.OPERATOR_POLICY))
+            .AddPolicy(Constants.EXTERNAL_POLICY, policy => policy.RequireRole(Constants.EXTERNAL_POLICY,
+                                                                               Constants.ADMIN_POLICY,
+                                                                               Constants.OPERATOR_POLICY));
 
         if (environment is Constants.DEV_ENVIRONMNET)
         {

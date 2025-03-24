@@ -1,3 +1,5 @@
+using CleanWebApiTemplate.Host.Routes.Todo.Filter;
+
 namespace CleanWebApiTemplate.Testing.Common;
 
 public static class ApiRoutes
@@ -11,20 +13,31 @@ public static class ApiRoutes
 
         public static string Delete(string id) => $"{BaseRoute}/{id}";
 
-        public static string Get(string? ids = null,
-                                 string? title = null,
-                                 string? status = null,
-                                 string? createdBy = null)
+        public static string Filtered(FilteredTodoRequest request)
         {
             var queryParams = new List<string>();
 
-            if (!string.IsNullOrEmpty(ids)) queryParams.Add($"Ids={ids}");
-            if (!string.IsNullOrEmpty(title)) queryParams.Add($"Title={title}");
-            if (!string.IsNullOrEmpty(status)) queryParams.Add($"Status={status}");
-            if (!string.IsNullOrEmpty(createdBy)) queryParams.Add($"CreatedBy={createdBy}");
+            if (request.Ids != null && request.Ids.Length > 0)
+                queryParams.AddRange(request.Ids.Select(id => $"Ids={id}"));
 
-            return queryParams.Count != 0 ? $"{BaseRoute}?{string.Join("&", queryParams)}" : BaseRoute;
+            if (request.Title != null && request.Title.Length > 0)
+                queryParams.AddRange(request.Title.Select(title => $"Title={title}"));
+
+            if (request.Status != null && request.Status.Length > 0)
+                queryParams.AddRange(request.Status.Select(status => $"Status={status}"));
+
+            if (request.CreatedBy != null && request.CreatedBy.Length > 0)
+                queryParams.AddRange(request.CreatedBy.Select(createdBy => $"CreatedBy={createdBy}"));
+
+            if (!string.IsNullOrEmpty(request.StartDate))
+                queryParams.Add($"StartDate={request.StartDate}");
+
+            if (!string.IsNullOrEmpty(request.EndDate))
+                queryParams.Add($"EndDate={request.EndDate}");
+
+            return queryParams.Count > 0 ? $"{BaseRoute}?{string.Join("&", queryParams)}" : BaseRoute;
         }
+
 
         public static string Create() => "api/Todo";
 

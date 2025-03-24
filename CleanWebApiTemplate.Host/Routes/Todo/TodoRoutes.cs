@@ -1,5 +1,6 @@
 ﻿using CleanWebApiTemplate.Application.Handlers.Todo.Delete;
 using CleanWebApiTemplate.Application.Handlers.Todo.GetById;
+using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Domain.Models.Responses;
 using CleanWebApiTemplate.Host.Common;
 using CleanWebApiTemplate.Host.Helpers;
@@ -16,7 +17,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
 {
     public void MapGroup(IEndpointRouteBuilder app)
     {
-        var group = RouteGroupFactory.CreateAuthorizedGroup(app, RouteName);
+        var group = RouteGroupFactory.CreateAuthorizedGroup(app, RouteName, [Constants.USER_POLICY]);
 
         group.MapGet("/{id}", async (string id, CancellationToken cancellationToken) =>
         {

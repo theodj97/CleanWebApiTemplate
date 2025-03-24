@@ -11,8 +11,10 @@ public class FilteredTodoQuery : IRequest<Result<IEnumerable<TodoResponse>>>
 {
     public IEnumerable<string>? Ids { get; set; }
     public IEnumerable<string>? Title { get; set; }
-    public IEnumerable<byte>? Status { get; set; }
+    public IEnumerable<int>? Status { get; set; } = [];
     public IEnumerable<string>? CreatedBy { get; set; }
+    public string? StartDate { get; set; }
+    public string? EndDate { get; set; }
 }
 
 internal class FilteredTodoQueryHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<FilteredTodoQuery, Result<IEnumerable<TodoResponse>>>
@@ -48,6 +50,15 @@ internal class FilteredTodoQueryHandler(IBaseRepository<TodoEntity> repository) 
         {
             Expression<Func<TodoEntity, bool>> createdByFilter = x => request.CreatedBy.Contains(x.CreatedBy);
             queryBody = Expression.AndAlso(queryBody, Expression.Invoke(createdByFilter, parameter));
+        }
+
+        if (string.IsNullOrEmpty(request.StartDate) is false && string.IsNullOrEmpty(request.EndDate) is false)
+        {
+            var startDate = DateTime.Parse(request.StartDate);
+            var endDate = DateTime.Parse(request.EndDate);
+
+            Expression<Func<TodoEntity, bool>> startDateFilter = x => x.CreatedAt >= startDate && x.CreatedAt <= endDate;
+            queryBody = Expression.AndAlso(queryBody, Expression.Invoke(startDateFilter, parameter));
         }
 
         filter = Expression.Lambda<Func<TodoEntity, bool>>(queryBody, parameter);

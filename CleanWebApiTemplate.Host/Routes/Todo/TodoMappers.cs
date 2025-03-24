@@ -17,7 +17,10 @@ public static class TodoMappers
         {
             Status = request.Status,
             Title = request.Title,
-            CreatedBy = request.CreatedBy
+            CreatedBy = request.CreatedBy,
+            StartDate = request.StartDate,
+            EndDate = request.EndDate,
+            Ids = request.Ids
         };
     }
 
@@ -26,7 +29,9 @@ public static class TodoMappers
         return new GetTodoTitleQuery()
         {
             PageNumber = request.PageNumber,
-            PageSize = request.PageSize
+            PageSize = request.PageSize,
+            OrderBy = request.OrderBy,
+            OrderDescending = request.OrderDescending
         };
     }
 

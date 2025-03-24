@@ -71,7 +71,7 @@ public sealed class BaseSqlRepository<TEntity>(SqlDbContext context) : IBaseRepo
         return false;
     }
 
-    public async Task<IEnumerable<TEntity>> FilterAsyncANT(Expression<Func<TEntity, bool>> expression,
+    public async Task<List<TEntity>> FilterAsyncANT(Expression<Func<TEntity, bool>> expression,
                                                            int? pageNumber = null,
                                                            int? pageSize = null,
                                                            CancellationToken cancellationToken = default)
@@ -82,8 +82,10 @@ public sealed class BaseSqlRepository<TEntity>(SqlDbContext context) : IBaseRepo
         return await query.ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<TOutput>> FilterAsyncANT<TOutput>(Expression<Func<TEntity, bool>> expression,
+    public async Task<List<TOutput>> FilterAsyncANT<TOutput>(Expression<Func<TEntity, bool>> expression,
                                                                     Expression<Func<TEntity, TOutput>> selector,
+                                                                    Expression<Func<TOutput, object>> orderBy,
+                                                                    bool descending = false,
                                                                     int? pageNumber = null,
                                                                     int? pageSize = null,
                                                                     CancellationToken cancellationToken = default)
@@ -93,6 +95,8 @@ public sealed class BaseSqlRepository<TEntity>(SqlDbContext context) : IBaseRepo
                     .Where(expression)
                     .Select(selector);
         query = RepositoryHelper.ManagePagination(query, pageNumber, pageSize);
+
+        query = descending ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
 
         return await query.ToListAsync(cancellationToken);
     }

@@ -36,9 +36,38 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
             AddFailure(context, "Property '{0}' must have exactly 26 characters");
     }
 
-    protected void ValidateEmail(string email, ValidationContext<TCommand> context)
+    /// <summary>
+    /// Validate a string that must be a valid DateTime.
+    /// </summary>
+    /// <param name="dateTime"></param>
+    /// <param name="context"></param>
+    protected void ValidateDateTime(string dateTime, ValidationContext<TCommand> context)
     {
+        if (DateTime.TryParse(dateTime, out _) is false)
+            AddFailure(context, "Property '{0}' must be a valid date time");
+    }
 
+    /// <summary>
+    /// Validate a StartDate and EndDate in a request.
+    /// </summary>
+    /// <param name="startDateEndDate"></param>
+    /// <param name="context"></param>
+    protected void ValidateStartDateAndEndDate(StartDateEndDateType startDateEndDate, ValidationContext<TCommand> context)
+    {
+        if (string.IsNullOrEmpty(startDateEndDate.StartDate)
+            && string.IsNullOrEmpty(startDateEndDate.EndDate) is false)
+            context.AddFailure(nameof(startDateEndDate.StartDate),
+                               $"{nameof(startDateEndDate.StartDate)} can't be null or empty when {nameof(startDateEndDate.EndDate)} has value");
+
+        if (string.IsNullOrEmpty(startDateEndDate.EndDate)
+        && string.IsNullOrEmpty(startDateEndDate.StartDate) is false)
+            context.AddFailure(nameof(startDateEndDate.EndDate),
+                               $"{nameof(startDateEndDate.EndDate)} can't be null or empty when {nameof(startDateEndDate.StartDate)} has value");
+
+        if (DateTime.TryParse(startDateEndDate.StartDate, out var startDate) &&
+                        DateTime.TryParse(startDateEndDate.EndDate, out var endDate))
+            if (startDate > endDate)
+                context.AddFailure(nameof(startDateEndDate.StartDate), $"{nameof(startDateEndDate.StartDate)} must be earlier than {nameof(startDateEndDate.EndDate)}");
     }
 
     /// <summary>
@@ -71,5 +100,11 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
         var propertyName = context.DisplayName.ToLower();
         var formattedMessage = string.Format(errorMessageTemplate, propertyName, args);
         context.AddFailure(propertyName, formattedMessage);
+    }
+
+    public class StartDateEndDateType(string? startDate, string? endDate)
+    {
+        public string StartDate = startDate ?? "";
+        public string EndDate = endDate ?? "";
     }
 }

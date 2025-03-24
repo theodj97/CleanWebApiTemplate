@@ -58,7 +58,7 @@ public static class TodoMappers
         }
         if (command.Status is not null)
         {
-            entity.Status = (byte)command.Status;
+            entity.Status = (int)command.Status;
             isUpdated = true;
         }
         if (isUpdated)

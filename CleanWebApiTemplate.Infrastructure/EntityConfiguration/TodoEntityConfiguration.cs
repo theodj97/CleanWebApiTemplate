@@ -18,6 +18,7 @@ public class TodoEntityConfiguration : IEntityTypeConfiguration<TodoEntity>
                   ulid => ulid.ToByteArray(),
                   bytes => new Ulid(bytes)
               );
+
         builder.Property(e => e.Title)
             .HasColumnName(nameof(TodoEntity.Title))
             .HasColumnType("NVARCHAR")

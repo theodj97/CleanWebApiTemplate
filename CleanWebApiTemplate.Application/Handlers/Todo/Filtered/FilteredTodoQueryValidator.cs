@@ -25,5 +25,16 @@ public class FilteredTodoQueryValidator : TodoValidator<FilteredTodoQuery>
         RuleForEach(x => x.CreatedBy)
             .Custom(ValidateUserEmail)
             .When(x => x.CreatedBy is not null);
+
+        RuleFor(x => x.StartDate)
+            .Custom(ValidateDateTime!)
+            .When(x => x.StartDate is not null);
+
+        RuleFor(x => x.EndDate)
+            .Custom(ValidateDateTime!)
+            .When(x => x.EndDate is not null);
+
+        RuleFor(x => new StartDateEndDateType(x.StartDate, x.EndDate))
+            .Custom(ValidateStartDateAndEndDate);
     }
 }

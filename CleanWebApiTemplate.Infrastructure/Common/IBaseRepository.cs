@@ -4,12 +4,14 @@ namespace CleanWebApiTemplate.Infrastructure.Common;
 
 public interface IBaseRepository<TEntity> where TEntity : class
 {
-    public Task<IEnumerable<TEntity>> FilterAsyncANT(Expression<Func<TEntity, bool>> expression,
+    public Task<List<TEntity>> FilterAsyncANT(Expression<Func<TEntity, bool>> expression,
                                                      int? pageNumber = null,
                                                      int? pageSize = null,
                                                      CancellationToken cancellationToken = default);
-    public Task<IEnumerable<TOutput>> FilterAsyncANT<TOutput>(Expression<Func<TEntity, bool>> expression,
+    public Task<List<TOutput>> FilterAsyncANT<TOutput>(Expression<Func<TEntity, bool>> expression,
                                                               Expression<Func<TEntity, TOutput>> selector,
+                                                              Expression<Func<TOutput, object>> orderBy,
+                                                              bool descending = false,
                                                               int? pageNumber = null,
                                                               int? pageSize = null,
                                                               CancellationToken cancellationToken = default);

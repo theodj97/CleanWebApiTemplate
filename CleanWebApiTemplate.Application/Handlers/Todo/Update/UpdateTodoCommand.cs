@@ -11,7 +11,7 @@ public class UpdateTodoCommand : IRequest<Result<TodoResponse>>
     public required string Id { get; set; }
     public string? Title { get; set; }
     public string? Description { get; set; }
-    public byte? Status { get; set; }
+    public int? Status { get; set; }
     public required string UpdatedBy { get; set; }
 }
 

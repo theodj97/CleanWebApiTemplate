@@ -72,7 +72,7 @@ public sealed class BaseMongoRepository<TDocument>(MongoDbContext context) : IBa
         return false;
     }
 
-    public async Task<IEnumerable<TDocument>> FilterAsyncANT(Expression<Func<TDocument, bool>> expression,
+    public async Task<List<TDocument>> FilterAsyncANT(Expression<Func<TDocument, bool>> expression,
                                                              int? pageNumber = null,
                                                              int? pageSize = null,
                                                              CancellationToken cancellationToken = default)
@@ -83,17 +83,21 @@ public sealed class BaseMongoRepository<TDocument>(MongoDbContext context) : IBa
         return await query.ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<TOutput>> FilterAsyncANT<TOutput>(Expression<Func<TDocument, bool>> expression,
-                                                                    Expression<Func<TDocument, TOutput>> selector,
-                                                                    int? pageNumber = null,
-                                                                    int? pageSize = null,
-                                                                    CancellationToken cancellationToken = default)
+    public async Task<List<TOutput>> FilterAsyncANT<TOutput>(Expression<Func<TDocument, bool>> expression,
+                                                             Expression<Func<TDocument, TOutput>> selector,
+                                                             Expression<Func<TOutput, object>> orderBy,
+                                                             bool descending = false,
+                                                             int? pageNumber = null,
+                                                             int? pageSize = null,
+                                                             CancellationToken cancellationToken = default)
     {
         var query = context.Set<TDocument>()
                     .AsNoTracking()
                     .Where(expression)
                     .Select(selector);
         query = RepositoryHelper.ManagePagination(query, pageNumber, pageSize);
+
+        query = descending ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
 
         return await query.ToListAsync(cancellationToken);
     }

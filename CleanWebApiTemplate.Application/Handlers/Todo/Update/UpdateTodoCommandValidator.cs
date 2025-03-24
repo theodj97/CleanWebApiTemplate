@@ -23,8 +23,8 @@ public class UpdateTodoCommandValidator : TodoValidator<UpdateTodoCommand>
             .Custom(ValidateDescription!)
             .When(x => string.IsNullOrEmpty(x.Description) is false);
 
-        RuleFor(x => x.Status)
-            .Custom(ValidateStatus!)
+        RuleFor(x => (int)x.Status!)
+            .Custom(ValidateStatus)
             .When(x => x.Status is not null || x.Status != 0);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using CleanWebApiTemplate.Domain.Helpers.Validators;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.Models.Enums;
+using CleanWebApiTemplate.Domain.Models.Responses;
 using CleanWebApiTemplate.Infrastructure.Common;
 using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
 using FluentValidation;
@@ -38,24 +39,30 @@ public class TodoValidator<T>(IBaseRepository<TodoEntity> repository) : BaseAbst
     }
 
     protected void ValidateUserEmail<TCommand>(string createdBy,
-                                              ValidationContext<TCommand> context) where TCommand : class, IRequest<object>
+                                               ValidationContext<TCommand> context) where TCommand : class, IRequest<object>
     {
         if (IsValidEmail(createdBy) is false)
             AddFailure(context, "Property '{0}' is not a valid email.");
     }
 
-    protected void ValidateStatus<TCommand>(byte? status,
+    protected void ValidateStatus<TCommand>(int status,
                                            ValidationContext<TCommand> context) where TCommand : class, IRequest<object>
-    {
-        if (status.HasValue && Enum.IsDefined(typeof(TodoStatusEnum), status) is false)
-            AddFailure(context, "Property '{0}' wasn't a registered status.");
-    }
-
-    protected void ValidateStatus<TCommand>(byte status,
-                                       ValidationContext<TCommand> context) where TCommand : class, IRequest<object>
     {
         if (Enum.IsDefined(typeof(TodoStatusEnum), status) is false)
             AddFailure(context, "Property '{0}' wasn't a registered status.");
+    }
+
+    protected void ValidateTitleOrderProperty<TCommand>(string? orderBy, ValidationContext<TCommand> context) where TCommand : class, IRequest<object>
+    {
+        if (orderBy is null) return;
+
+        var validProperties = typeof(TodoTitleResponse)
+                                .GetProperties()
+                                .Select(p => p.Name.ToLower())
+                                .ToList();
+
+        if (validProperties.Contains(orderBy.ToLower()) is false)
+            AddFailure(context, "Property '{0}' isn't a valid order property.");
     }
 
     /// <summary>
@@ -69,6 +76,6 @@ public class TodoValidator<T>(IBaseRepository<TodoEntity> repository) : BaseAbst
         if (string.IsNullOrWhiteSpace(title))
             return true;
 
-        return (await repository.FilterAsyncANT(x => x.Title == title, cancellationToken: cancellationToken)).Any() is false;
+        return (await repository.FilterAsyncANT(x => x.Title == title, cancellationToken: cancellationToken)).Count is 0;
     }
 }
