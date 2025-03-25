@@ -26,4 +26,20 @@ public static class TestServerFixtureExtension
 
         return todoEntity;
     }
+
+
+    /// <summary>
+    /// Generates a random string of the specified length.
+    /// </summary>
+    /// <param name="length">The desired lenght of the random string.</param>
+    /// <returns>A random string of the specified length.</returns>
+    /// <exception cref="ArgumentException"></exception>
+    public static string GenerateRandomString(int length)
+    {
+        if (length <= 0) throw new ArgumentException("Length must be greater than zero", nameof(length));
+
+        const string characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new();
+        return new string([.. Enumerable.Repeat(characters, length).Select(s => s[random.Next(s.Length)])]);
+    }
 }

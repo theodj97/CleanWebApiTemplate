@@ -4,6 +4,8 @@ using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Domain.Models.Enums;
 using CleanWebApiTemplate.Domain.Models.Responses;
 using CleanWebApiTemplate.Host.Routes.Todo.Filter;
+using CleanWebApiTemplate.Host.Routes.Todo.Get;
+using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
 using CleanWebApiTemplate.Testing.Common;
 using CleanWebApiTemplate.Testing.Common.Attributes;
 
@@ -43,7 +45,7 @@ public class Get(TestServerFixture fixture)
     [ResetDatabase]
     [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
-    public async Task GetTodoById_Should_ReturnNotFound()
+    public async Task GetTodoById_Should_Return_NoContent()
     {
         // Arrange
 
@@ -56,10 +58,9 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [ResetDatabase]
     [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
-    public async Task GetTodoById_WrongId_Should_ReturnBadRequest()
+    public async Task GetTodoById_WrongId_Should_Return_BadRequest()
     {
         // Arrange
         string wrongId = "wrong-id";
@@ -73,10 +74,9 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [ResetDatabase]
     [RoleAsignation(Constants.EXTERNAL_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
-    public async Task GetTodoById_ExternalUser_Should_ReturnForbidden()
+    public async Task GetTodoById_ExternalUser_Should_Return_Forbidden()
     {
         // Arrange
 
@@ -219,19 +219,322 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [ResetDatabase]
     [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
-    public async Task FilteredTodo_WrongRequestId_Should_ReturnBadRequest()
+    public async Task FilteredTodo_WrongRequestId_Should_Return_BadRequest()
     {
         // Arrange
         FilteredTodoRequest request = new() { Ids = ["wrongUlid"] };
 
         // Act
-        var result = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.Filtered(request));
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.Filtered(request));
 
         // Assert
-        Assert.False(result.IsSuccessStatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [RoleAsignation(Constants.USER_POLICY)]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task FilteredTodo_TooLongTitle_Should_Return_BadRequest()
+    {
+        // Arrange
+        FilteredTodoRequest request = new() { Title = [TestServerFixtureExtension.GenerateRandomString(TodoEntityConfiguration.TitleLenght + 1)] };
+
+        // Act
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.Filtered(request));
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [RoleAsignation(Constants.USER_POLICY)]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task FilteredTodo_InvalidState_Should_Return_BadRequest()
+    {
+        // Arrange
+        int invalidStatus = 0;
+        for (int i = 1; i < 256; i++)
+        {
+            if (Enum.IsDefined(typeof(TodoStatusEnum), i) is false)
+            {
+                invalidStatus = i;
+                break;
+            }
+        }
+        FilteredTodoRequest request = new() { Status = [invalidStatus] };
+
+        // Act
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.Filtered(request));
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [RoleAsignation(Constants.USER_POLICY)]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task FilteredTodo_InvalidEmailCreatedBy_Should_Return_BadRequest()
+    {
+        // Arrange
+        string invalidUserEmail = "this is not an email";
+        FilteredTodoRequest request = new() { CreatedBy = [invalidUserEmail] };
+
+        // Act
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.Filtered(request));
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [RoleAsignation(Constants.USER_POLICY)]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task FilteredTodo_InvalidStartDate_Should_Return_BadRequest()
+    {
+        // Arrange
+        string invalidStartDate = "this is not a date";
+        FilteredTodoRequest request = new() { StartDate = invalidStartDate };
+
+        // Act
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.Filtered(request));
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [RoleAsignation(Constants.USER_POLICY)]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task FilteredTodo_InvalidEndDate_Should_Return_BadRequest()
+    {
+        // Arrange
+        string invalidEndDate = "this is not a date";
+        FilteredTodoRequest request = new() { EndDate = invalidEndDate };
+
+        // Act
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.Filtered(request));
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [RoleAsignation(Constants.USER_POLICY)]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task FilteredTodo_StartDateAfterEndDate_Should_Return_BadRequest()
+    {
+        // Arrange
+        DateTime startDate = DateTime.UtcNow.AddDays(-1);
+        DateTime endDate = DateTime.UtcNow.AddDays(-2);
+        FilteredTodoRequest request = new() { StartDate = startDate.ToString(), EndDate = endDate.ToString() };
+
+        // Act
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.Filtered(request));
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [RoleAsignation(Constants.USER_POLICY)]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task FilteredTodo_StartDateButNoEndDateInRequest_Should_Return_BadRequest()
+    {
+        // Arrange
+        DateTime startDate = DateTime.UtcNow.AddDays(-1);
+        FilteredTodoRequest request = new() { StartDate = startDate.ToString() };
+
+        // Act
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.Filtered(request));
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [RoleAsignation(Constants.USER_POLICY)]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task FilteredTodo_NoStartDateButEndDateInRequest_Should_Return_BadRequest()
+    {
+        // Arrange
+        DateTime endDate = DateTime.UtcNow.AddDays(1);
+        FilteredTodoRequest request = new() { EndDate = endDate.ToString() };
+
+        // Act
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.Filtered(request));
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [RoleAsignation(Constants.EXTERNAL_POLICY)]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task FilteredTodo_ExternalUser_Should_Return_Forbidden()
+    {
+        // Arrange
+        FilteredTodoRequest request = new();
+
+        // Act
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.Filtered(request));
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [RoleAsignation(Constants.USER_POLICY)]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task GetTitles_OrderByTitle_Should_ReturnTitles_Ok()
+    {
+        // Arrange
+        var firstTodo = await Fixture.AddDefaultTodo(title: "BTitle");
+        var secondTodo = await Fixture.AddDefaultTodo(title: "ATitle");
+        var thirdTodo = await Fixture.AddDefaultTodo(title: "CTitle");
+        var fourthTodo = await Fixture.AddDefaultTodo(title: "DTitle");
+        GetTodoTitlesRequest firstRequest = new() { PageNumber = 1, PageSize = 3, OrderBy = "Title", OrderDescending = true };
+        GetTodoTitlesRequest secondRequest = new() { PageNumber = 2, PageSize = 3, OrderBy = "Title", OrderDescending = true };
+
+        // Act
+        var firstRequestResponse = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetTitles(firstRequest));
+        var secondRequestResponse = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetTitles(secondRequest));
+
+        // Assert
+        Assert.True(firstRequestResponse.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.OK, firstRequestResponse.StatusCode);
+        var firstResponseModel = await firstRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>();
+        Assert.NotNull(firstResponseModel);
+        Assert.Equal(3, firstResponseModel.Count());
+
+        Assert.True(secondRequestResponse.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.OK, secondRequestResponse.StatusCode);
+        var secondResponseModel = await secondRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>();
+        Assert.NotNull(secondResponseModel);
+        Assert.Single(secondResponseModel);
+
+        var firstTodoResponse = firstResponseModel.ElementAt(0);
+        Assert.Equal(fourthTodo.Title, firstTodoResponse.Title);
+        Assert.Equal(fourthTodo.Id, firstTodoResponse.Id);
+
+        var secondTodoResponse = firstResponseModel.ElementAt(1);
+        Assert.Equal(thirdTodo.Title, secondTodoResponse.Title);
+        Assert.Equal(thirdTodo.Id, secondTodoResponse.Id);
+
+        var thirdTodoResponse = firstResponseModel.ElementAt(2);
+        Assert.Equal(firstTodo.Title, thirdTodoResponse.Title);
+        Assert.Equal(firstTodo.Id, thirdTodoResponse.Id);
+
+        var fourthTodoResponse = secondResponseModel.First();
+        Assert.Equal(secondTodo.Title, fourthTodoResponse.Title);
+        Assert.Equal(secondTodo.Id, fourthTodoResponse.Id);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [RoleAsignation(Constants.USER_POLICY)]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task GetTitles_OrderById_Should_ReturnTitles_Ok()
+    {
+        // Arrange
+        var firstTodo = await Fixture.AddDefaultTodo(title: "BTitle");
+        var secondTodo = await Fixture.AddDefaultTodo(title: "ATitle");
+        var thirdTodo = await Fixture.AddDefaultTodo(title: "CTitle");
+        var fourthTodo = await Fixture.AddDefaultTodo(title: "DTitle");
+        GetTodoTitlesRequest firstRequest = new() { PageNumber = 1, PageSize = 3, OrderBy = "Id" };
+        GetTodoTitlesRequest secondRequest = new() { PageNumber = 2, PageSize = 3, OrderBy = "Id" };
+
+        // Act
+        var firstRequestResponse = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetTitles(firstRequest));
+        var secondRequestResponse = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetTitles(secondRequest));
+
+        // Assert
+        Assert.True(firstRequestResponse.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.OK, firstRequestResponse.StatusCode);
+        var firstResponseModel = await firstRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>();
+        Assert.NotNull(firstResponseModel);
+        Assert.Equal(3, firstResponseModel.Count());
+
+        Assert.True(secondRequestResponse.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.OK, secondRequestResponse.StatusCode);
+        var secondResponseModel = await secondRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>();
+        Assert.NotNull(secondResponseModel);
+        Assert.Single(secondResponseModel);
+
+        var firstTodoResponse = firstResponseModel.ElementAt(0);
+        Assert.Equal(firstTodo.Title, firstTodoResponse.Title);
+        Assert.Equal(firstTodo.Id, firstTodoResponse.Id);
+
+        var secondTodoResponse = firstResponseModel.ElementAt(1);
+        Assert.Equal(secondTodo.Title, secondTodoResponse.Title);
+        Assert.Equal(secondTodo.Id, secondTodoResponse.Id);
+
+        var thirdTodoResponse = firstResponseModel.ElementAt(2);
+        Assert.Equal(thirdTodo.Title, thirdTodoResponse.Title);
+        Assert.Equal(thirdTodo.Id, thirdTodoResponse.Id);
+
+        var fourthTodoResponse = secondResponseModel.First();
+        Assert.Equal(fourthTodo.Title, fourthTodoResponse.Title);
+        Assert.Equal(fourthTodo.Id, fourthTodoResponse.Id);
+    }
+
+    [Fact]
+    [RoleAsignation(Constants.USER_POLICY)]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task GetTitles_WrongPagination_Should_Return_BadRequest()
+    {
+        // Arrange
+        GetTodoTitlesRequest request = new() { PageNumber = 0, PageSize = 0 };
+
+        // Act
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetTitles(request));
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [RoleAsignation(Constants.USER_POLICY)]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task GetTitles_WrongOrderBy_Should_Return_BadRequest()
+    {
+        // Arrange
+        GetTodoTitlesRequest request = new() { PageNumber = 1, PageSize = 1, OrderBy = "wrongOrder" };
+
+        // Act
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetTitles(request));
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [RoleAsignation(Constants.EXTERNAL_POLICY)]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task GetTitles_ExternalUser_Should_Return_Forbidden()
+    {
+        // Arrange
+        GetTodoTitlesRequest request = new() { PageNumber = 1, PageSize = 1 };
+
+        // Act
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetTitles(request));
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 }

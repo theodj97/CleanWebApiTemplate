@@ -12,7 +12,7 @@ public static class RepositoryHelper
             if (pageSize < 1)
                 throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be greater than or equal to 1.");
 
-            query = query.Skip(((int)pageNumber - 1) * (int)pageSize);
+            query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
         }
 
         return query;

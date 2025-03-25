@@ -94,9 +94,10 @@ public sealed class BaseSqlRepository<TEntity>(SqlDbContext context) : IBaseRepo
                     .AsNoTracking()
                     .Where(expression)
                     .Select(selector);
-        query = RepositoryHelper.ManagePagination(query, pageNumber, pageSize);
 
-        query = descending ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
+        query = descending ? query.OrderByDescending(orderBy) : query.OrderBy(orderBy);
+
+        query = RepositoryHelper.ManagePagination(query, pageNumber, pageSize);
 
         return await query.ToListAsync(cancellationToken);
     }

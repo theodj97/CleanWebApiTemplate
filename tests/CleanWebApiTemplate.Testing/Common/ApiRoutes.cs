@@ -1,4 +1,5 @@
 using CleanWebApiTemplate.Host.Routes.Todo.Filter;
+using CleanWebApiTemplate.Host.Routes.Todo.Get;
 
 namespace CleanWebApiTemplate.Testing.Common;
 
@@ -41,6 +42,21 @@ public static class ApiRoutes
 
         public static string Create() => "api/Todo";
 
-        public static string GetTitles(int pageNumber, int pageSize) => $"api/Todo/titles?PageNumber={pageNumber}&PageSize={pageSize}";
+        public static string GetTitles(GetTodoTitlesRequest request)
+        {
+            var queryParams = new List<string>
+            {
+                $"PageNumber={request.PageNumber}",
+                $"PageSize={request.PageSize}"
+            };
+
+            if (!string.IsNullOrEmpty(request.OrderBy))
+                queryParams.Add($"OrderBy={request.OrderBy}");
+
+            if (request.OrderDescending.HasValue)
+                queryParams.Add($"OrderDescending={request.OrderDescending.Value.ToString().ToLower()}");
+
+            return $"api/Todo/titles?{string.Join("&", queryParams)}";
+        }
     }
 }

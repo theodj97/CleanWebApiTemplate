@@ -25,7 +25,7 @@ internal class GetTodoTitleQueryHandler(IBaseRepository<TodoEntity> repository) 
     {
         Expression<Func<TodoTitleResponse, object>> orderSelector;
 
-        if (request.OrderBy.IsNullOrEmpty())
+        if (string.IsNullOrEmpty(request.OrderBy))
             orderSelector = o => o.Title;
 
         else
