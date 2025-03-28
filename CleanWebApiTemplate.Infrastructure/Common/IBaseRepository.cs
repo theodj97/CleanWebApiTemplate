@@ -19,7 +19,7 @@ public interface IBaseRepository<TEntity> where TEntity : class
     public Task<TOutput?> GetByIdAsyncANT<TOutput>(string id,
                                                    Expression<Func<TEntity, TOutput>> selector,
                                                    CancellationToken cancellationToken = default);
-    public Task<TEntity?> CreateAsync(TEntity entity, CancellationToken cancellationToken = default);
+    public Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default);
     public Task<bool> BulkInsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
     public bool BulkInsert(IEnumerable<TEntity> entities);
     public Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);

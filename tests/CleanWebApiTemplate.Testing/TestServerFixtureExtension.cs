@@ -27,6 +27,18 @@ public static class TestServerFixtureExtension
         return todoEntity;
     }
 
+    public static async Task<TodoEntity> GetTodo(this TestServerFixture testServerFixture, string id)
+    {
+        TodoEntity todo = null;
+
+        await testServerFixture.ExecuteDbContextAsync(async context =>
+        {
+            todo = await context.FindAsync<TodoEntity>(id);
+        });
+
+        return form;
+    }
+
 
     /// <summary>
     /// Generates a random string of the specified length.

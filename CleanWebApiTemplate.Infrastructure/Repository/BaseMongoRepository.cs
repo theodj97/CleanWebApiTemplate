@@ -42,13 +42,13 @@ public sealed class BaseMongoRepository<TDocument>(MongoDbContext context) : IBa
         return await context.SaveChangesAsync(cancellationToken) > 0;
     }
 
-    public async Task<TDocument?> CreateAsync(TDocument entity, CancellationToken cancellationToken = default)
+    public async Task<TDocument> CreateAsync(TDocument entity, CancellationToken cancellationToken = default)
     {
         var result = await context.AddAsync(entity, cancellationToken);
         if (await context.SaveChangesAsync(cancellationToken) > 0)
             return result.Entity;
 
-        return null;
+        throw new Exception("Failed to create document.");
     }
 
     public bool Delete(string id)

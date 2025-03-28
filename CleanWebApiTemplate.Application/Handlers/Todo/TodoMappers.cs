@@ -29,16 +29,12 @@ public static class TodoMappers
 
     public static TodoEntity FromCommandToEntity(CreateTodoCommand command)
     {
-        DateTime actualUtcMoment = DateTime.UtcNow;
         return new TodoEntity
         {
             Id = Ulid.NewUlid(),
             Title = command.Title,
             Description = command.Description,
             CreatedBy = command.CreatedBy,
-            CreatedAt = actualUtcMoment,
-            Status = 1,
-            UpdatedAt = actualUtcMoment,
             UpdatedBy = command.CreatedBy
         };
     }
