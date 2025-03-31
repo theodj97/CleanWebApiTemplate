@@ -72,34 +72,36 @@ public sealed class BaseSqlRepository<TEntity>(SqlDbContext context) : IBaseRepo
     }
 
     public async Task<List<TEntity>> FilterAsyncANT(Expression<Func<TEntity, bool>> expression,
-                                                           int? pageNumber = null,
-                                                           int? pageSize = null,
-                                                           CancellationToken cancellationToken = default)
+                                                    Expression<Func<TEntity, object>>? orderBy = null,
+                                                    bool descending = false,
+                                                    int? pageNumber = null,
+                                                    int? pageSize = null,
+                                                    CancellationToken cancellationToken = default)
     {
         var query = context.Set<TEntity>().AsNoTracking().Where(expression);
+        if (orderBy is not null)
+            query = descending ? query.OrderByDescending(orderBy) : query.OrderBy(orderBy);
         query = RepositoryHelper.ManagePagination(query, pageNumber, pageSize);
 
         return await query.ToListAsync(cancellationToken);
     }
 
     public async Task<List<TOutput>> FilterAsyncANT<TOutput>(Expression<Func<TEntity, bool>> expression,
-                                                                    Expression<Func<TEntity, TOutput>> selector,
-                                                                    Expression<Func<TOutput, object>> orderBy,
-                                                                    bool descending = false,
-                                                                    int? pageNumber = null,
-                                                                    int? pageSize = null,
-                                                                    CancellationToken cancellationToken = default)
+                                                             Expression<Func<TEntity, TOutput>> selector,
+                                                             Expression<Func<TEntity, object>>? orderBy = null,
+                                                             bool descending = false,
+                                                             int? pageNumber = null,
+                                                             int? pageSize = null,
+                                                             CancellationToken cancellationToken = default)
     {
         var query = context.Set<TEntity>()
                     .AsNoTracking()
-                    .Where(expression)
-                    .Select(selector);
-
-        query = descending ? query.OrderByDescending(orderBy) : query.OrderBy(orderBy);
-
+                    .Where(expression);
+        if (orderBy is not null)
+            query = descending ? query.OrderByDescending(orderBy) : query.OrderBy(orderBy);
         query = RepositoryHelper.ManagePagination(query, pageNumber, pageSize);
 
-        return await query.ToListAsync(cancellationToken);
+        return await query.Select(selector).ToListAsync(cancellationToken);
     }
 
     public async Task<TEntity?> GetByIdAsyncANT(string id, CancellationToken cancellationToken = default)

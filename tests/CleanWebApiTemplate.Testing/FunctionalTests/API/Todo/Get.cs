@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using CleanWebApiTemplate.Domain.Configuration;
-using CleanWebApiTemplate.Domain.Models.Enums;
+using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Domain.Models.Responses;
 using CleanWebApiTemplate.Host.Routes.Todo.Filter;
 using CleanWebApiTemplate.Host.Routes.Todo.Get;
@@ -18,7 +18,6 @@ public class Get(TestServerFixture fixture)
 
     [Fact]
     [ResetDatabase]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task GetTodoById_Should_ReturnTodo_Ok()
     {
@@ -43,7 +42,6 @@ public class Get(TestServerFixture fixture)
 
     [Fact]
     [ResetDatabase]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task GetTodoById_Should_Return_NoContent()
     {
@@ -58,7 +56,6 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task GetTodoById_WrongId_Should_Return_BadRequest()
     {
@@ -74,7 +71,7 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [RoleAsignation(Constants.EXTERNAL_POLICY)]
+    [IdentityAsignation(role: Constants.EXTERNAL_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task GetTodoById_ExternalUser_Should_Return_Forbidden()
     {
@@ -90,7 +87,6 @@ public class Get(TestServerFixture fixture)
 
     [Fact]
     [ResetDatabase]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task FilteredTodo_FilteredAllParams_Should_ReturnFilteredTodos_Ok()
     {
@@ -100,21 +96,20 @@ public class Get(TestServerFixture fixture)
         DateTime dayTwo = utcNow.AddDays(-1);
         DateTime dayThree = utcNow;
 
-        var firstTodo = await Fixture.AddDefaultTodo(title: "firstTitle",
+        var firstTodo = await Fixture.AddDefaultTodo(title: "BfirstTitle",
                                                      createdAt: dayOne,
-                                                     status: (int)TodoStatusEnum.Pending,
+                                                     status: (int)ETodoStatus.Pending,
                                                      createdBy: "user1@test.tst");
 
-        var secondTodo = await Fixture.AddDefaultTodo(title: "secondTitle",
+        var secondTodo = await Fixture.AddDefaultTodo(title: "AsecondTitle",
                                                       createdAt: dayTwo,
-                                                      status: (int)TodoStatusEnum.Completed,
+                                                      status: (int)ETodoStatus.Completed,
                                                       createdBy: "user2@test.tst");
 
-        var thirdTodo = await Fixture.AddDefaultTodo(title: "thirdTitle",
+        var thirdTodo = await Fixture.AddDefaultTodo(title: "CthirdTitle",
                                                      createdAt: dayThree,
-                                                     status: (int)TodoStatusEnum.InProgress,
+                                                     status: (int)ETodoStatus.InProgress,
                                                      createdBy: "user1@test.tst");
-
 
         FilteredTodoRequest request = new()
         {
@@ -123,7 +118,11 @@ public class Get(TestServerFixture fixture)
             Status = [firstTodo.Status, secondTodo.Status],
             Ids = [firstTodo.Id.ToString(), secondTodo.Id.ToString()],
             StartDate = dayOne.ToString(),
-            EndDate = dayTwo.AddSeconds(1).ToString()
+            EndDate = dayTwo.AddSeconds(1).ToString(),
+            OrderBy = (byte?)ETodoOrderBy.CreatedAt,
+            OrderDescending = false,
+            PageNumber = 1,
+            PageSize = 2
         };
 
         // Act
@@ -155,7 +154,6 @@ public class Get(TestServerFixture fixture)
 
     [Fact]
     [ResetDatabase]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task FilteredTodo_FilteredAnyParams_Should_ReturnAllTodos_Ok()
     {
@@ -167,17 +165,17 @@ public class Get(TestServerFixture fixture)
 
         var firstTodo = await Fixture.AddDefaultTodo(title: "firstTitle",
                                                      createdAt: dayOne,
-                                                     status: (int)TodoStatusEnum.Pending,
+                                                     status: (int)ETodoStatus.Pending,
                                                      createdBy: "user1@test.tst");
 
         var secondTodo = await Fixture.AddDefaultTodo(title: "secondTitle",
                                                       createdAt: dayTwo,
-                                                      status: (int)TodoStatusEnum.Completed,
+                                                      status: (int)ETodoStatus.Completed,
                                                       createdBy: "user2@test.tst");
 
         var thirdTodo = await Fixture.AddDefaultTodo(title: "thirdTitle",
                                                      createdAt: dayThree,
-                                                     status: (int)TodoStatusEnum.InProgress,
+                                                     status: (int)ETodoStatus.InProgress,
                                                      createdBy: "user1@test.tst");
 
 
@@ -219,7 +217,6 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task FilteredTodo_WrongRequestId_Should_Return_BadRequest()
     {
@@ -235,7 +232,6 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task FilteredTodo_TooLongTitle_Should_Return_BadRequest()
     {
@@ -251,7 +247,6 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task FilteredTodo_InvalidState_Should_Return_BadRequest()
     {
@@ -259,7 +254,7 @@ public class Get(TestServerFixture fixture)
         int invalidStatus = 0;
         for (int i = 1; i < 256; i++)
         {
-            if (Enum.IsDefined(typeof(TodoStatusEnum), i) is false)
+            if (Enum.IsDefined(typeof(ETodoStatus), i) is false)
             {
                 invalidStatus = i;
                 break;
@@ -276,7 +271,6 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task FilteredTodo_InvalidEmailCreatedBy_Should_Return_BadRequest()
     {
@@ -293,7 +287,6 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task FilteredTodo_InvalidStartDate_Should_Return_BadRequest()
     {
@@ -310,7 +303,6 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task FilteredTodo_InvalidEndDate_Should_Return_BadRequest()
     {
@@ -327,7 +319,6 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task FilteredTodo_StartDateAfterEndDate_Should_Return_BadRequest()
     {
@@ -345,7 +336,6 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task FilteredTodo_StartDateButNoEndDateInRequest_Should_Return_BadRequest()
     {
@@ -362,7 +352,6 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task FilteredTodo_NoStartDateButEndDateInRequest_Should_Return_BadRequest()
     {
@@ -379,7 +368,7 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [RoleAsignation(Constants.EXTERNAL_POLICY)]
+    [IdentityAsignation(role: Constants.EXTERNAL_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task FilteredTodo_ExternalUser_Should_Return_Forbidden()
     {
@@ -396,7 +385,53 @@ public class Get(TestServerFixture fixture)
 
     [Fact]
     [ResetDatabase]
-    [RoleAsignation(Constants.USER_POLICY)]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task GetTitles_NoOrder_Should_ReturnTitlesOrderById_Ok()
+    {
+        // Arrange
+        var firstTodo = await Fixture.AddDefaultTodo(title: "BTitle");
+        var secondTodo = await Fixture.AddDefaultTodo(title: "ATitle");
+        var thirdTodo = await Fixture.AddDefaultTodo(title: "CTitle");
+        var fourthTodo = await Fixture.AddDefaultTodo(title: "DTitle");
+        GetTodoTitlesRequest firstRequest = new() { PageNumber = 1, PageSize = 3 };
+        GetTodoTitlesRequest secondRequest = new() { PageNumber = 2, PageSize = 3 };
+
+        // Act
+        var firstRequestResponse = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetTitles(firstRequest));
+        var secondRequestResponse = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetTitles(secondRequest));
+
+        // Assert
+        Assert.True(firstRequestResponse.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.OK, firstRequestResponse.StatusCode);
+        var firstResponseModel = await firstRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>();
+        Assert.NotNull(firstResponseModel);
+        Assert.Equal(3, firstResponseModel.Count());
+
+        Assert.True(secondRequestResponse.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.OK, secondRequestResponse.StatusCode);
+        var secondResponseModel = await secondRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>();
+        Assert.NotNull(secondResponseModel);
+        Assert.Single(secondResponseModel);
+
+        var firstTodoResponse = firstResponseModel.OrderBy(x => x.Id).ElementAt(0);
+        Assert.Equal(firstTodo.Title, firstTodoResponse.Title);
+        Assert.Equal(firstTodo.Id, firstTodoResponse.Id);
+
+        var secondTodoResponse = firstResponseModel.OrderBy(x => x.Id).ElementAt(1);
+        Assert.Equal(secondTodo.Title, secondTodoResponse.Title);
+        Assert.Equal(secondTodo.Id, secondTodoResponse.Id);
+
+        var thirdTodoResponse = firstResponseModel.OrderBy(x => x.Id).ElementAt(2);
+        Assert.Equal(thirdTodo.Title, thirdTodoResponse.Title);
+        Assert.Equal(thirdTodo.Id, thirdTodoResponse.Id);
+
+        var fourthTodoResponse = secondResponseModel.First();
+        Assert.Equal(fourthTodo.Title, fourthTodoResponse.Title);
+        Assert.Equal(fourthTodo.Id, fourthTodoResponse.Id);
+    }
+
+    [Fact]
+    [ResetDatabase]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task GetTitles_OrderByTitle_Should_ReturnTitles_Ok()
     {
@@ -405,8 +440,8 @@ public class Get(TestServerFixture fixture)
         var secondTodo = await Fixture.AddDefaultTodo(title: "ATitle");
         var thirdTodo = await Fixture.AddDefaultTodo(title: "CTitle");
         var fourthTodo = await Fixture.AddDefaultTodo(title: "DTitle");
-        GetTodoTitlesRequest firstRequest = new() { PageNumber = 1, PageSize = 3, OrderBy = "Title", OrderDescending = true };
-        GetTodoTitlesRequest secondRequest = new() { PageNumber = 2, PageSize = 3, OrderBy = "Title", OrderDescending = true };
+        GetTodoTitlesRequest firstRequest = new() { PageNumber = 1, PageSize = 3, OrderBy = (byte)ETodoOrderBy.Title, OrderDescending = true };
+        GetTodoTitlesRequest secondRequest = new() { PageNumber = 2, PageSize = 3, OrderBy = (byte)ETodoOrderBy.Title, OrderDescending = true };
 
         // Act
         var firstRequestResponse = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetTitles(firstRequest));
@@ -444,7 +479,6 @@ public class Get(TestServerFixture fixture)
 
     [Fact]
     [ResetDatabase]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task GetTitles_OrderById_Should_ReturnTitles_Ok()
     {
@@ -453,8 +487,8 @@ public class Get(TestServerFixture fixture)
         var secondTodo = await Fixture.AddDefaultTodo(title: "ATitle");
         var thirdTodo = await Fixture.AddDefaultTodo(title: "CTitle");
         var fourthTodo = await Fixture.AddDefaultTodo(title: "DTitle");
-        GetTodoTitlesRequest firstRequest = new() { PageNumber = 1, PageSize = 3, OrderBy = "Id" };
-        GetTodoTitlesRequest secondRequest = new() { PageNumber = 2, PageSize = 3, OrderBy = "Id" };
+        GetTodoTitlesRequest firstRequest = new() { PageNumber = 1, PageSize = 3, OrderBy = (byte)ETodoOrderBy.Id };
+        GetTodoTitlesRequest secondRequest = new() { PageNumber = 2, PageSize = 3, OrderBy = (byte)ETodoOrderBy.Id };
 
         // Act
         var firstRequestResponse = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetTitles(firstRequest));
@@ -473,15 +507,15 @@ public class Get(TestServerFixture fixture)
         Assert.NotNull(secondResponseModel);
         Assert.Single(secondResponseModel);
 
-        var firstTodoResponse = firstResponseModel.ElementAt(0);
+        var firstTodoResponse = firstResponseModel.OrderBy(x => x.Id).ElementAt(0);
         Assert.Equal(firstTodo.Title, firstTodoResponse.Title);
         Assert.Equal(firstTodo.Id, firstTodoResponse.Id);
 
-        var secondTodoResponse = firstResponseModel.ElementAt(1);
+        var secondTodoResponse = firstResponseModel.OrderBy(x => x.Id).ElementAt(1);
         Assert.Equal(secondTodo.Title, secondTodoResponse.Title);
         Assert.Equal(secondTodo.Id, secondTodoResponse.Id);
 
-        var thirdTodoResponse = firstResponseModel.ElementAt(2);
+        var thirdTodoResponse = firstResponseModel.OrderBy(x => x.Id).ElementAt(2);
         Assert.Equal(thirdTodo.Title, thirdTodoResponse.Title);
         Assert.Equal(thirdTodo.Id, thirdTodoResponse.Id);
 
@@ -491,7 +525,6 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task GetTitles_WrongPagination_Should_Return_BadRequest()
     {
@@ -507,12 +540,11 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task GetTitles_WrongOrderBy_Should_Return_BadRequest()
     {
         // Arrange
-        GetTodoTitlesRequest request = new() { PageNumber = 1, PageSize = 1, OrderBy = "wrongOrder" };
+        GetTodoTitlesRequest request = new() { PageNumber = 1, PageSize = 1, OrderBy = (byte)ETodoOrderBy.CreatedAt + 30 };
 
         // Act
         var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetTitles(request));
@@ -523,7 +555,7 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
-    [RoleAsignation(Constants.EXTERNAL_POLICY)]
+    [IdentityAsignation(role: Constants.EXTERNAL_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task GetTitles_ExternalUser_Should_Return_Forbidden()
     {

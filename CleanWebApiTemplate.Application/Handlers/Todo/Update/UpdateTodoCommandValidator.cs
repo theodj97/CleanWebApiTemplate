@@ -8,12 +8,11 @@ public class UpdateTodoCommandValidator : TodoValidator<UpdateTodoCommand>
     public UpdateTodoCommandValidator(IBaseRepository<TodoEntity> repository) : base(repository)
     {
         RuleFor(x => x.Id)
-            .Custom(NotNullNotEmpty)
             .Custom(ValidateUlid);
 
-        RuleFor(x => x.Title)
+        RuleFor(x => new IdAndTitleType(x.Id, x.Title))
             .CustomAsync(ValidateTitle!)
-            .When(x => string.IsNullOrEmpty(x.Title) is false);
+            .When(x => string.IsNullOrEmpty(x.Title) is false && Ulid.TryParse(x.Id, out _) is true);
 
         RuleFor(x => x.UpdatedBy)
             .Custom(NotNullNotEmpty)

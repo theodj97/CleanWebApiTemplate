@@ -36,5 +36,16 @@ public class FilteredTodoQueryValidator : TodoValidator<FilteredTodoQuery>
 
         RuleFor(x => new StartDateEndDateType(x.StartDate, x.EndDate))
             .Custom(ValidateStartDateAndEndDate);
+
+        RuleFor(x => x.PageNumber).Must(value => value > 0)
+            .WithMessage($"Property {nameof(FilteredTodoQuery.PageNumber)} must be greater than 0")
+            .When(x => x.PageNumber is not null);
+
+        RuleFor(x => x.PageSize).Must(value => value > 0)
+            .WithMessage($"Property {nameof(FilteredTodoQuery.PageSize)} must be greater than 0")
+            .When(x => x.PageSize is not null);
+
+        RuleFor(x => x.OrderBy).Custom(ValidTodoOrderBy)
+            .When(x => x.OrderBy is not null);
     }
 }

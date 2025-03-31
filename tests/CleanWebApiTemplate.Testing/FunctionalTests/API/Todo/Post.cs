@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using CleanWebApiTemplate.Domain.Configuration;
-using CleanWebApiTemplate.Domain.Models.Enums;
+using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Domain.Models.Responses;
 using CleanWebApiTemplate.Host.Routes.Todo.Create;
 using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
@@ -19,7 +19,6 @@ public class Post(TestServerFixture fixture)
 
     [Fact]
     [ResetDatabase]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task CreateTodo_Should_ReturnCreated_Ok()
     {
@@ -36,15 +35,13 @@ public class Post(TestServerFixture fixture)
         var responseModel = await response.Content.ReadFromJsonAsync<TodoResponse>();
         Assert.Equal(request.Title, responseModel.Title);
         Assert.Equal(request.Description, responseModel.Description);
-        Assert.Equal((int)TodoStatusEnum.Pending, responseModel.Status);
+        Assert.Equal((int)ETodoStatus.Pending, responseModel.Status);
         Assert.True(Math.Abs((responseModel.CreatedAt - actualUtcMoment).TotalSeconds) <= 10);
         Assert.Equal(TestAuthHandler.UserEmail, responseModel.CreatedBy);
         Assert.Equal(TestAuthHandler.UserEmail, responseModel.UpdatedBy);
     }
 
     [Fact]
-    [ResetDatabase]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task CreateTodo_WithOutTitle_Should_Return_BadRequest()
     {
@@ -60,8 +57,23 @@ public class Post(TestServerFixture fixture)
     }
 
     [Fact]
+    [IdentityAsignation(userEmail: "wrongEmail")]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task CreateTodo_WithWrongEmail_Should_Return_BadRequest()
+    {
+        // Arrange
+        CreateTodoRequest request = new() { Title = string.Empty };
+
+        // Act
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(), request);
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     [ResetDatabase]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task CreateTodo_ExistingTitle_Should_Return_BadRequest()
     {
@@ -78,8 +90,6 @@ public class Post(TestServerFixture fixture)
     }
 
     [Fact]
-    [ResetDatabase]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task CreateTodo_TooLongTitle_Should_Return_BadRequest()
     {
@@ -95,8 +105,6 @@ public class Post(TestServerFixture fixture)
     }
 
     [Fact]
-    [ResetDatabase]
-    [RoleAsignation(Constants.USER_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task CreateTodo_TooLongoDescription_Should_Return_BadRequest()
     {
@@ -112,8 +120,7 @@ public class Post(TestServerFixture fixture)
     }
 
     [Fact]
-    [ResetDatabase]
-    [RoleAsignation(Constants.EXTERNAL_POLICY)]
+    [IdentityAsignation(role: Constants.EXTERNAL_POLICY)]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task CreateTodo_ExternalUser_Should_Return_Forbidden()
     {

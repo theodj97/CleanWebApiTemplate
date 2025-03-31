@@ -7,12 +7,17 @@ using Microsoft.Extensions.Options;
 
 namespace CleanWebApiTemplate.Testing.Configuration;
 
-public class TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
+public class TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options,
+                             ILoggerFactory logger,
+                             UrlEncoder encoder) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
     public const string SchemeName = "TestAuth";
-    public const string UserName = "testUser";
-    public const string UserEmail = "test@test.tst";
-    public static string Role { get; private set; } = string.Empty;
+    private const string DefaultUserName = "testUser";
+    private const string DefaultUserEmail = "test@test.tst";
+    private const string DefaultRole = Constants.USER_POLICY;
+    public static string UserName { get; private set; } = DefaultUserName;
+    public static string UserEmail { get; private set; } = DefaultUserEmail;
+    public static string Role { get; private set; } = DefaultRole;
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
@@ -30,12 +35,20 @@ public class TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> option
         return Task.FromResult(AuthenticateResult.Success(ticket));
     }
 
-    public static void SetRole(string role)
+    internal static void SetRole(string role)
     {
         if (Constants.AUTHORIZATION_POLICIES.Any(x => x == role) is false) throw new ArgumentException($"Invalid authPolicy: {role}.");
 
         Role = role;
     }
 
-    public static void ClearRole() => Role = string.Empty;
+    internal static void SetUserName(string userName) => UserName = userName;
+    internal static void SetUserEmail(string userEmail) => UserEmail = userEmail;
+
+    internal static void ResetDefault()
+    {
+        UserName = DefaultUserName;
+        UserEmail = DefaultUserEmail;
+        Role = DefaultRole;
+    }
 }

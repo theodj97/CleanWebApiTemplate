@@ -1,5 +1,5 @@
 ﻿using CleanWebApiTemplate.Domain.Models.Entities;
-using CleanWebApiTemplate.Domain.Models.Enums;
+using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Domain.Models.Responses;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Common;
@@ -25,7 +25,7 @@ internal class CreateTodoCommandHandler(IBaseRepository<TodoEntity> repository) 
         var actualUtcMoment = DateTime.UtcNow;
         todoEntity.CreatedAt = actualUtcMoment;
         todoEntity.UpdatedAt = actualUtcMoment;
-        todoEntity.Status = (int)TodoStatusEnum.Pending;
+        todoEntity.Status = (int)ETodoStatus.Pending;
 
         var todoDb = await repository.CreateAsync(todoEntity, cancellationToken);
 

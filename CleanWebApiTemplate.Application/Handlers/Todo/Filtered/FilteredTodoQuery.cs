@@ -1,4 +1,5 @@
-﻿using CleanWebApiTemplate.Domain.Models.Entities;
+﻿using CleanWebApiTemplate.Application.Services.Todo;
+using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.Models.Responses;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Common;
@@ -15,11 +16,18 @@ public class FilteredTodoQuery : IRequest<Result<IEnumerable<TodoResponse>>>
     public IEnumerable<string>? CreatedBy { get; set; }
     public string? StartDate { get; set; }
     public string? EndDate { get; set; }
+    public byte? PageNumber { get; set; }
+    public byte? PageSize { get; set; }
+    public byte? OrderBy { get; set; } = null;
+    public bool OrderDescending { get; set; } = false;
 }
 
-internal class FilteredTodoQueryHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<FilteredTodoQuery, Result<IEnumerable<TodoResponse>>>
+internal class FilteredTodoQueryHandler(IBaseRepository<TodoEntity> repository, ITodoServices todoServices) : IRequestHandler<FilteredTodoQuery, Result<IEnumerable<TodoResponse>>>
 {
     private readonly IBaseRepository<TodoEntity> repository = repository;
+    private readonly ITodoServices todoServices = todoServices;
+
+
     public async Task<Result<IEnumerable<TodoResponse>>> Handle(FilteredTodoQuery request, CancellationToken cancellationToken)
     {
         Expression<Func<TodoEntity, bool>> filter = x => true;
@@ -62,7 +70,13 @@ internal class FilteredTodoQueryHandler(IBaseRepository<TodoEntity> repository) 
         }
 
         filter = Expression.Lambda<Func<TodoEntity, bool>>(queryBody, parameter);
-        var todosDb = await repository.FilterAsyncANT(filter, cancellationToken: cancellationToken);
+
+        var todosDb = await repository.FilterAsyncANT(filter,
+                                                      todoServices.TodoResolveOrderBy(request.OrderBy),
+                                                      request.OrderDescending,
+                                                      request.PageNumber,
+                                                      request.PageSize,
+                                                      cancellationToken: cancellationToken);
         if (todosDb is null)
             return Result<IEnumerable<TodoResponse>>.NoContent();
 

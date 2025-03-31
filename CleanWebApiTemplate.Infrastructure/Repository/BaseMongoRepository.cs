@@ -73,11 +73,15 @@ public sealed class BaseMongoRepository<TDocument>(MongoDbContext context) : IBa
     }
 
     public async Task<List<TDocument>> FilterAsyncANT(Expression<Func<TDocument, bool>> expression,
-                                                             int? pageNumber = null,
-                                                             int? pageSize = null,
-                                                             CancellationToken cancellationToken = default)
+                                                      Expression<Func<TDocument, object>>? orderBy = null,
+                                                      bool descending = false,
+                                                      int? pageNumber = null,
+                                                      int? pageSize = null,
+                                                      CancellationToken cancellationToken = default)
     {
         var query = context.Set<TDocument>().AsNoTracking().Where(expression);
+        if (orderBy is not null)
+            query = descending ? query.OrderByDescending(orderBy) : query.OrderBy(orderBy);
         query = RepositoryHelper.ManagePagination(query, pageNumber, pageSize);
 
         return await query.ToListAsync(cancellationToken);
@@ -85,7 +89,7 @@ public sealed class BaseMongoRepository<TDocument>(MongoDbContext context) : IBa
 
     public async Task<List<TOutput>> FilterAsyncANT<TOutput>(Expression<Func<TDocument, bool>> expression,
                                                              Expression<Func<TDocument, TOutput>> selector,
-                                                             Expression<Func<TOutput, object>> orderBy,
+                                                             Expression<Func<TDocument, object>>? orderBy = null,
                                                              bool descending = false,
                                                              int? pageNumber = null,
                                                              int? pageSize = null,
@@ -93,13 +97,12 @@ public sealed class BaseMongoRepository<TDocument>(MongoDbContext context) : IBa
     {
         var query = context.Set<TDocument>()
                     .AsNoTracking()
-                    .Where(expression)
-                    .Select(selector);
+                    .Where(expression);
+        if (orderBy is not null)
+            query = descending ? query.OrderByDescending(orderBy) : query.OrderBy(orderBy);
         query = RepositoryHelper.ManagePagination(query, pageNumber, pageSize);
 
-        query = descending ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
-
-        return await query.ToListAsync(cancellationToken);
+        return await query.Select(selector).ToListAsync(cancellationToken);
     }
 
     public async Task<TDocument?> GetByIdAsyncANT(string id, CancellationToken cancellationToken = default)

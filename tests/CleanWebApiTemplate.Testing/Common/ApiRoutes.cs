@@ -36,9 +36,20 @@ public static class ApiRoutes
             if (!string.IsNullOrEmpty(request.EndDate))
                 queryParams.Add($"EndDate={request.EndDate}");
 
+            if (request.PageNumber.HasValue)
+                queryParams.Add($"PageNumber={request.PageNumber.Value}");
+
+            if (request.PageSize.HasValue)
+                queryParams.Add($"PageSize={request.PageSize.Value}");
+
+            if (request.OrderBy.HasValue)
+                queryParams.Add($"OrderBy={request.OrderBy.Value}");
+
+            if (request.OrderDescending is not null && request.OrderDescending.Value)
+                queryParams.Add("OrderDescending=true");
+
             return queryParams.Count > 0 ? $"{BaseRoute}?{string.Join("&", queryParams)}" : BaseRoute;
         }
-
 
         public static string Create() => "api/Todo";
 
@@ -50,7 +61,7 @@ public static class ApiRoutes
                 $"PageSize={request.PageSize}"
             };
 
-            if (!string.IsNullOrEmpty(request.OrderBy))
+            if (request.OrderBy is not null)
                 queryParams.Add($"OrderBy={request.OrderBy}");
 
             if (request.OrderDescending.HasValue)

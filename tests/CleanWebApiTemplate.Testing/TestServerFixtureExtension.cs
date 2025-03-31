@@ -1,11 +1,18 @@
 using CleanWebApiTemplate.Domain.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace CleanWebApiTemplate.Testing;
 
 public static class TestServerFixtureExtension
 {
-    public static async Task<TodoEntity> AddDefaultTodo(this TestServerFixture testServerFixture, string title = "defaultTitle", string description = "defaultDescription", DateTime? createdAt = null,
-    DateTime? updatedAt = null, int status = 0, string createdBy = "defaultCreatedBy", string updatedBy = "defaultUpdatedBy")
+    public static async Task<TodoEntity> AddDefaultTodo(this TestServerFixture testServerFixture,
+                                                        string title = "defaultTitle",
+                                                        string description = "defaultDescription",
+                                                        DateTime? createdAt = null,
+                                                        DateTime? updatedAt = null,
+                                                        int status = 0,
+                                                        string createdBy = "defaultCreatedBy",
+                                                        string updatedBy = "defaultUpdatedBy")
     {
         TodoEntity todoEntity = new()
         {
@@ -27,16 +34,14 @@ public static class TestServerFixtureExtension
         return todoEntity;
     }
 
-    public static async Task<TodoEntity> GetTodo(this TestServerFixture testServerFixture, string id)
+    public static async Task<TodoEntity?> GetTodo(this TestServerFixture testServerFixture, Ulid id)
     {
-        TodoEntity todo = null;
-
+        TodoEntity? todoDb = null;
         await testServerFixture.ExecuteDbContextAsync(async context =>
         {
-            todo = await context.FindAsync<TodoEntity>(id);
+            todoDb = await context.Set<TodoEntity>().FirstOrDefaultAsync(x => x.Id == id);
         });
-
-        return form;
+        return todoDb;
     }
 
 

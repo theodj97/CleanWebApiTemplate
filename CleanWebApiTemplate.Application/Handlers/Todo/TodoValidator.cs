@@ -1,7 +1,6 @@
 ﻿using CleanWebApiTemplate.Domain.Helpers.Validators;
 using CleanWebApiTemplate.Domain.Models.Entities;
-using CleanWebApiTemplate.Domain.Models.Enums;
-using CleanWebApiTemplate.Domain.Models.Responses;
+using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Infrastructure.Common;
 using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
 using FluentValidation;
@@ -14,7 +13,7 @@ public class TodoValidator<T>(IBaseRepository<TodoEntity> repository) : BaseAbst
     private readonly IBaseRepository<TodoEntity> repository = repository;
 
     /// <summary>
-    /// Title validation.
+    /// Title validation. Lenght and Uniqueness.
     /// </summary>
     /// <param name="title"></param>
     /// <param name="context"></param>
@@ -27,7 +26,18 @@ public class TodoValidator<T>(IBaseRepository<TodoEntity> repository) : BaseAbst
         if (title.Length > TodoEntityConfiguration.TitleLenght)
             AddFailure(context, "Property '{0}' max length is {1}.", TodoEntityConfiguration.TitleLenght);
 
-        if (await TitleIsUnique(title, cancellationToken) is false)
+        if (await TitleIsUnique(title, cancellationToken: cancellationToken) is false)
+            AddFailure(context, "Property '{0}' must be unique!");
+    }
+
+    protected async Task ValidateTitle<TCommand>(IdAndTitleType idAndTitleType,
+                                                 ValidationContext<TCommand> context,
+                                                 CancellationToken cancellationToken) where TCommand : class, IRequest<object>
+    {
+        if (idAndTitleType.Title.Length > TodoEntityConfiguration.TitleLenght)
+            AddFailure(context, "Property '{0}' max length is {1}.", TodoEntityConfiguration.TitleLenght);
+
+        if (await TitleIsUnique(idAndTitleType.Title, idAndTitleType.Id, cancellationToken) is false)
             AddFailure(context, "Property '{0}' must be unique!");
     }
 
@@ -46,23 +56,19 @@ public class TodoValidator<T>(IBaseRepository<TodoEntity> repository) : BaseAbst
     }
 
     protected void ValidateStatus<TCommand>(int status,
-                                           ValidationContext<TCommand> context) where TCommand : class, IRequest<object>
+                                            ValidationContext<TCommand> context) where TCommand : class, IRequest<object>
     {
-        if (Enum.IsDefined(typeof(TodoStatusEnum), status) is false)
-            AddFailure(context, "Property '{0}' wasn't a registered status.");
+        if (Enum.IsDefined(typeof(ETodoStatus), status) is false)
+            AddFailure(context, "Property '{0}' wasn't a registered {1}.", status, nameof(ETodoStatus));
     }
 
-    protected void ValidateTitleOrderProperty<TCommand>(string? orderBy, ValidationContext<TCommand> context) where TCommand : class, IRequest<object>
+    protected void ValidTodoOrderBy<TCommand>(byte? orderBy,
+                                              ValidationContext<TCommand> context) where TCommand : class, IRequest<object>
     {
         if (orderBy is null) return;
 
-        var validProperties = typeof(TodoTitleResponse)
-                                .GetProperties()
-                                .Select(p => p.Name.ToLower())
-                                .ToList();
-
-        if (validProperties.Contains(orderBy.ToLower()) is false)
-            AddFailure(context, "Property '{0}' isn't a valid order property.");
+        if (Enum.IsDefined(typeof(ETodoOrderBy), (int)orderBy.Value) is false)
+            AddFailure(context, "Property '{0}' wasn't a registered {1} property.", orderBy, nameof(ETodoOrderBy));
     }
 
     /// <summary>
@@ -71,11 +77,21 @@ public class TodoValidator<T>(IBaseRepository<TodoEntity> repository) : BaseAbst
     /// <param name="title"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>Validation result</returns>
-    private async Task<bool> TitleIsUnique(string title, CancellationToken cancellationToken)
+    private async Task<bool> TitleIsUnique(string title, string? todoId = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(title))
             return true;
 
-        return (await repository.FilterAsyncANT(x => x.Title == title, cancellationToken: cancellationToken)).Count is 0;
+        if (todoId is null)
+            return (await repository.FilterAsyncANT(x => x.Title == title, cancellationToken: cancellationToken)).Count is 0;
+
+        Ulid id = Ulid.Parse(todoId);
+        return (await repository.FilterAsyncANT(x => x.Title == title && x.Id != id, cancellationToken: cancellationToken)).Count is 0;
+    }
+
+    public class IdAndTitleType(string? id, string? title)
+    {
+        public string Id = id ?? "";
+        public string Title = title ?? "";
     }
 }

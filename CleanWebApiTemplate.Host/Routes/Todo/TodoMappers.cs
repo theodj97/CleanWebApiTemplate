@@ -20,7 +20,11 @@ public static class TodoMappers
             CreatedBy = request.CreatedBy,
             StartDate = request.StartDate,
             EndDate = request.EndDate,
-            Ids = request.Ids
+            Ids = request.Ids,
+            OrderBy = request.OrderBy,
+            OrderDescending = request.OrderDescending ?? false,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize,
         };
     }
 

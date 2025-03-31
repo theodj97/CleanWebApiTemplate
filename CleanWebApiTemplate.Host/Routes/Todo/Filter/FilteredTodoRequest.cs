@@ -8,4 +8,8 @@ public struct FilteredTodoRequest
     public string[]? CreatedBy { get; set; }
     public string? StartDate { get; set; }
     public string? EndDate { get; set; }
+    public byte? PageNumber { get; set; }
+    public byte? PageSize { get; set; }
+    public byte? OrderBy { get; set; }
+    public bool? OrderDescending { get; set; }
 }
