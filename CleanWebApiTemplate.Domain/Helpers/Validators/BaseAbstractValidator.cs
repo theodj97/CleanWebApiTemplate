@@ -97,8 +97,14 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     /// <param name="args"></param>
     protected void AddFailure<T>(ValidationContext<T> context, string errorMessageTemplate, params object[] args)
     {
-        var propertyName = context.DisplayName.ToLower();
-        var formattedMessage = string.Format(errorMessageTemplate, propertyName, args);
+        string formattedMessage;
+        string propertyName;
+        if (string.IsNullOrEmpty(context.DisplayName))
+            propertyName = string.Empty;
+        else
+            propertyName = context.DisplayName.ToLower();
+
+        formattedMessage = string.Format(errorMessageTemplate, propertyName, args);
         context.AddFailure(propertyName, formattedMessage);
     }
 

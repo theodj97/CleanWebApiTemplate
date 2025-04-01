@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
+﻿using CleanWebApiTemplate.Domain.ResultModel;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace CleanWebApiTemplate.Host.Configuration;
 
@@ -12,17 +12,17 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         if (exception is null)
             return false;
 
-        ProblemDetails problemDetails = new()
+        ResultModel problemDetails = new()
         {
-            Status = StatusCodes.Status500InternalServerError,
+            StatusCode = StatusCodes.Status500InternalServerError,
             Title = "Server Error",
             Type = "Server Error",
             Detail = "An error occurred while processing your request."
         };
 
-        logger.LogError("Error: {exception}", exception);
+        logger.LogError(eventId: new(), exception: exception, "Internal server error: {exception}", exception.Message);
 
-        httpContext.Response.StatusCode = problemDetails.Status!.Value;
+        httpContext.Response.StatusCode = problemDetails.StatusCode;
         await httpContext.Response.WriteAsJsonAsync(problemDetails!, cancellationToken);
 
         return true;

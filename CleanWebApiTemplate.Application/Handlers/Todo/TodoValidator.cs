@@ -30,15 +30,23 @@ public class TodoValidator<T>(IBaseRepository<TodoEntity> repository) : BaseAbst
             AddFailure(context, "Property '{0}' must be unique!");
     }
 
+    /// <summary>
+    /// Title validation for updates. You recieve the ID of the element you want to update to not take it's title in the validation.
+    /// </summary>
+    /// <typeparam name="TCommand"></typeparam>
+    /// <param name="idAndTitleType"></param>
+    /// <param name="context"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     protected async Task ValidateTitle<TCommand>(IdAndTitleType idAndTitleType,
                                                  ValidationContext<TCommand> context,
                                                  CancellationToken cancellationToken) where TCommand : class, IRequest<object>
     {
         if (idAndTitleType.Title.Length > TodoEntityConfiguration.TitleLenght)
-            AddFailure(context, "Property '{0}' max length is {1}.", TodoEntityConfiguration.TitleLenght);
+            context.AddFailure(nameof(idAndTitleType.Title), $"Property '{nameof(idAndTitleType.Title)}' max length is {TodoEntityConfiguration.TitleLenght}.");
 
         if (await TitleIsUnique(idAndTitleType.Title, idAndTitleType.Id, cancellationToken) is false)
-            AddFailure(context, "Property '{0}' must be unique!");
+            context.AddFailure(nameof(idAndTitleType.Title), $"Property '{nameof(idAndTitleType.Title)}' must be unique!");
     }
 
     protected void ValidateDescription<TCommand>(string description,

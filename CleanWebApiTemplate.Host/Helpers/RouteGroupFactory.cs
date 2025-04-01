@@ -1,4 +1,5 @@
-﻿using CleanWebApiTemplate.Domain.Configuration;
+﻿using System.Net;
+using CleanWebApiTemplate.Domain.Configuration;
 
 namespace CleanWebApiTemplate.Host.Helpers;
 
@@ -27,6 +28,6 @@ public static class RouteGroupFactory
         else
             routeGroupBuilder.RequireAuthorization();
 
-        return routeGroupBuilder;
+        return routeGroupBuilder.ProducesProblem((int)HttpStatusCode.NoContent);
     }
 }
