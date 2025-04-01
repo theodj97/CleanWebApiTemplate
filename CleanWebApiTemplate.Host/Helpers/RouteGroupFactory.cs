@@ -28,6 +28,7 @@ public static class RouteGroupFactory
         else
             routeGroupBuilder.RequireAuthorization();
 
-        return routeGroupBuilder.ProducesProblem((int)HttpStatusCode.NoContent);
+        return routeGroupBuilder.ProducesProblem((int)HttpStatusCode.InternalServerError)
+            .ProducesProblem((int)HttpStatusCode.Unauthorized);
     }
 }

@@ -4,6 +4,7 @@ using CleanWebApiTemplate.Domain.Models.Responses;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Common;
 using MediatR;
+using Microsoft.IdentityModel.Tokens;
 using System.Linq.Expressions;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
@@ -77,9 +78,9 @@ internal class FilteredTodoQueryHandler(IBaseRepository<TodoEntity> repository, 
                                                       request.PageNumber,
                                                       request.PageSize,
                                                       cancellationToken: cancellationToken);
-        if (todosDb is null)
+        if (todosDb is not null && todosDb.Count == 0)
             return Result<IEnumerable<TodoResponse>>.NoContent();
 
-        return Result<IEnumerable<TodoResponse>>.Success(TodoMappers.FromEntityToResponse(todosDb));
+        return Result<IEnumerable<TodoResponse>>.Success(TodoMappers.FromEntityToResponse(todosDb!));
     }
 }

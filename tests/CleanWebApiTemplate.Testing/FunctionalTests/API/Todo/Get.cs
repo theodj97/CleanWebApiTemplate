@@ -43,7 +43,7 @@ public class Get(TestServerFixture fixture)
     [Fact]
     [ResetDatabase]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
-    public async Task GetTodoById_Should_Return_NoContent()
+    public async Task GetTodoById_EmptyResult_Should_Return_NoContent()
     {
         // Arrange
 
@@ -214,6 +214,22 @@ public class Get(TestServerFixture fixture)
         Assert.Equal(firstTodoResponse.Status, firstTodo.Status);
         Assert.Equal(secondTodoResponse.Status, secondTodo.Status);
         Assert.Equal(thirdTodoResponse.Status, thirdTodo.Status);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task FilteredTodo_EmptyResponse_Should_Return_NoContent()
+    {
+        // Arrange
+        FilteredTodoRequest request = new();
+
+        // Act
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.Filtered(request));
+
+        // Assert
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
     [Fact]
@@ -522,6 +538,22 @@ public class Get(TestServerFixture fixture)
         var fourthTodoResponse = secondResponseModel.First();
         Assert.Equal(fourthTodo.Title, fourthTodoResponse.Title);
         Assert.Equal(fourthTodo.Id, fourthTodoResponse.Id);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task GetTitles_EmptyResult_Should_Return_NoContent()
+    {
+        // Arrange
+        GetTodoTitlesRequest request = new() { PageNumber = 1, PageSize = 3, OrderBy = (byte)ETodoOrderBy.Id };
+
+        // Act
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetTitles(request));
+
+        // Assert
+        Assert.True(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
     [Fact]

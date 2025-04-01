@@ -23,7 +23,7 @@ internal class GetTodoTitleQueryHandler(IBaseRepository<TodoEntity> repository, 
 
     public async Task<Result<IEnumerable<TodoTitleResponse>>> Handle(GetTodoTitleQuery request, CancellationToken cancellationToken)
     {
-        var todoDb = await repository.FilterAsyncANT(x => true,
+        var todosDb = await repository.FilterAsyncANT(x => true,
                                                      p => new TodoTitleResponse
                                                      {
                                                          Id = p.Id,
@@ -35,6 +35,9 @@ internal class GetTodoTitleQueryHandler(IBaseRepository<TodoEntity> repository, 
                                                      request.PageSize,
                                                      cancellationToken);
 
-        return Result<IEnumerable<TodoTitleResponse>>.Success(todoDb);
+        if (todosDb is not null && todosDb.Count == 0)
+            return Result<IEnumerable<TodoTitleResponse>>.NoContent();
+
+        return Result<IEnumerable<TodoTitleResponse>>.Success(todosDb!);
     }
 }

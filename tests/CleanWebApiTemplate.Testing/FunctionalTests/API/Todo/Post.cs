@@ -20,7 +20,7 @@ public class Post(TestServerFixture fixture)
     [Fact]
     [ResetDatabase]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
-    public async Task CreateTodo_Should_ReturnCreated_Ok()
+    public async Task CreateTodo_Should_Return_Created()
     {
         // Arrange
         DateTime actualUtcMoment = DateTime.UtcNow;
