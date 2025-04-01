@@ -5,10 +5,17 @@
     "url": "https://github.com/theodj97/CleanWebApiTemplate",
     "type": "GitHub"
   },
-  "classifications": ["WebApi", "CleanArchitecture"],
+  "classifications": [
+    "WebApi",
+    "CleanArchitecture",
+    "Result Pattern",
+    "REPR Pattern",
+    "CQRS Pattern",
+    "Testing"
+  ],
   "identity": "CleanWebApiTemplate",
-  "name": "Clean architecture DotnetV9 minimal WebApi Template",
-  "description": ".NET Core Web Api v9 application, minimal api, clean architecture and CQRS with MediatR, and libraries like TestContainers, FluentValidation, FluentAssertion, XUnit, AutoMapper.",
+  "name": "Minimal WebApi Template CA",
+  "description": "Dotnet9 minimal WebApi Template with clean architecture focused based on microservices implementations",
   "shortName": "CleanWebApiTemplate",
   "sourceName": "CleanWebApiTemplate",
   "tags": {
@@ -17,13 +24,13 @@
   },
   "preferNameDirectory": true,
   "symbols": {
-    "AddHealthCheck": {
+    "ApiHealthCheck": {
       "type": "parameter",
-      "description": "Add HealthCheck endpoint",
+      "description": "Add Api HealthCheck endpoint",
       "datatype": "bool",
       "defaultValue": "true"
     },
-    "DatabaseType": {
+    "DataBase": {
       "type": "parameter",
       "description": "Select the DB to consume in your project",
       "datatype": "choice",
@@ -39,11 +46,11 @@
     },
     "IsSQLServer": {
       "type": "computed",
-      "value": "(DatabaseType == \"SQLServer\")"
+      "value": "(DataBase == \"SQLServer\")"
     },
     "IsMongoDB": {
       "type": "computed",
-      "value": "(DatabaseType == \"MongoDB\")"
+      "value": "(DataBase == \"MongoDB\")"
     },
     "ApplicationHttpUrl": {
       "type": "parameter",
@@ -56,20 +63,24 @@
   "sources": [
     {
       "modifiers": [
-        { "exclude": [".git/**", ".gitignore", ".vs/**", "README.md"] },
+        {
+          "exclude": [
+            ".git/**",
+            ".gitignore",
+            ".vs/**",
+            "README.md"
+          ]
+        },
         {
           "condition": "IsSQLServer",
           "exclude": [
-            "src/CleanWebApiTemplate.Infrastructure/Context/MongoDbContext.cs",
-            "src/CleanWebApiTemplate.Domain/Attributes/BsonCollectionAttribute.cs"
+            ""
           ]
         },
         {
           "condition": "IsMongoDB",
           "exclude": [
-            "src/CleanWebApiTemplate.Infrastructure/Context/SqlServerContext.cs",
-            "src/CleanWebApiTemplate.Infrastructure/Migrations/**",
-            "tests/CleanWebApiTemplate.Tests/SeedWork/DatabaseReseeder.cs"
+            ""
           ]
         }
       ]
