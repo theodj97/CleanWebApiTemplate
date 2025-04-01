@@ -7,12 +7,12 @@ namespace CleanWebApiTemplate.Infrastructure.Context;
 
 public class MongoDbContext(DbContextOptions<MongoDbContext> options) : DbContext(options)
 {
-    public DbSet<TaskCollection> TaskDb { get; set; }
+    public DbSet<TodoCollection> TodoDb { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<TaskCollection>().ToCollection(MongoDbConstants.TASK_COLLECTION);
+        modelBuilder.Entity<TodoCollection>().ToCollection(MongoDbConstants.TODO_COLLECTION);
     }
 }

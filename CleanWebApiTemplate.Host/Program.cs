@@ -3,13 +3,13 @@ using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Host.Routes;
 using CleanWebApiTemplate.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using MongoDB.Driver;
+// using MongoDB.Driver;
 
 namespace CleanWebApiTemplate.Host;
 
 public class Program
 {
-    static void Main(string[] args)
+    public static void Main(string[] args)
     {
         var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -34,10 +34,12 @@ public class Program
                                          environment,
                                          appSettings.CorsAllow,
                                          appSettings.ValidIssuers,
-                                         appSettings.ConnectionStrings!.SqlServer,
-                                         appSettings.ConnectionStrings!.MongoDb);
-        builder.Services.AddInfrastructureServices(appSettings.ConnectionStrings.SqlServer,
-                                                   appSettings.ConnectionStrings.MongoDb);
+                                         appSettings.ConnectionStrings!.SqlServer
+                                         //  appSettings.ConnectionStrings!.MongoDb
+                                         );
+        builder.Services.AddInfrastructureServices(appSettings.ConnectionStrings.SqlServer
+                                                   //    appSettings.ConnectionStrings.MongoDb
+                                                   );
         builder.Services.AddApplicationServices();
 
         builder.AddFluentValidationEndpointFilter();
@@ -72,10 +74,10 @@ public class Program
             Predicate = check => check.Tags.Contains("sqlServerDb")
         });
 
-        app.MapHealthChecks("/health/mongoDb", new HealthCheckOptions
-        {
-            Predicate = check => check.Tags.Contains("mongoDb")
-        });
+        // app.MapHealthChecks("/health/mongoDb", new HealthCheckOptions
+        // {
+        //     Predicate = check => check.Tags.Contains("mongoDb")
+        // });
 
         // Configure API routes.
         app.MapRoutes();
@@ -91,12 +93,12 @@ public class Program
             {
                 SqlServer = builder.Configuration[Constants.SQLSERVER_CNNSTRING]
                 ?? throw new Exception("No sql server cnnstring recieved in envs!"),
-                MongoDb = MongoUrl.Create(builder.Configuration[Constants.MONGODB_CNNSTRING])
-                ?? throw new Exception("No mongodb cnnstring recieved in envs!")
+                // MongoDb = MongoUrl.Create(builder.Configuration[Constants.MONGODB_CNNSTRING])
+                // ?? throw new Exception("No mongodb cnnstring recieved in envs!")
             };
         if (appSettings.ConnectionStrings is null
-            || string.IsNullOrEmpty(appSettings.ConnectionStrings.SqlServer)
-            || appSettings.ConnectionStrings.MongoDb is null)
+            || string.IsNullOrEmpty(appSettings.ConnectionStrings.SqlServer))
+            // || appSettings.ConnectionStrings.MongoDb is null)
             throw new Exception("ConnectionString should have a value!");
 
         return appSettings;

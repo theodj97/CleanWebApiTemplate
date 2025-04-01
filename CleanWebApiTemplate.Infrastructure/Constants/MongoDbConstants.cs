@@ -3,5 +3,5 @@
 public static class MongoDbConstants
 {
     // Collections
-    public const string TASK_COLLECTION = "Task";
+    public const string TODO_COLLECTION = "Todo";
 }

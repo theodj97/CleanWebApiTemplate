@@ -3,15 +3,16 @@ using CleanWebApiTemplate.Infrastructure.Context;
 using CleanWebApiTemplate.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using MongoDB.Driver;
+// using MongoDB.Driver;
 
 namespace CleanWebApiTemplate.Infrastructure;
 
 public static class ConfigureServices
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services,
-                                                               string sqlServerCnnStrings,
-                                                               MongoUrl mongoDbCnnStrings)
+                                                               string sqlServerCnnStrings
+                                                               //    MongoUrl mongoDbCnnStrings
+                                                               )
     {
         var assembly = typeof(ConfigureServices).Assembly;
 
@@ -20,11 +21,11 @@ public static class ConfigureServices
                 b => b.MigrationsAssembly(assembly)
             ));
 
-        services.AddDbContextPool<MongoDbContext>(options =>
-            options.UseMongoDB(mongoDbCnnStrings.ToString(), mongoDbCnnStrings.DatabaseName));
+        // services.AddDbContextPool<MongoDbContext>(options =>
+        //     options.UseMongoDB(mongoDbCnnStrings.ToString(), mongoDbCnnStrings.DatabaseName));
 
         services.AddTransient(typeof(IBaseRepository<>), typeof(BaseSqlRepository<>));
-
+        // services.AddTransient(typeof(IBaseRepository<>), typeof(BaseMongoRepository<>));
 
         return services;
     }

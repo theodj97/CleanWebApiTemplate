@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
-using MongoDB.Driver;
+// using MongoDB.Driver;
 using System.Reflection;
 using System.Text;
 
@@ -20,10 +20,11 @@ public static class ConfigureServices
                                                      string environment,
                                                      string[]? corsAllow,
                                                      string[]? validIssuers,
-                                                     string sqlConnectionStrings,
-                                                     MongoUrl mongoDbConnectionStrings)
+                                                     string sqlConnectionStrings
+                                                     //  MongoUrl mongoDbConnectionStrings
+                                                     )
     {
-        services.AddSingleton(new MongoClient(mongoDbConnectionStrings));
+        // services.AddSingleton(new MongoClient(mongoDbConnectionStrings));
 
         services.AddHealthChecks()
                 .AddCheck("api-health-check", () => HealthCheckResult.Healthy("API is up and running"), tags: ["api"])
@@ -32,12 +33,13 @@ public static class ConfigureServices
                     name: "sqlserver-check",
                     failureStatus: HealthStatus.Unhealthy,
                     tags: ["sqlServerDb", "sql"]
-                ).AddMongoDb(
-                    name: "mongodb-check",
-                    failureStatus: HealthStatus.Unhealthy,
-                    tags: ["mongoDb", "mongo"]
-                );
-
+                )
+                // .AddMongoDb(
+                //     name: "mongodb-check",
+                //     failureStatus: HealthStatus.Unhealthy,
+                //     tags: ["mongoDb", "mongo"]
+                // )
+                ;
 
         services.ConfigureCors(environment, corsAllow);
 
