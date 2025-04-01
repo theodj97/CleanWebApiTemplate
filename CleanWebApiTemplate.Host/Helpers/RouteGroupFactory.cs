@@ -16,7 +16,9 @@ public static class RouteGroupFactory
     {
         var routeGroupBuilder = app.MapGroup($"/api/{routeName}")
             .WithTags(routeName)
-            .AddFluentValidationFilter();
+            .AddFluentValidationFilter()
+            .ProducesProblem((int)HttpStatusCode.InternalServerError)
+            .ProducesProblem((int)HttpStatusCode.Unauthorized);
 
         if (authPolicy is not null)
         {
@@ -28,7 +30,6 @@ public static class RouteGroupFactory
         else
             routeGroupBuilder.RequireAuthorization();
 
-        return routeGroupBuilder.ProducesProblem((int)HttpStatusCode.InternalServerError)
-            .ProducesProblem((int)HttpStatusCode.Unauthorized);
+        return routeGroupBuilder;
     }
 }

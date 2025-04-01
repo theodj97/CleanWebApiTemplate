@@ -52,12 +52,19 @@
       "type": "computed",
       "value": "(DataBase == \"MongoDB\")"
     },
+    "ApplicationHttspUrl": {
+      "type": "parameter",
+      "datatype": "text",
+      "description": "Specify the app SSL URL, by default https://localhost:5001",
+      "replaces": "{ApplicationHttpUrl}",
+      "defaultValue": "https://localhost:5001"
+    },
     "ApplicationHttpUrl": {
       "type": "parameter",
       "datatype": "text",
-      "description": "Specify the app URL, by default http://localhost:7210",
+      "description": "Specify the app URL, by default http://localhost:5000",
       "replaces": "{ApplicationHttpUrl}",
-      "defaultValue": "http://localhost:7210"
+      "defaultValue": "http://localhost:5000"
     }
   },
   "sources": [

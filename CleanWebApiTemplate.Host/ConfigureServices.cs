@@ -23,8 +23,9 @@ public static class ConfigureServices
                                                      string sqlConnectionStrings,
                                                      MongoUrl mongoDbConnectionStrings)
     {
-        services.AddSingleton(new MongoClient(mongoDbConnectionStrings))
-                .AddHealthChecks()
+        services.AddSingleton(new MongoClient(mongoDbConnectionStrings));
+
+        services.AddHealthChecks()
                 .AddCheck("api-health-check", () => HealthCheckResult.Healthy("API is up and running"), tags: ["api"])
                 .AddSqlServer(
                     connectionString: sqlConnectionStrings,
@@ -40,20 +41,18 @@ public static class ConfigureServices
 
         services.ConfigureCors(environment, corsAllow);
 
-        if (environment is not Constants.PRODUCTION_ENVIRONMENT)
-            services.AddEndpointsApiExplorer();
-
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
 
         services.ConfigureResponseCompression();
 
-        if (environment is not Constants.PRODUCTION_ENVIRONMENT)
-            services.AddOpenApi();
-
         services.ConfigureAuth(environment, validIssuers, configuration);
 
-        //services.AddGrpc();
+        if (environment is not Constants.PRODUCTION_ENVIRONMENT)
+        {
+            services.AddEndpointsApiExplorer();
+            services.AddOpenApi();
+        }
 
         services.AddHttpContextAccessor();
 
@@ -79,7 +78,6 @@ public static class ConfigureServices
                                .AllowCredentials();
                 });
             });
-
 
         return services;
     }

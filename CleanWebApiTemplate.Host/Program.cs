@@ -32,7 +32,7 @@ public class Program
         // Adding DI Services.
         builder.Services.AddHostServices(builder.Configuration,
                                          environment,
-                                         appSettings.CorwsAllow,
+                                         appSettings.CorsAllow,
                                          appSettings.ValidIssuers,
                                          appSettings.ConnectionStrings!.SqlServer,
                                          appSettings.ConnectionStrings!.MongoDb);

@@ -3,6 +3,6 @@
 public record AppSettings
 {
     public ConnectionStrings? ConnectionStrings { get; set; }
-    public string[]? CorwsAllow { get; set; }
+    public string[]? CorsAllow { get; set; }
     public string[]? ValidIssuers { get; set; }
 }
