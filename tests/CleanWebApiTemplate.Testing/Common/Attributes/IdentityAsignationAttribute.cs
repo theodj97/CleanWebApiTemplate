@@ -22,8 +22,6 @@ public class IdentityAsignationAttribute(string? userName = null,
             TestAuthHandler.SetUserEmail(UserEmail);
     }
 
-    public override void After(MethodInfo methodUnderTest)
-    {
-        TestAuthHandler.ResetDefault();
-    }
+    public override void After(MethodInfo methodUnderTest) => TestAuthHandler.ResetDefault();
+
 }

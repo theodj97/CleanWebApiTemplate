@@ -5,13 +5,9 @@ namespace CleanWebApiTemplate.Testing.Common.Attributes;
 
 public class ResetDatabaseAttribute : BeforeAfterTestAttribute
 {
-    public override void After(MethodInfo methodUnderTest)
-    {
-        base.After(methodUnderTest);
-    }
+    public override void After(MethodInfo methodUnderTest) => base.After(methodUnderTest);
 
-    public override void Before(MethodInfo methodUnderTest)
-    {
-        TestServerFixture.ResetDatabaseAsync().Wait();
-    }
+
+    public override void Before(MethodInfo methodUnderTest) => TestServerFixture.ResetDatabaseAsync().Wait();
+
 }

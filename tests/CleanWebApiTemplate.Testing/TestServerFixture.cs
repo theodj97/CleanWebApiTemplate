@@ -73,10 +73,8 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
         HttpClient = Server.CreateClient();
     }
 
-    Task IAsyncLifetime.DisposeAsync()
-    {
-        return SqlServerContainer.DisposeAsync().AsTask();
-    }
+    Task IAsyncLifetime.DisposeAsync() => SqlServerContainer.DisposeAsync().AsTask();
+
 
     private async void InitDatabase(string sqlConnectionStr)
     {
@@ -117,10 +115,9 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
         await reEnableCnstaitCommand.ExecuteNonQueryAsync();
     }
 
-    public async Task ExecuteDbContextAsync(Func<SqlDbContext, Task> function)
-    {
+    public async Task ExecuteDbContextAsync(Func<SqlDbContext, Task> function) =>
         await ExecuteScopeAsync(sp => function(sp.GetService<SqlDbContext>() ?? throw new InvalidOperationException("No DbContext was provided")));
-    }
+
 
     private async Task ExecuteScopeAsync(Func<IServiceProvider, Task> function)
     {

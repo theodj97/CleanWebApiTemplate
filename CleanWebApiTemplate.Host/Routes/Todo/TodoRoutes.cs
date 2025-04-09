@@ -30,7 +30,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
         .Produces<ProblemDetails>((int)HttpStatusCode.NoContent)
         .Produces<ProblemDetails>((int)HttpStatusCode.MethodNotAllowed);
 
-        userGroup.MapGet("/", async ([AsParameters] FilteredTodoRequest request, CancellationToken cancellationToken) =>
+        userGroup.MapPost("/filter", async ([FromBody] FilteredTodoRequest request, CancellationToken cancellationToken) =>
         {
             var query = TodoMappers.FromRequestToQuery(request);
             var result = await Mediator.Send(query, cancellationToken);
@@ -39,7 +39,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
         .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest)
         .Produces<ProblemDetails>((int)HttpStatusCode.NoContent);
 
-        userGroup.MapGet("/titles", async ([AsParameters] GetTodoTitlesRequest request, CancellationToken cancellationToken) =>
+        userGroup.MapPost("/titles", async ([FromBody] GetTodoTitlesRequest request, CancellationToken cancellationToken) =>
         {
             var query = TodoMappers.FromRequestToQuery(request);
             var result = await Mediator.Send(query, cancellationToken);
