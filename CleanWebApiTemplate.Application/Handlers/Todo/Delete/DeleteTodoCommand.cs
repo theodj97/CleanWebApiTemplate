@@ -5,12 +5,12 @@ using MediatR;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Delete;
 
-public class DeleteTodoCommand : IRequest<Result<bool>>
+public sealed class DeleteTodoCommand : IRequest<Result<bool>>
 {
     public required string Id { get; set; }
 }
 
-internal class DeleteTodoCommandHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<DeleteTodoCommand, Result<bool>>
+internal sealed class DeleteTodoCommandHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<DeleteTodoCommand, Result<bool>>
 {
     private readonly IBaseRepository<TodoEntity> repository = repository;
 

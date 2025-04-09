@@ -6,7 +6,7 @@ using MediatR;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Update;
 
-public class UpdateTodoCommand : IRequest<Result<TodoResponse>>
+public sealed class UpdateTodoCommand : IRequest<Result<TodoResponse>>
 {
     public required string Id { get; set; }
     public string? Title { get; set; }
@@ -15,13 +15,13 @@ public class UpdateTodoCommand : IRequest<Result<TodoResponse>>
     public required string UpdatedBy { get; set; }
 }
 
-internal class UpdateTodoCommandHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<UpdateTodoCommand, Result<TodoResponse>>
+internal sealed class UpdateTodoCommandHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<UpdateTodoCommand, Result<TodoResponse>>
 {
     private readonly IBaseRepository<TodoEntity> repository = repository;
 
     public async Task<Result<TodoResponse>> Handle(UpdateTodoCommand request, CancellationToken cancellationToken)
     {
-        var todoDb = await repository.GetByIdAsyncANT(request.Id, cancellationToken);
+        var todoDb = await repository.GetByIdAsync(request.Id, cancellationToken);
         if (todoDb is null)
             return Result<TodoResponse>.Failure(new NotFoundError("ID was not found."));
 

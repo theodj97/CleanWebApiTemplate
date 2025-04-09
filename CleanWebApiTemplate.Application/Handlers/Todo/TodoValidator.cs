@@ -8,7 +8,7 @@ using MediatR;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo;
 
-public class TodoValidator<T>(IBaseRepository<TodoEntity> repository) : BaseAbstractValidator<T> where T : class, IRequest<object>
+public class TodoValidator<TCommand>(IBaseRepository<TodoEntity> repository) : BaseAbstractValidator<TCommand> where TCommand : class, IRequest<object>
 {
     private readonly IBaseRepository<TodoEntity> repository = repository;
 
@@ -19,9 +19,9 @@ public class TodoValidator<T>(IBaseRepository<TodoEntity> repository) : BaseAbst
     /// <param name="context"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected async Task ValidateTitle<TCommand>(string title,
-                                                 ValidationContext<TCommand> context,
-                                                 CancellationToken cancellationToken) where TCommand : class, IRequest<object>
+    protected async Task ValidateTitle(string title,
+                                       ValidationContext<TCommand> context,
+                                       CancellationToken cancellationToken)
     {
         if (title.Length > TodoEntityConfiguration.TitleLenght)
             AddFailure(context, "Property '{0}' max length is {1}.", TodoEntityConfiguration.TitleLenght);
@@ -38,9 +38,9 @@ public class TodoValidator<T>(IBaseRepository<TodoEntity> repository) : BaseAbst
     /// <param name="context"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected async Task ValidateTitle<TCommand>(IdAndTitleType idAndTitleType,
-                                                 ValidationContext<TCommand> context,
-                                                 CancellationToken cancellationToken) where TCommand : class, IRequest<object>
+    protected async Task ValidateTitle(IdAndTitleType idAndTitleType,
+                                       ValidationContext<TCommand> context,
+                                       CancellationToken cancellationToken)
     {
         if (idAndTitleType.Title.Length > TodoEntityConfiguration.TitleLenght)
             context.AddFailure(nameof(idAndTitleType.Title), $"Property '{nameof(idAndTitleType.Title)}' max length is {TodoEntityConfiguration.TitleLenght}.");
@@ -49,34 +49,25 @@ public class TodoValidator<T>(IBaseRepository<TodoEntity> repository) : BaseAbst
             context.AddFailure(nameof(idAndTitleType.Title), $"Property '{nameof(idAndTitleType.Title)}' must be unique!");
     }
 
-    protected void ValidateDescription<TCommand>(string description,
-                                                 ValidationContext<TCommand> context) where TCommand : class, IRequest<object>
+    protected void ValidateDescription(string description,
+                                       ValidationContext<TCommand> context)
     {
         if (description.Length > TodoEntityConfiguration.DescriptionLenght)
             AddFailure(context, "Property '{0}' max length is {1}.", TodoEntityConfiguration.DescriptionLenght);
     }
 
-    protected void ValidateUserEmail<TCommand>(string createdBy,
-                                               ValidationContext<TCommand> context) where TCommand : class, IRequest<object>
+    protected void ValidateUserEmail(string createdBy,
+                                     ValidationContext<TCommand> context)
     {
         if (IsValidEmail(createdBy) is false)
             AddFailure(context, "Property '{0}' is not a valid email.");
     }
 
-    protected void ValidateStatus<TCommand>(int status,
-                                            ValidationContext<TCommand> context) where TCommand : class, IRequest<object>
+    protected void ValidateStatus(int status,
+                                  ValidationContext<TCommand> context)
     {
         if (Enum.IsDefined(typeof(ETodoStatus), status) is false)
             AddFailure(context, "Property '{0}' wasn't a registered {1}.", status, nameof(ETodoStatus));
-    }
-
-    protected void ValidTodoOrderBy<TCommand>(byte? orderBy,
-                                              ValidationContext<TCommand> context) where TCommand : class, IRequest<object>
-    {
-        if (orderBy is null) return;
-
-        if (Enum.IsDefined(typeof(ETodoOrderBy), (int)orderBy.Value) is false)
-            AddFailure(context, "Property '{0}' wasn't a registered {1} property.", orderBy, nameof(ETodoOrderBy));
     }
 
     /// <summary>
@@ -91,10 +82,10 @@ public class TodoValidator<T>(IBaseRepository<TodoEntity> repository) : BaseAbst
             return true;
 
         if (todoId is null)
-            return (await repository.FilterAsyncANT(x => x.Title == title, cancellationToken: cancellationToken)).Count is 0;
+            return (await repository.FilterAsync(x => x.Title == title, cancellationToken: cancellationToken)).Count is 0;
 
         Ulid id = Ulid.Parse(todoId);
-        return (await repository.FilterAsyncANT(x => x.Title == title && x.Id != id, cancellationToken: cancellationToken)).Count is 0;
+        return (await repository.FilterAsync(x => x.Title == title && x.Id != id, cancellationToken: cancellationToken)).Count is 0;
     }
 
     public class IdAndTitleType(string? id, string? title)

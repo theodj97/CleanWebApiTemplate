@@ -7,14 +7,14 @@ using MediatR;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Create;
 
-public class CreateTodoCommand : IRequest<Result<TodoResponse>>
+public sealed class CreateTodoCommand : IRequest<Result<TodoResponse>>
 {
     public required string Title { get; init; }
     public string Description { get; init; } = string.Empty;
     public required string CreatedBy { get; init; }
 }
 
-internal class CreateTodoCommandHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<CreateTodoCommand, Result<TodoResponse>>
+internal sealed class CreateTodoCommandHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<CreateTodoCommand, Result<TodoResponse>>
 {
     private readonly IBaseRepository<TodoEntity> repository = repository;
 

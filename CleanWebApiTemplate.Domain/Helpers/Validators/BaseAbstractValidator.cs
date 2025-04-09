@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using System.Net.Mail;
+using System.Reflection;
 
 namespace CleanWebApiTemplate.Domain.Helpers.Validators;
 
@@ -56,18 +57,36 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     {
         if (string.IsNullOrEmpty(startDateEndDate.StartDate)
             && string.IsNullOrEmpty(startDateEndDate.EndDate) is false)
-            context.AddFailure(nameof(startDateEndDate.StartDate),
+            AddFailure(context, nameof(startDateEndDate.StartDate),
                                $"{nameof(startDateEndDate.StartDate)} can't be null or empty when {nameof(startDateEndDate.EndDate)} has value");
 
         if (string.IsNullOrEmpty(startDateEndDate.EndDate)
         && string.IsNullOrEmpty(startDateEndDate.StartDate) is false)
-            context.AddFailure(nameof(startDateEndDate.EndDate),
+            AddFailure(context, nameof(startDateEndDate.EndDate),
                                $"{nameof(startDateEndDate.EndDate)} can't be null or empty when {nameof(startDateEndDate.StartDate)} has value");
 
         if (DateTime.TryParse(startDateEndDate.StartDate, out var startDate) &&
                         DateTime.TryParse(startDateEndDate.EndDate, out var endDate))
             if (startDate > endDate)
-                context.AddFailure(nameof(startDateEndDate.StartDate), $"{nameof(startDateEndDate.StartDate)} must be earlier than {nameof(startDateEndDate.EndDate)}");
+                AddFailure(context, nameof(startDateEndDate.StartDate), $"{nameof(startDateEndDate.StartDate)} must be earlier than {nameof(startDateEndDate.EndDate)}");
+    }
+
+    protected void ValidateSortBy(IEnumerable<KeyValuePair<string, bool>>? sortProperty,
+                                  Type typeToSortBy,
+                                  ValidationContext<TCommand> context)
+    {
+        if (sortProperty is not null && sortProperty.Any()) return;
+
+        if (sortProperty!.Select(kvp => kvp.Key).Distinct().Count() != sortProperty!.Count())
+            AddFailure(context, "Property '{0}' contains duplicated sorts.", nameof(sortProperty));
+
+        var typeToSortByProperties = typeToSortBy.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                                 .Select(p => p.Name)
+                                                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var property in sortProperty!)
+            if (!typeToSortByProperties.Contains(property.Key))
+                AddFailure(context, $"Property '{property.Key}' is not a valid property of type {typeToSortBy.Name}.");
     }
 
     /// <summary>
@@ -95,7 +114,9 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     /// <param name="context"></param>
     /// <param name="errorMessageTemplate"></param>
     /// <param name="args"></param>
-    protected void AddFailure<T>(ValidationContext<T> context, string errorMessageTemplate, params object[] args)
+    protected void AddFailure<T>(ValidationContext<T> context,
+                                 string errorMessageTemplate,
+                                 params object[] args)
     {
         string formattedMessage;
         string propertyName;
@@ -105,7 +126,7 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
             propertyName = context.DisplayName.ToLower();
 
         formattedMessage = string.Format(errorMessageTemplate, propertyName, args);
-        context.AddFailure(propertyName, formattedMessage);
+        AddFailure(context, propertyName, formattedMessage);
     }
 
     public class StartDateEndDateType(string? startDate, string? endDate)

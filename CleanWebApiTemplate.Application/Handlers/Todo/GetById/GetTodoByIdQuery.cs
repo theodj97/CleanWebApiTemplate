@@ -6,18 +6,18 @@ using MediatR;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.GetById;
 
-public class GetTodoByIdQuery : IRequest<Result<TodoResponse>>
+public sealed class GetTodoByIdQuery : IRequest<Result<TodoResponse>>
 {
     public required string Id { get; set; }
 }
 
-internal class GetTodoByIdQueryHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<GetTodoByIdQuery, Result<TodoResponse>>
+internal sealed class GetTodoByIdQueryHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<GetTodoByIdQuery, Result<TodoResponse>>
 {
     private readonly IBaseRepository<TodoEntity> repository = repository;
 
     public async Task<Result<TodoResponse>> Handle(GetTodoByIdQuery request, CancellationToken cancellationToken)
     {
-        var todoDb = await repository.GetByIdAsyncANT(request.Id, cancellationToken);
+        var todoDb = await repository.GetByIdAsync(request.Id, cancellationToken);
         if (todoDb is null)
             return Result<TodoResponse>.NoContent();
 

@@ -1,4 +1,3 @@
-using CleanWebApiTemplate.Application.Services.Todo;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.Models.Responses;
 using CleanWebApiTemplate.Domain.ResultModel;
@@ -7,33 +6,29 @@ using MediatR;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.GetTitles;
 
-public class GetTodoTitleQuery : IRequest<Result<IEnumerable<TodoTitleResponse>>>
+public sealed class GetTodoTitleQuery : IRequest<Result<IEnumerable<TodoTitleResponse>>>
 {
     public byte? PageNumber { get; set; }
     public byte? PageSize { get; set; }
-    public byte? OrderBy { get; set; } = null;
-    public bool OrderDescending { get; set; } = false;
+    public IEnumerable<KeyValuePair<string, bool>>? SortProperties { get; set; } = null;
 }
 
-internal class GetTodoTitleQueryHandler(IBaseRepository<TodoEntity> repository, ITodoServices todoServices) : IRequestHandler<GetTodoTitleQuery, Result<IEnumerable<TodoTitleResponse>>>
+internal sealed class GetTodoTitleQueryHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<GetTodoTitleQuery, Result<IEnumerable<TodoTitleResponse>>>
 {
     private readonly IBaseRepository<TodoEntity> repository = repository;
-    private readonly ITodoServices todoServices = todoServices;
-
 
     public async Task<Result<IEnumerable<TodoTitleResponse>>> Handle(GetTodoTitleQuery request, CancellationToken cancellationToken)
     {
-        var todosDb = await repository.FilterAsyncANT(x => true,
-                                                     p => new TodoTitleResponse
-                                                     {
-                                                         Id = p.Id,
-                                                         Title = p.Title,
-                                                     },
-                                                     todoServices.TodoResolveOrderBy(request.OrderBy),
-                                                     request.OrderDescending,
-                                                     request.PageNumber,
-                                                     request.PageSize,
-                                                     cancellationToken);
+        var todosDb = await repository.FilterSortAsync(x => true,
+                                                    p => new TodoTitleResponse
+                                                    {
+                                                        Id = p.Id,
+                                                        Title = p.Title,
+                                                    },
+                                                    request.SortProperties,
+                                                    request.PageNumber,
+                                                    request.PageSize,
+                                                    cancellationToken);
 
         if (todosDb is not null && todosDb.Count == 0)
             return Result<IEnumerable<TodoTitleResponse>>.NoContent();

@@ -1,4 +1,5 @@
 using CleanWebApiTemplate.Domain.Models.Entities;
+using CleanWebApiTemplate.Domain.Models.Responses;
 using CleanWebApiTemplate.Infrastructure.Common;
 using FluentValidation;
 
@@ -16,7 +17,7 @@ public class GetTodoTitleQueryValidator : TodoValidator<GetTodoTitleQuery>
             .WithMessage($"Property {nameof(GetTodoTitleQuery.PageSize)} must be greater than 0")
             .When(x => x.PageSize is not null);
 
-        RuleFor(x => x.OrderBy).Custom(ValidTodoOrderBy)
-            .When(x => x.OrderBy is not null);
+        RuleFor(x => x.SortProperties).Custom((sortProperties, context) => ValidateSortBy(sortProperties, typeof(TodoTitleResponse), context))
+                                      .When(x => x.SortProperties is not null);
     }
 }

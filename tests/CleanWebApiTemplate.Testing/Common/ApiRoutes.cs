@@ -42,16 +42,13 @@ public static class ApiRoutes
             if (request.PageSize.HasValue)
                 queryParams.Add($"PageSize={request.PageSize.Value}");
 
-            if (request.OrderBy.HasValue)
-                queryParams.Add($"OrderBy={request.OrderBy.Value}");
-
-            if (request.OrderDescending is not null && request.OrderDescending.Value)
-                queryParams.Add("OrderDescending=true");
+            // if (request.SortProperties.HasValue)
+            //     queryParams.Add($"OrderBy={request.OrderBy.Value}");
 
             return queryParams.Count > 0 ? $"{BaseRoute}?{string.Join("&", queryParams)}" : BaseRoute;
         }
 
-        public static string Create() => "api/Todo";
+        public static string Create() => BaseRoute;
 
         public static string GetTitles(GetTodoTitlesRequest request)
         {
@@ -61,13 +58,10 @@ public static class ApiRoutes
                 $"PageSize={request.PageSize}"
             };
 
-            if (request.OrderBy is not null)
-                queryParams.Add($"OrderBy={request.OrderBy}");
+            // if (request.OrderBy is not null)
+            //     queryParams.Add($"OrderBy={request.OrderBy}");
 
-            if (request.OrderDescending.HasValue)
-                queryParams.Add($"OrderDescending={request.OrderDescending.Value.ToString().ToLower()}");
-
-            return $"api/Todo/titles?{string.Join("&", queryParams)}";
+            return $"{BaseRoute}/titles?{string.Join("&", queryParams)}";
         }
     }
 }

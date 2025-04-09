@@ -1,5 +1,4 @@
 ﻿using CleanWebApiTemplate.Application.Behaviours;
-using CleanWebApiTemplate.Application.Services.Todo;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,14 +16,6 @@ public static class ConfigureServices
                 .AddValidatorsFromAssembly(assembly, ServiceLifetime.Transient)
                 .AddTransient(typeof(IPipelineBehavior<,>), typeof(FluentValidationBehavior<,>));
 
-        services.AddCustomServices();
-
-        return services;
-    }
-
-    private static IServiceCollection AddCustomServices(this IServiceCollection services)
-    {
-        services.AddTransient<ITodoServices, TodoServices>();
         return services;
     }
 }

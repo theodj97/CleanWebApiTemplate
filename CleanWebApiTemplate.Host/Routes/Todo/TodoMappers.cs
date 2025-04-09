@@ -21,8 +21,7 @@ public static class TodoMappers
             StartDate = request.StartDate,
             EndDate = request.EndDate,
             Ids = request.Ids,
-            OrderBy = request.OrderBy,
-            OrderDescending = request.OrderDescending ?? false,
+            SortProperties = request.SortProperties,
             PageNumber = request.PageNumber,
             PageSize = request.PageSize,
         };
@@ -34,8 +33,7 @@ public static class TodoMappers
         {
             PageNumber = request.PageNumber,
             PageSize = request.PageSize,
-            OrderBy = request.OrderBy,
-            OrderDescending = request.OrderDescending ?? false
+            SortProperties = request.SortProperties
         };
     }
 
