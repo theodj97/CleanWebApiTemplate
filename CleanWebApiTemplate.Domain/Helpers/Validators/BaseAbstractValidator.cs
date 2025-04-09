@@ -124,9 +124,9 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
         var builder = new StringBuilder();
 
         if (!string.IsNullOrWhiteSpace(propertyName))
-            builder.Append($"Error while validanting property: '{propertyName}' .");
+            builder.AppendLine($"Error while validanting property: '{propertyName}' .");
 
-        builder.AppendLine(errorMessage);
+        builder.Append(errorMessage);
 
         context.AddFailure(builder.ToString());
     }

@@ -27,7 +27,7 @@ public class TodoValidator<TCommand>(IBaseRepository<TodoEntity> repository) : B
             AddFailure(context, $"Property '{context.DisplayName}' max length is {TodoEntityConfiguration.TitleLenght}.");
 
         if (await TitleIsUnique(title, cancellationToken: cancellationToken) is false)
-            AddFailure(context, $"Property '{context.DisplayName}' must be unique!");
+            AddFailure(context, $"Property '{context.DisplayName}' is already in use!");
     }
 
     /// <summary>
@@ -43,10 +43,10 @@ public class TodoValidator<TCommand>(IBaseRepository<TodoEntity> repository) : B
                                        CancellationToken cancellationToken)
     {
         if (idAndTitleType.Title.Length > TodoEntityConfiguration.TitleLenght)
-            context.AddFailure(nameof(idAndTitleType.Title), $"Property '{nameof(idAndTitleType.Title)}' max length is {TodoEntityConfiguration.TitleLenght}.");
+            AddFailure(context, $"Property '{nameof(idAndTitleType.Title)}' max length is {TodoEntityConfiguration.TitleLenght}.", nameof(idAndTitleType.Title));
 
         if (await TitleIsUnique(idAndTitleType.Title, idAndTitleType.Id, cancellationToken) is false)
-            context.AddFailure(nameof(idAndTitleType.Title), $"Property '{nameof(idAndTitleType.Title)}' must be unique!");
+            AddFailure(context, $"Property '{nameof(idAndTitleType.Title)}' is already in use!", nameof(idAndTitleType.Title));
     }
 
     protected void ValidateDescription(string description,
