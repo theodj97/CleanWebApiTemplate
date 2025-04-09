@@ -24,10 +24,10 @@ public class TodoValidator<TCommand>(IBaseRepository<TodoEntity> repository) : B
                                        CancellationToken cancellationToken)
     {
         if (title.Length > TodoEntityConfiguration.TitleLenght)
-            AddFailure(context, "Property '{0}' max length is {1}.", TodoEntityConfiguration.TitleLenght);
+            AddFailure(context, $"Property '{context.DisplayName}' max length is {TodoEntityConfiguration.TitleLenght}.");
 
         if (await TitleIsUnique(title, cancellationToken: cancellationToken) is false)
-            AddFailure(context, "Property '{0}' must be unique!");
+            AddFailure(context, $"Property '{context.DisplayName}' must be unique!");
     }
 
     /// <summary>
@@ -53,21 +53,21 @@ public class TodoValidator<TCommand>(IBaseRepository<TodoEntity> repository) : B
                                        ValidationContext<TCommand> context)
     {
         if (description.Length > TodoEntityConfiguration.DescriptionLenght)
-            AddFailure(context, "Property '{0}' max length is {1}.", TodoEntityConfiguration.DescriptionLenght);
+            AddFailure(context, $"Property '{context.DisplayName}' max length is {TodoEntityConfiguration.DescriptionLenght}.");
     }
 
     protected void ValidateUserEmail(string createdBy,
                                      ValidationContext<TCommand> context)
     {
         if (IsValidEmail(createdBy) is false)
-            AddFailure(context, "Property '{0}' is not a valid email.");
+            AddFailure(context, $"Property '{context.DisplayName}' is not a valid email.");
     }
 
     protected void ValidateStatus(int status,
                                   ValidationContext<TCommand> context)
     {
         if (Enum.IsDefined(typeof(ETodoStatus), status) is false)
-            AddFailure(context, "Property '{0}' wasn't a registered {1}.", status, nameof(ETodoStatus));
+            AddFailure(context, $"Property '{context.DisplayName}' wasn't a registered {nameof(ETodoStatus)}.");
     }
 
     /// <summary>

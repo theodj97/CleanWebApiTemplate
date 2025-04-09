@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using System.Net.Mail;
 using System.Reflection;
+using System.Text;
 
 namespace CleanWebApiTemplate.Domain.Helpers.Validators;
 
@@ -20,7 +21,7 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     protected void NotNullNotEmpty(string property, ValidationContext<TCommand> context)
     {
         if (string.IsNullOrEmpty(property))
-            AddFailure(context, "Property '{0}' can't be null or empty!");
+            AddFailure(context, $"Property '{context.DisplayName}' can't be null or empty!");
     }
 
     /// <summary>
@@ -31,10 +32,10 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     protected void ValidateUlid(string id, ValidationContext<TCommand> context)
     {
         if (Ulid.TryParse(id, out _) is false)
-            AddFailure(context, "Property '{0}' must be a valid ULID");
+            AddFailure(context, $"Property '{context.DisplayName}' must be a valid ULID");
 
         if (id.Length is not 26)
-            AddFailure(context, "Property '{0}' must have exactly 26 characters");
+            AddFailure(context, $"Property '{context.DisplayName}' must have exactly 26 characters");
     }
 
     /// <summary>
@@ -45,7 +46,7 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     protected void ValidateDateTime(string dateTime, ValidationContext<TCommand> context)
     {
         if (DateTime.TryParse(dateTime, out _) is false)
-            AddFailure(context, "Property '{0}' must be a valid date time");
+            AddFailure(context, $"Property '{context.DisplayName}' must be a valid date time");
     }
 
     /// <summary>
@@ -57,18 +58,16 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     {
         if (string.IsNullOrEmpty(startDateEndDate.StartDate)
             && string.IsNullOrEmpty(startDateEndDate.EndDate) is false)
-            AddFailure(context, nameof(startDateEndDate.StartDate),
-                               $"{nameof(startDateEndDate.StartDate)} can't be null or empty when {nameof(startDateEndDate.EndDate)} has value");
+            AddFailure(context, $"{nameof(startDateEndDate.StartDate)} can't be null or empty when {nameof(startDateEndDate.EndDate)} has value");
 
         if (string.IsNullOrEmpty(startDateEndDate.EndDate)
         && string.IsNullOrEmpty(startDateEndDate.StartDate) is false)
-            AddFailure(context, nameof(startDateEndDate.EndDate),
-                               $"{nameof(startDateEndDate.EndDate)} can't be null or empty when {nameof(startDateEndDate.StartDate)} has value");
+            AddFailure(context, $"{nameof(startDateEndDate.EndDate)} can't be null or empty when {nameof(startDateEndDate.StartDate)} has value");
 
         if (DateTime.TryParse(startDateEndDate.StartDate, out var startDate) &&
                         DateTime.TryParse(startDateEndDate.EndDate, out var endDate))
             if (startDate > endDate)
-                AddFailure(context, nameof(startDateEndDate.StartDate), $"{nameof(startDateEndDate.StartDate)} must be earlier than {nameof(startDateEndDate.EndDate)}");
+                AddFailure(context, $"{nameof(startDateEndDate.StartDate)} must be earlier than {nameof(startDateEndDate.EndDate)}");
     }
 
     protected void ValidateSortBy(IEnumerable<KeyValuePair<string, bool>>? sortProperty,
@@ -78,7 +77,7 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
         if (sortProperty is not null && sortProperty.Any()) return;
 
         if (sortProperty!.Select(kvp => kvp.Key).Distinct().Count() != sortProperty!.Count())
-            AddFailure(context, "Property '{0}' contains duplicated sorts.", nameof(sortProperty));
+            AddFailure(context, $"Property '{nameof(sortProperty)}' contains duplicated sorts.");
 
         var typeToSortByProperties = typeToSortBy.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                                                  .Select(p => p.Name)
@@ -112,21 +111,24 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="context"></param>
-    /// <param name="errorMessageTemplate"></param>
+    /// <param name="errorMessage"></param>
     /// <param name="args"></param>
     protected void AddFailure<T>(ValidationContext<T> context,
-                                 string errorMessageTemplate,
-                                 params object[] args)
+                                 string errorMessage,
+                                 string? propertyName = null)
     {
-        string formattedMessage;
-        string propertyName;
-        if (string.IsNullOrEmpty(context.DisplayName))
-            propertyName = string.Empty;
-        else
-            propertyName = context.DisplayName.ToLower();
+        if (string.IsNullOrWhiteSpace(propertyName))
+            propertyName = !string.IsNullOrWhiteSpace(context.DisplayName)
+                ? context.DisplayName.ToLower()
+                : string.Empty;
+        var builder = new StringBuilder();
 
-        formattedMessage = string.Format(errorMessageTemplate, propertyName, args);
-        AddFailure(context, propertyName, formattedMessage);
+        if (!string.IsNullOrWhiteSpace(propertyName))
+            builder.Append($"Error while validanting property: '{propertyName}' .");
+
+        builder.AppendLine(errorMessage);
+
+        context.AddFailure(builder.ToString());
     }
 
     public class StartDateEndDateType(string? startDate, string? endDate)
