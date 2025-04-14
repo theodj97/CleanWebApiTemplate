@@ -74,7 +74,7 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
                                   Type typeToSortBy,
                                   ValidationContext<TCommand> context)
     {
-        if (sortProperty is not null && sortProperty.Any()) return;
+        if (sortProperty is null || sortProperty.Any() is false) return;
 
         if (sortProperty!.Select(kvp => kvp.Key).Distinct().Count() != sortProperty!.Count())
             AddFailure(context, $"Property '{nameof(sortProperty)}' contains duplicated sorts.");

@@ -32,7 +32,7 @@ internal sealed class FilteredTodoQueryHandler(IBaseRepository<TodoEntity> repos
 
         if (request.Ids is not null && request.Ids.Any())
         {
-            var idsParsed = request.Ids.Select(x => Ulid.Parse(x));
+            var idsParsed = request.Ids.Select(Ulid.Parse);
 
             Expression<Func<TodoEntity, bool>> idFilter = x => idsParsed.Contains(x.Id);
             queryBody = Expression.AndAlso(queryBody, Expression.Invoke(idFilter, parameter));
@@ -67,14 +67,13 @@ internal sealed class FilteredTodoQueryHandler(IBaseRepository<TodoEntity> repos
 
         filter = Expression.Lambda<Func<TodoEntity, bool>>(queryBody, parameter);
 
-        var todosDb = await repository.FilterSortAsync(filter,
-                                                   request.SortProperties,
-                                                   request.PageNumber,
-                                                   request.PageSize,
-                                                   cancellationToken: cancellationToken);
+        List<TodoEntity> todosDb = await repository.FilterSortAsync(filter,
+                                                                    request.SortProperties,
+                                                                    request.PageNumber,
+                                                                    request.PageSize,
+                                                                    cancellationToken: cancellationToken);
 
-        if (todosDb is not null && todosDb.Count == 0)
-            return Result<IEnumerable<TodoResponse>>.NoContent();
+        if (todosDb.Count == 0) return Result<IEnumerable<TodoResponse>>.NoContent();
 
         return Result<IEnumerable<TodoResponse>>.Success(TodoMappers.FromEntityToResponse(todosDb!));
     }

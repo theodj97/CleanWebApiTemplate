@@ -18,9 +18,9 @@ public static class ConfigureServices
     public static IServiceCollection AddHostServices(this IServiceCollection services,
                                                      IConfiguration configuration,
                                                      string environment,
-                                                     string[]? corsAllow,
-                                                     string[]? validIssuers,
-                                                     string sqlConnectionStrings
+                                                     string[] corsAllow,
+                                                     string[] validIssuers,
+                                                     ConnectionStringsSection connectionStrings
                                                      //  MongoUrl mongoDbConnectionStrings
                                                      )
     {
@@ -29,7 +29,7 @@ public static class ConfigureServices
         services.AddHealthChecks()
                 .AddCheck("api-health-check", () => HealthCheckResult.Healthy("API is up and running"), tags: ["api"])
                 .AddSqlServer(
-                    connectionString: sqlConnectionStrings,
+                    connectionString: connectionStrings.SqlServer,
                     name: "sqlserver-check",
                     failureStatus: HealthStatus.Unhealthy,
                     tags: ["sqlServerDb", "sql"]
@@ -65,7 +65,7 @@ public static class ConfigureServices
 
     private static IServiceCollection ConfigureCors(this IServiceCollection services,
                                                     string environment,
-                                                    string[]? corsAllow)
+                                                    string[] corsAllow)
     {
         if (corsAllow is not null && corsAllow.Length != 0)
             services.AddCors(opts =>
@@ -99,7 +99,7 @@ public static class ConfigureServices
 
     private static IServiceCollection ConfigureAuth(this IServiceCollection services,
                                                     string environment,
-                                                    string[]? validIssuers,
+                                                    string[] validIssuers,
                                                     IConfiguration configuration)
     {
 

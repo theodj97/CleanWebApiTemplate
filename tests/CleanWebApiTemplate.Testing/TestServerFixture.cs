@@ -44,6 +44,11 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
         {
             builder.Sources.Clear();
 
+            builder.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                { $"{ConnectionStringsSection.SectionName}:{nameof(ConnectionStringsSection.SqlServer)}", SqlServerCnnString }
+            });
+
             builder.AddEnvironmentVariables();
         });
 

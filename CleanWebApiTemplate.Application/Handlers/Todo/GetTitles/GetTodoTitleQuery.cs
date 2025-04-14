@@ -19,19 +19,14 @@ internal sealed class GetTodoTitleQueryHandler(IBaseRepository<TodoEntity> repos
 
     public async Task<Result<IEnumerable<TodoTitleResponse>>> Handle(GetTodoTitleQuery request, CancellationToken cancellationToken)
     {
-        var todosDb = await repository.FilterSortAsync(x => true,
-                                                    p => new TodoTitleResponse
-                                                    {
-                                                        Id = p.Id,
-                                                        Title = p.Title,
-                                                    },
-                                                    request.SortProperties,
-                                                    request.PageNumber,
-                                                    request.PageSize,
-                                                    cancellationToken);
+        List<TodoTitleResponse> todosDb = await repository.FilterSortAsync(x => true,
+                                                                           p => new TodoTitleResponse { Id = p.Id, Title = p.Title, },
+                                                                           request.SortProperties,
+                                                                           request.PageNumber,
+                                                                           request.PageSize,
+                                                                           cancellationToken);
 
-        if (todosDb is not null && todosDb.Count == 0)
-            return Result<IEnumerable<TodoTitleResponse>>.NoContent();
+        if (todosDb.Count == 0) return Result<IEnumerable<TodoTitleResponse>>.NoContent();
 
         return Result<IEnumerable<TodoTitleResponse>>.Success(todosDb!);
     }

@@ -1,8 +1,14 @@
-﻿namespace CleanWebApiTemplate.Domain.Configuration;
+﻿using System.ComponentModel.DataAnnotations;
 
-public record AppSettings
+namespace CleanWebApiTemplate.Domain.Configuration;
+
+public sealed class AppSettings
 {
-    public ConnectionStrings? ConnectionStrings { get; set; }
-    public string[]? CorsAllow { get; set; }
-    public string[]? ValidIssuers { get; set; }
+    [Required]
+    public required ConnectionStringsSection ConnectionStrings { get; set; }
+    [Required]
+    public required string[] CorsAllow { get; set; }
+    [Required]
+    public required string[] ValidIssuers { get; set; }
+    internal const string SECTION_EXTENSION = "Section";
 }

@@ -234,6 +234,25 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
+    [ResetDatabase]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task FilteredTodo_InvalidSortByName_Should_Return_BadRequest()
+    {
+        // Arrange
+        FilteredTodoRequest request = new()
+        {
+            SortProperties = [new KeyValuePair<string, bool>("UnExistingProperty", false)]
+        };
+
+        // Act
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
     public async Task FilteredTodo_WrongRequestId_Should_Return_BadRequest()
     {
@@ -310,6 +329,66 @@ public class Get(TestServerFixture fixture)
         // Arrange
         string invalidStartDate = "this is not a date";
         FilteredTodoRequest request = new() { StartDate = invalidStartDate };
+
+        // Act
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task FilteredTodo_WrongPageNumber_Should_Return_BadRequest()
+    {
+        // Arrange
+        FilteredTodoRequest request = new() { PageNumber = 0 };
+
+        // Act
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task FilteredTodo_WrongPageSize_Should_Return_BadRequest()
+    {
+        // Arrange
+        FilteredTodoRequest request = new() { PageSize = 0 };
+
+        // Act
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task FilteredTodo_EmptyPageNumberWhenPageSizeIsSet_Should_Return_BadRequest()
+    {
+        // Arrange
+        FilteredTodoRequest request = new() { PageSize = 1 };
+
+        // Act
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task FilteredTodo_EmptyPageSizeWhenPageNumberIsSet_Should_Return_BadRequest()
+    {
+        // Arrange
+        FilteredTodoRequest request = new() { PageNumber = 1 };
 
         // Act
         var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
@@ -558,11 +637,75 @@ public class Get(TestServerFixture fixture)
     }
 
     [Fact]
+    [ResetDatabase]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
-    public async Task GetTitles_WrongPagination_Should_Return_BadRequest()
+    public async Task GetTitles_InvalidSortByName_Should_Return_BadRequest()
     {
         // Arrange
-        GetTodoTitlesRequest request = new() { PageNumber = 0, PageSize = 0 };
+        GetTodoTitlesRequest request = new()
+        {
+            SortProperties = [new KeyValuePair<string, bool>("UnExistingProperty", false)]
+        };
+
+        // Act
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request);
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task GetTitles_WrongPageNumber_Should_Return_BadRequest()
+    {
+        // Arrange
+        GetTodoTitlesRequest request = new() { PageNumber = 0 };
+
+        // Act
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request);
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task GetTitles_WrongPageSize_Should_Return_BadRequest()
+    {
+        // Arrange
+        GetTodoTitlesRequest request = new() { PageSize = 0 };
+
+        // Act
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request);
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task GetTitles_EmptyPageNumberWhenPageSizeIsSet_Should_Return_BadRequest()
+    {
+        // Arrange
+        GetTodoTitlesRequest request = new() { PageSize = 1 };
+
+        // Act
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request);
+
+        // Assert
+        Assert.False(response.IsSuccessStatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
+    public async Task GetTitles_EmptyPageSizeWhenPageNumberIsSet_Should_Return_BadRequest()
+    {
+        // Arrange
+        GetTodoTitlesRequest request = new() { PageNumber = 1 };
 
         // Act
         var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request);

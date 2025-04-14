@@ -86,10 +86,10 @@ public sealed class BaseSqlRepository<TEntity>(SqlDbContext context) : IBaseRepo
 
 
     public async Task<List<TEntity>> FilterSortAsync(Expression<Func<TEntity, bool>> expression,
-                                                 IEnumerable<KeyValuePair<string, bool>>? sortProperties,
-                                                 int? pageNumber = null,
-                                                 int? pageSize = null,
-                                                 CancellationToken cancellationToken = default) =>
+                                                     IEnumerable<KeyValuePair<string, bool>>? sortProperties,
+                                                     int? pageNumber = null,
+                                                     int? pageSize = null,
+                                                     CancellationToken cancellationToken = default) =>
         await context.Set<TEntity>()
                      .AsNoTracking()
                      .Where(expression)
@@ -98,11 +98,11 @@ public sealed class BaseSqlRepository<TEntity>(SqlDbContext context) : IBaseRepo
                      .ToListAsync(cancellationToken);
 
     public async Task<List<TOutput>> FilterSortAsync<TOutput>(Expression<Func<TEntity, bool>> expression,
-                                                          Expression<Func<TEntity, TOutput>> selector,
-                                                          IEnumerable<KeyValuePair<string, bool>>? sortProperties,
-                                                          int? pageNumber = null,
-                                                          int? pageSize = null,
-                                                          CancellationToken cancellationToken = default) =>
+                                                              Expression<Func<TEntity, TOutput>> selector,
+                                                              IEnumerable<KeyValuePair<string, bool>>? sortProperties,
+                                                              int? pageNumber = null,
+                                                              int? pageSize = null,
+                                                              CancellationToken cancellationToken = default) =>
         await context.Set<TEntity>()
                      .AsNoTracking()
                      .Where(expression)

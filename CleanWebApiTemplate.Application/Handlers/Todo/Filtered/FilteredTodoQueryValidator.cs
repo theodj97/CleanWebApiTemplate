@@ -38,13 +38,13 @@ public class FilteredTodoQueryValidator : TodoValidator<FilteredTodoQuery>
         RuleFor(x => new StartDateEndDateType(x.StartDate, x.EndDate))
             .Custom(ValidateStartDateAndEndDate);
 
-        RuleFor(x => x.PageNumber).Must(value => value > 0)
-            .WithMessage($"Property {nameof(FilteredTodoQuery.PageNumber)} must be greater than 0")
-            .When(x => x.PageNumber is not null);
+        RuleFor(x => x.PageNumber).Must(value => value is not null && value > 0)
+            .When(x => x.PageSize is not null || x.PageNumber is not null)
+            .WithMessage($"Property {nameof(FilteredTodoQuery.PageNumber)} can't be null or 0 if property {nameof(FilteredTodoQuery.PageSize)} is not null.");
 
-        RuleFor(x => x.PageSize).Must(value => value > 0)
-            .WithMessage($"Property {nameof(FilteredTodoQuery.PageSize)} must be greater than 0")
-            .When(x => x.PageSize is not null);
+        RuleFor(x => x.PageSize).Must(value => value is not null && value > 0)
+            .When(x => x.PageNumber is not null || x.PageSize is not null)
+            .WithMessage($"Property {nameof(FilteredTodoQuery.PageSize)} must be greater than 0 if property {nameof(FilteredTodoQuery.PageNumber)} is not null.");
 
         RuleFor(x => x.SortProperties).Custom((sortProperties, context) => ValidateSortBy(sortProperties, typeof(TodoResponse), context))
                                       .When(x => x.SortProperties is not null);
