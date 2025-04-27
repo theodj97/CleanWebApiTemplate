@@ -28,6 +28,13 @@ public static class ConfigureApplication
             });
         }
 
+        // Configure API routes.
+        app.MapRoutes();
+    }
+
+    public static void MapCustomHealthChecks(this WebApplication app)
+    {
+
         app.MapHealthChecks("/health/api", new HealthCheckOptions
         {
             Predicate = check => check.Tags.Contains("api")
@@ -42,8 +49,6 @@ public static class ConfigureApplication
         // {
         //     Predicate = check => check.Tags.Contains("mongoDb")
         // });
-
-        // Configure API routes.
-        app.MapRoutes();
     }
+
 }

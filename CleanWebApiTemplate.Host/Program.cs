@@ -26,6 +26,7 @@ public class Program
 
         app.ConfigureHostApplication();
         app.ConfigureRoutes(environment);
+        app.MapCustomHealthChecks();
 
         app.Run();
     }
