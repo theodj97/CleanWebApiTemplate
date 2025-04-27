@@ -16,9 +16,12 @@ public sealed class FluentValidationBehavior<TRequest, TResponse>(IEnumerable<IV
             return await next();
 
         var context = new ValidationContext<TRequest>(request);
-        var failures = validators
-            .Select(v => v.ValidateAsync(context))
-            .SelectMany(result => result.Result.Errors)
+
+        var validationTasks = validators.Select(v => v.ValidateAsync(context, cancellationToken));
+        var validationResults = await Task.WhenAll(validationTasks);
+
+        var failures = validationResults
+            .SelectMany(r => r.Errors)
             .Where(f => f is not null)
             .Select(x => x.ErrorMessage)
             .Distinct()
