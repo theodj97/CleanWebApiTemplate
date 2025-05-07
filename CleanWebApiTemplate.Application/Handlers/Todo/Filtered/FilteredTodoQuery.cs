@@ -1,5 +1,5 @@
-﻿using CleanWebApiTemplate.Domain.Models.Entities;
-using CleanWebApiTemplate.Domain.Models.Responses;
+﻿using CleanWebApiTemplate.Domain.Dtos.Todo;
+using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Common;
 using MediatR;
@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
 
-public sealed class FilteredTodoQuery : IRequest<Result<IEnumerable<TodoResponse>>>
+public sealed record FilteredTodoQuery : IRequest<Result<IEnumerable<TodoDto>>>
 {
     public IEnumerable<string>? Ids { get; set; }
     public IEnumerable<string>? Title { get; set; }
@@ -20,11 +20,11 @@ public sealed class FilteredTodoQuery : IRequest<Result<IEnumerable<TodoResponse
     public IEnumerable<KeyValuePair<string, bool>>? SortProperties { get; set; } = null;
 }
 
-internal sealed class FilteredTodoQueryHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<FilteredTodoQuery, Result<IEnumerable<TodoResponse>>>
+internal sealed class FilteredTodoQueryHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<FilteredTodoQuery, Result<IEnumerable<TodoDto>>>
 {
     private readonly IBaseRepository<TodoEntity> repository = repository;
 
-    public async Task<Result<IEnumerable<TodoResponse>>> Handle(FilteredTodoQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<TodoDto>>> Handle(FilteredTodoQuery request, CancellationToken cancellationToken)
     {
         Expression<Func<TodoEntity, bool>> filter = x => true;
         var queryBody = filter.Body;
@@ -73,8 +73,6 @@ internal sealed class FilteredTodoQueryHandler(IBaseRepository<TodoEntity> repos
                                                                     request.PageSize,
                                                                     cancellationToken: cancellationToken);
 
-        if (todosDb.Count == 0) return Result<IEnumerable<TodoResponse>>.NoContent();
-
-        return Result<IEnumerable<TodoResponse>>.Success(TodoMappers.FromEntityToResponse(todosDb!));
+        return Result<IEnumerable<TodoDto>>.Success(todosDb.Select(x => x.ToDto()));
     }
 }

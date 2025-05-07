@@ -1,5 +1,5 @@
+using CleanWebApiTemplate.Domain.Dtos.Todo;
 using CleanWebApiTemplate.Domain.Models.Entities;
-using CleanWebApiTemplate.Domain.Models.Responses;
 using CleanWebApiTemplate.Infrastructure.Common;
 using FluentValidation;
 
@@ -17,7 +17,8 @@ public class GetTodoTitleQueryValidator : TodoValidator<GetTodoTitleQuery>
             .When(x => x.PageNumber is not null || x.PageSize is not null)
             .WithMessage($"Property {nameof(GetTodoTitleQuery.PageSize)} must be greater than 0 if property {nameof(GetTodoTitleQuery.PageNumber)} is not null.");
 
-        RuleFor(x => x.SortProperties).Custom((sortProperties, context) => ValidateSortBy(sortProperties, typeof(TodoTitleResponse), context))
-                                      .When(x => x.SortProperties is not null);
+        RuleFor(x => x.SortProperties).Custom((sortProperties, context) => ValidateSortBy(sortProperties,
+                                                                                          typeof(TodoDto),
+                                                                                          context)).When(x => x.SortProperties is not null);
     }
 }

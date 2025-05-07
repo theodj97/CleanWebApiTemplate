@@ -3,7 +3,7 @@ using System.Net.Mail;
 using System.Reflection;
 using System.Text;
 
-namespace CleanWebApiTemplate.Domain.Helpers.Validators;
+namespace CleanWebApiTemplate.Application.Helpers.Validators;
 
 public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where TCommand : class
 {

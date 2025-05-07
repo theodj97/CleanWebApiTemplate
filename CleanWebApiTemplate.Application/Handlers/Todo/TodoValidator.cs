@@ -1,4 +1,4 @@
-﻿using CleanWebApiTemplate.Domain.Helpers.Validators;
+﻿using CleanWebApiTemplate.Application.Helpers.Validators;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Infrastructure.Common;
@@ -24,10 +24,12 @@ public class TodoValidator<TCommand>(IBaseRepository<TodoEntity> repository) : B
                                        CancellationToken cancellationToken)
     {
         if (title.Length > TodoEntityConfiguration.TitleLenght)
-            AddFailure(context, $"Property '{context.DisplayName}' max length is {TodoEntityConfiguration.TitleLenght}.");
+            AddFailure(context,
+                       $"Property '{context.DisplayName}' max length is {TodoEntityConfiguration.TitleLenght}.");
 
         if (await TitleIsUnique(title, cancellationToken: cancellationToken) is false)
-            AddFailure(context, $"Property '{context.DisplayName}' is already in use!");
+            AddFailure(context,
+                       $"Property '{context.DisplayName}' is already in use!");
     }
 
     /// <summary>
@@ -43,10 +45,35 @@ public class TodoValidator<TCommand>(IBaseRepository<TodoEntity> repository) : B
                                        CancellationToken cancellationToken)
     {
         if (idAndTitleType.Title.Length > TodoEntityConfiguration.TitleLenght)
-            AddFailure(context, $"Property '{nameof(idAndTitleType.Title)}' max length is {TodoEntityConfiguration.TitleLenght}.", nameof(idAndTitleType.Title));
+            AddFailure(context,
+                       $"Property '{nameof(idAndTitleType.Title)}' max length is {TodoEntityConfiguration.TitleLenght}.",
+                       nameof(idAndTitleType.Title));
 
         if (await TitleIsUnique(idAndTitleType.Title, idAndTitleType.Id, cancellationToken) is false)
-            AddFailure(context, $"Property '{nameof(idAndTitleType.Title)}' is already in use!", nameof(idAndTitleType.Title));
+            AddFailure(context,
+                       $"Property '{nameof(idAndTitleType.Title)}' is already in use!",
+                       nameof(idAndTitleType.Title));
+    }
+
+    /// <summary>
+    /// Validate the existance of the todo by its ID.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="context"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    protected async Task TodoExist(string id,
+                                   ValidationContext<TCommand> context,
+                                   CancellationToken cancellationToken)
+    {
+        if ((await repository.FilterAsync(x => x.Id == Ulid.Parse(id),
+            cancellationToken: cancellationToken)).Count == 0)
+        {
+            AddFailure(context,
+                       $"A Todo with '{nameof(id)}' doesn't exists in the current context.",
+                       nameof(id));
+        }
+
     }
 
     protected void ValidateDescription(string description,
@@ -76,7 +103,9 @@ public class TodoValidator<TCommand>(IBaseRepository<TodoEntity> repository) : B
     /// <param name="title"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>Validation result</returns>
-    private async Task<bool> TitleIsUnique(string title, string? todoId = null, CancellationToken cancellationToken = default)
+    private async Task<bool> TitleIsUnique(string title,
+                                           string? todoId = null,
+                                           CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(title))
             return true;
