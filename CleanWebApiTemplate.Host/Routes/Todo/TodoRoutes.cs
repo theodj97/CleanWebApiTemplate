@@ -2,17 +2,18 @@
 using CleanWebApiTemplate.Application.Handlers.Todo.GetById;
 using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Domain.Dtos.Todo;
+using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Host.Common;
 using CleanWebApiTemplate.Host.Helpers;
-using CleanWebApiTemplate.Host.Routes.Api.Todo.Create;
-using CleanWebApiTemplate.Host.Routes.Api.Todo.Filter;
-using CleanWebApiTemplate.Host.Routes.Api.Todo.Get;
-using CleanWebApiTemplate.Host.Routes.Api.Todo.Update;
-using CleanWebApiTemplate.Host.Routes.ResponseModels.Todo;
+using CleanWebApiTemplate.Host.ResponseModels.Todo;
+using CleanWebApiTemplate.Host.Routes.Todo.Create;
+using CleanWebApiTemplate.Host.Routes.Todo.Filter;
+using CleanWebApiTemplate.Host.Routes.Todo.Get;
+using CleanWebApiTemplate.Host.Routes.Todo.Update;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
-namespace CleanWebApiTemplate.Host.Routes.Api.Todo;
+namespace CleanWebApiTemplate.Host.Routes.Todo;
 
 public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRouter(httpContextAccessor), IGroupMap
 {
@@ -24,7 +25,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
         userGroup.MapGet("/{id}", async (string id, CancellationToken cancellationToken) =>
         {
             GetTodoByIdQuery query = new() { Id = id };
-            var result = await Mediator.Send(query, cancellationToken);
+            Result<TodoDto?> result = await Mediator.Send(query, cancellationToken);
             return result.ToResponse<TodoDto?, TodoResponse>();
         }).Produces<TodoResponse>((int)HttpStatusCode.OK)
         .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest)
@@ -35,7 +36,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
         {
             var query = request.ToQuery();
             var result = await Mediator.Send(query, cancellationToken);
-            return result.ToResponse<TodoDto, TodoResponse>();
+            return result.ToResponse<TodoDto?, TodoResponse>();
         }).Produces<IEnumerable<TodoResponse>>((int)HttpStatusCode.OK)
         .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest)
         .Produces<ProblemDetails>((int)HttpStatusCode.NoContent);
@@ -44,7 +45,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
         {
             var query = request.ToQuery();
             var result = await Mediator.Send(query, cancellationToken);
-            return result.ToResponse<TodoDto, TodoTitleResponse>();
+            return result.ToResponse<TodoDto?, TodoTitleResponse>();
         }).Produces<IEnumerable<TodoTitleResponse>>((int)HttpStatusCode.OK)
         .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest)
         .Produces<ProblemDetails>((int)HttpStatusCode.NoContent);
@@ -66,13 +67,13 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
         .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest)
         .Produces<ProblemDetails>((int)HttpStatusCode.NotFound);
 
-        // operatorGroup.MapDelete("/{id}", async (string id, CancellationToken cancellationToken) =>
-        // {
-        //     var command = new DeleteTodoCommand() { Id = id };
-        //     var result = await Mediator.Send(command, cancellationToken);
-        //     return result.ToResponse<bool, bool>();
-        // }).Produces<bool>((int)HttpStatusCode.OK)
-        // .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest);
+        operatorGroup.MapDelete("/{id}", async (string id, CancellationToken cancellationToken) =>
+        {
+            var command = new DeleteTodoCommand() { Id = id };
+            var result = await Mediator.Send(command, cancellationToken);
+            return result.ToResponse();
+        }).Produces<bool>((int)HttpStatusCode.OK)
+        .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest);
     }
 }
 

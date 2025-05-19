@@ -1,6 +1,6 @@
 ﻿using CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
 
-namespace CleanWebApiTemplate.Host.Routes.Api.Todo.Filter;
+namespace CleanWebApiTemplate.Host.Routes.Todo.Filter;
 
 public sealed class FilteredTodoRequest
 {

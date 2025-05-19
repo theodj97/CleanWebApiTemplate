@@ -1,8 +1,8 @@
 ﻿using CleanWebApiTemplate.Domain.Dtos.Todo;
 
-namespace CleanWebApiTemplate.Host.Routes.ResponseModels.Todo;
+namespace CleanWebApiTemplate.Host.ResponseModels.Todo;
 
-internal sealed record TodoResponse : IBaseResponse<TodoDto?, TodoResponse>
+public sealed record TodoResponse : IBaseResponse<TodoDto?, TodoResponse>
 {
     public required Ulid Id { get; set; }
     public required string Title { get; set; }
@@ -12,7 +12,7 @@ internal sealed record TodoResponse : IBaseResponse<TodoDto?, TodoResponse>
     public required string CreatedBy { get; set; }
     public required string UpdatedBy { get; set; }
 
-    public static TodoResponse? ToResponse(TodoDto? dto)
+    public static TodoResponse? ToResponseModel(TodoDto? dto)
     {
         if (dto is null) return null;
         return new()

@@ -1,6 +1,6 @@
 ﻿using CleanWebApiTemplate.Application.Handlers.Todo.Update;
 
-namespace CleanWebApiTemplate.Host.Routes.Api.Todo.Update;
+namespace CleanWebApiTemplate.Host.Routes.Todo.Update;
 
 public sealed class UpdateTodoRequest
 {

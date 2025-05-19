@@ -1,6 +1,6 @@
 ﻿using CleanWebApiTemplate.Application.Handlers.Todo.Create;
 
-namespace CleanWebApiTemplate.Host.Routes.Api.Todo.Create;
+namespace CleanWebApiTemplate.Host.Routes.Todo.Create;
 
 public sealed class CreateTodoRequest
 {

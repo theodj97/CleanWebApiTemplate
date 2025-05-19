@@ -1,6 +1,6 @@
 using CleanWebApiTemplate.Application.Handlers.Todo.GetTitles;
 
-namespace CleanWebApiTemplate.Host.Routes.Api.Todo.Get;
+namespace CleanWebApiTemplate.Host.Routes.Todo.Get;
 
 public sealed class GetTodoTitlesRequest
 {

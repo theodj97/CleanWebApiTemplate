@@ -1,5 +1,5 @@
 using CleanWebApiTemplate.Domain.ResultModel;
-using CleanWebApiTemplate.Host.Routes.ResponseModels;
+using CleanWebApiTemplate.Host.ResponseModels;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace CleanWebApiTemplate.Host.Common;
@@ -7,36 +7,35 @@ namespace CleanWebApiTemplate.Host.Common;
 public static class ApiResultExtensions
 {
     public static IResult ToResponse<TDto, TResponse>(this Result<TDto> result)
-        where TResponse : IBaseResponse<TDto, TResponse>
+        where TResponse : class, IBaseResponse<TDto, TResponse>
+        where TDto : class?
     {
-        if (result.IsSuccess)
-            return ResolveSuccess(result.Value, result.IsCreated, result.IsNoContent, TResponse.ToResponse);
+        if (result.IsFailure) return ResolveError(result.Error!);
+        if (result.IsNoContent) return Results.NoContent();
 
-        return ResolveError(result.Error!);
+        var response = TResponse.ToResponseModel(result.Value);
+        if (result.IsCreated) return Results.Created(string.Empty, response);
+        else return Results.Ok(response);
     }
 
     public static IResult ToResponse<TDto, TResponse>(this Result<IEnumerable<TDto>> result)
         where TResponse : IBaseResponse<TDto, TResponse>
     {
-        if (result.IsSuccess)
-            return ResolveSuccess(result.Value, result.IsCreated, result.IsNoContent, items => items.Select(TResponse.ToResponse));
+        if (result.IsFailure) return ResolveError(result.Error!);
+        if (result.IsNoContent) return Results.NoContent();
 
-        return ResolveError(result.Error!);
+        var response = result.Value?.Select(TResponse.ToResponseModel);
+        if (result.IsCreated) return Results.Created(string.Empty, response);
+        else return Results.Ok(response);
     }
 
-    private static IResult ResolveSuccess<TValue, TResponseModel>(
-    TValue? value,
-    bool isCreated,
-    bool isNoContent,
-    Func<TValue, TResponseModel> converter)
+    public static IResult ToResponse(this Result<bool> result)
     {
-        if (isNoContent)
-            return Results.NoContent();
+        if (result.IsFailure) return ResolveError(result.Error!);
+        if (result.IsNoContent) return Results.NoContent();
 
-        var response = converter(value!);
-        return isCreated
-            ? Results.Created(string.Empty, response)
-            : Results.Ok(response);
+        if (result.IsCreated) return Results.Created(string.Empty, result.Value);
+        else return Results.Ok(result.Value);
     }
 
     private static IResult ResolveError(Error error) => error switch

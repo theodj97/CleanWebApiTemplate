@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace CleanWebApiTemplate.Infrastructure.Repository;
 
-public sealed class BaseSqlRepository<TEntity>(SqlDbContext context) : IBaseRepository<TEntity> where TEntity : BaseEntity
+public sealed class BaseRepository<TEntity>(SqlDbContext context) : IBaseRepository<TEntity> where TEntity : BaseEntity
 {
     private readonly SqlDbContext context = context;
 

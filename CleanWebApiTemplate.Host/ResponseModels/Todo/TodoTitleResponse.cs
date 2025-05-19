@@ -1,13 +1,13 @@
 using CleanWebApiTemplate.Domain.Dtos.Todo;
 
-namespace CleanWebApiTemplate.Host.Routes.ResponseModels.Todo;
+namespace CleanWebApiTemplate.Host.ResponseModels.Todo;
 
-internal sealed record TodoTitleResponse : IBaseResponse<TodoDto?, TodoTitleResponse>
+public sealed record TodoTitleResponse : IBaseResponse<TodoDto?, TodoTitleResponse>
 {
     public required Ulid Id { get; set; }
     public required string Title { get; set; }
 
-    public static TodoTitleResponse? ToResponse(TodoDto? dto)
+    public static TodoTitleResponse? ToResponseModel(TodoDto? dto)
     {
         if (dto is null) return null;
         return new()
