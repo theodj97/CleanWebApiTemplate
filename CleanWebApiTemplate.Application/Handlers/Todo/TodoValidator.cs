@@ -55,27 +55,6 @@ public class TodoValidator<TCommand>(IBaseRepository<TodoEntity> repository) : B
                        nameof(idAndTitleType.Title));
     }
 
-    /// <summary>
-    /// Validate the existance of the todo by its ID.
-    /// </summary>
-    /// <param name="id"></param>
-    /// <param name="context"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    protected async Task TodoExist(string id,
-                                   ValidationContext<TCommand> context,
-                                   CancellationToken cancellationToken)
-    {
-        if ((await repository.FilterAsync(x => x.Id == Ulid.Parse(id),
-            cancellationToken: cancellationToken)).Count == 0)
-        {
-            AddFailure(context,
-                       $"A Todo with '{nameof(id)}' doesn't exists in the current context.",
-                       nameof(id));
-        }
-
-    }
-
     protected void ValidateDescription(string description,
                                        ValidationContext<TCommand> context)
     {

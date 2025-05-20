@@ -1,7 +1,7 @@
 ﻿using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Host.Configuration;
+using CleanWebApiTemplate.Host.Extensions;
 using CleanWebApiTemplate.Host.Helpers;
-using CleanWebApiTemplate.Host.Routes;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;

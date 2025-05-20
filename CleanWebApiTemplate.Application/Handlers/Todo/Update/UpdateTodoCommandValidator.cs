@@ -3,15 +3,13 @@ using CleanWebApiTemplate.Infrastructure.Common;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Update;
+
 public class UpdateTodoCommandValidator : TodoValidator<UpdateTodoCommand>
 {
     public UpdateTodoCommandValidator(IBaseRepository<TodoEntity> repository) : base(repository)
     {
         RuleFor(x => x.Id)
             .Custom(ValidateUlid);
-
-        RuleFor(x => x.Id)
-            .CustomAsync(TodoExist);
 
         RuleFor(x => new IdAndTitleType(x.Id, x.Title))
             .CustomAsync(ValidateTitle!)

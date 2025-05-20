@@ -1,11 +1,13 @@
 ﻿using CleanWebApiTemplate.Application.Handlers.Todo.Delete;
 using CleanWebApiTemplate.Application.Handlers.Todo.GetById;
 using CleanWebApiTemplate.Domain.Configuration;
-using CleanWebApiTemplate.Domain.Dtos.Todo;
+using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Host.Common;
+using CleanWebApiTemplate.Host.Extensions;
 using CleanWebApiTemplate.Host.Helpers;
-using CleanWebApiTemplate.Host.ResponseModels.Todo;
+using CleanWebApiTemplate.Host.Models.Interfaces;
+using CleanWebApiTemplate.Host.Models.Responses.Todo;
 using CleanWebApiTemplate.Host.Routes.Todo.Create;
 using CleanWebApiTemplate.Host.Routes.Todo.Filter;
 using CleanWebApiTemplate.Host.Routes.Todo.Get;
@@ -38,8 +40,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
             var result = await Mediator.Send(query, cancellationToken);
             return result.ToResponse<TodoDto?, TodoResponse>();
         }).Produces<IEnumerable<TodoResponse>>((int)HttpStatusCode.OK)
-        .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest)
-        .Produces<ProblemDetails>((int)HttpStatusCode.NoContent);
+        .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest);
 
         userGroup.MapPost("/titles", async ([FromBody] GetTodoTitlesRequest request, CancellationToken cancellationToken) =>
         {
@@ -47,8 +48,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
             var result = await Mediator.Send(query, cancellationToken);
             return result.ToResponse<TodoDto?, TodoTitleResponse>();
         }).Produces<IEnumerable<TodoTitleResponse>>((int)HttpStatusCode.OK)
-        .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest)
-        .Produces<ProblemDetails>((int)HttpStatusCode.NoContent);
+        .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest);
 
         userGroup.MapPost("/", async (CreateTodoRequest request, CancellationToken cancellationToken) =>
         {

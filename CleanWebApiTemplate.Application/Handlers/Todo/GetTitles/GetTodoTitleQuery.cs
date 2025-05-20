@@ -1,4 +1,4 @@
-using CleanWebApiTemplate.Domain.Dtos.Todo;
+using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Common;

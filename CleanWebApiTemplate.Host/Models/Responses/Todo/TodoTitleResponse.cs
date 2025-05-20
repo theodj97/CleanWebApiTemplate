@@ -1,6 +1,6 @@
-using CleanWebApiTemplate.Domain.Dtos.Todo;
+using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 
-namespace CleanWebApiTemplate.Host.ResponseModels.Todo;
+namespace CleanWebApiTemplate.Host.Models.Responses.Todo;
 
 public sealed record TodoTitleResponse : IBaseResponse<TodoDto?, TodoTitleResponse>
 {

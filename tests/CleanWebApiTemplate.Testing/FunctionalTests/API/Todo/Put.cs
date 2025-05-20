@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
-using CleanWebApiTemplate.Host.ResponseModels.Todo;
+using CleanWebApiTemplate.Host.Models.Responses.Todo;
 using CleanWebApiTemplate.Host.Routes.Todo.Update;
 using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
 using CleanWebApiTemplate.Testing.Common;
@@ -34,6 +34,7 @@ public class Put(TestServerFixture fixture)
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var responseModel = await response.Content.ReadFromJsonAsync<TodoResponse>();
+        Assert.NotNull(responseModel);
         Assert.Equal(request.Title, responseModel.Title);
         Assert.Equal(request.Description, responseModel.Description);
         Assert.Equal(request.Status, responseModel.Status);
@@ -97,6 +98,7 @@ public class Put(TestServerFixture fixture)
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var responseModel = await response.Content.ReadFromJsonAsync<TodoResponse>();
+        Assert.NotNull(responseModel);
         Assert.Equal(request.Title, responseModel.Title);
         Assert.Equal(request.Description, responseModel.Description);
         Assert.Equal(request.Status, responseModel.Status);
@@ -227,6 +229,7 @@ public class Put(TestServerFixture fixture)
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var responseModel = await response.Content.ReadFromJsonAsync<TodoResponse>();
+        Assert.NotNull(responseModel);
         Assert.Equal(request.Title, responseModel.Title);
         Assert.Equal(request.Description, responseModel.Description);
         Assert.Equal(request.Status, responseModel.Status);

@@ -1,4 +1,4 @@
-namespace CleanWebApiTemplate.Domain.Dtos.Todo;
+namespace CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 
 public record TodoDto
 {

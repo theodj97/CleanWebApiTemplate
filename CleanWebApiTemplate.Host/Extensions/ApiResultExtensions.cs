@@ -1,8 +1,8 @@
 using CleanWebApiTemplate.Domain.ResultModel;
-using CleanWebApiTemplate.Host.ResponseModels;
+using CleanWebApiTemplate.Host.Models.Responses;
 using Microsoft.AspNetCore.WebUtilities;
 
-namespace CleanWebApiTemplate.Host.Common;
+namespace CleanWebApiTemplate.Host.Extensions;
 
 public static class ApiResultExtensions
 {

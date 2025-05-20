@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
-using CleanWebApiTemplate.Host.ResponseModels.Todo;
+using CleanWebApiTemplate.Host.Models.Responses.Todo;
 using CleanWebApiTemplate.Host.Routes.Todo.Filter;
 using CleanWebApiTemplate.Host.Routes.Todo.Get;
 using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
@@ -221,7 +221,7 @@ public class Get(TestServerFixture fixture)
     [Fact]
     [ResetDatabase]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
-    public async Task FilteredTodo_EmptyResponse_Should_Return_NoContent()
+    public async Task FilteredTodo_EmptyResponse_Should_Return_EmptyList()
     {
         // Arrange
         FilteredTodoRequest request = new();
@@ -231,7 +231,10 @@ public class Get(TestServerFixture fixture)
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var responseModel = await response.Content.ReadFromJsonAsync<IEnumerable<TodoResponse>>();
+        Assert.NotNull(responseModel);
+        Assert.Empty(responseModel);
     }
 
     [Fact]
@@ -624,7 +627,7 @@ public class Get(TestServerFixture fixture)
     [Fact]
     [ResetDatabase]
     [Trait(CategoryTrait.CATEGORY, CategoryTrait.FUNCTIONAL)]
-    public async Task GetTitles_EmptyResult_Should_Return_NoContent()
+    public async Task GetTitles_EmptyResult_Should_Return_EmptyList()
     {
         // Arrange
         GetTodoTitlesRequest request = new() { PageNumber = 1, PageSize = 3, SortProperties = [new KeyValuePair<string, bool>(nameof(TodoEntity.Id), false)] };
@@ -634,7 +637,9 @@ public class Get(TestServerFixture fixture)
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        var responseModel = await response.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>();
+        Assert.NotNull(responseModel);
+        Assert.Empty(responseModel);
     }
 
     [Fact]

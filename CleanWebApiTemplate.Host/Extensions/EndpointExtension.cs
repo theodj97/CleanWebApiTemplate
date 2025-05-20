@@ -1,8 +1,8 @@
-﻿using CleanWebApiTemplate.Host.Common;
+﻿using CleanWebApiTemplate.Host.Models.Interfaces;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Reflection;
 
-namespace CleanWebApiTemplate.Host.Routes;
+namespace CleanWebApiTemplate.Host.Extensions;
 
 public static class EndpointExtension
 {

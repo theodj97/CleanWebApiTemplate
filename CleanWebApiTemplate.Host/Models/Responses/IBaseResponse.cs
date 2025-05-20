@@ -1,4 +1,4 @@
-namespace CleanWebApiTemplate.Host.ResponseModels;
+namespace CleanWebApiTemplate.Host.Models.Responses;
 
 public interface IBaseResponse<DtoType, ResponseType> where ResponseType : IBaseResponse<DtoType, ResponseType>
 {
