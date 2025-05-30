@@ -12,6 +12,8 @@ using Microsoft.Extensions.Configuration;
 using CleanWebApiTemplate.Testing.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using CleanWebApiTemplate.Domain.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Builder;
 
 namespace CleanWebApiTemplate.Testing;
 
@@ -43,12 +45,6 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
         builder.ConfigureAppConfiguration((context, builder) =>
         {
             builder.Sources.Clear();
-
-            builder.AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                { $"{ConnectionStringsSection.SectionName}:{nameof(ConnectionStringsSection.SqlServer)}", SqlServerCnnString }
-            });
-
             builder.AddEnvironmentVariables();
         });
 
@@ -57,8 +53,7 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
         {
             var authDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IAuthenticationService));
             if (authDescriptor is not null) services.Remove(authDescriptor);
-            services.AddAuthentication(TestAuthHandler.SchemeName)
-                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, null);
+            services.AddAuthentication(TestAuthHandler.SchemeName).AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, null);
 
             var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<SqlDbContext>));
             if (descriptor is not null) services.Remove(descriptor);
