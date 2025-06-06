@@ -96,7 +96,7 @@ public class TodoValidator<TCommand>(IBaseRepository<TodoEntity> repository) : B
         return (await repository.FilterAsync(x => x.Title == title && x.Id != id, cancellationToken: cancellationToken)).Count is 0;
     }
 
-    public class IdAndTitleType(string? id, string? title)
+    public struct IdAndTitleType(string? id, string? title)
     {
         public string Id = id ?? "";
         public string Title = title ?? "";

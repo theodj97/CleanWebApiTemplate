@@ -20,12 +20,8 @@ public static class ConfigureServices
                                                      string environment,
                                                      string[] corsAllow,
                                                      string[] validIssuers,
-                                                     ConnectionStringsSection connectionStrings
-                                                     //  MongoUrl mongoDbConnectionStrings
-                                                     )
+                                                     ConnectionStringsSection connectionStrings)
     {
-        // services.AddSingleton(new MongoClient(mongoDbConnectionStrings));
-
         services.AddHealthChecks()
                 .AddCheck("api-health-check", () => HealthCheckResult.Healthy("API is up and running"), tags: ["api"])
                 .AddSqlServer(
@@ -33,13 +29,7 @@ public static class ConfigureServices
                     name: "sqlserver-check",
                     failureStatus: HealthStatus.Unhealthy,
                     tags: ["sqlServerDb", "sql"]
-                )
-                // .AddMongoDb(
-                //     name: "mongodb-check",
-                //     failureStatus: HealthStatus.Unhealthy,
-                //     tags: ["mongoDb", "mongo"]
-                // )
-                ;
+                );
 
         services.ConfigureCors(environment, corsAllow);
 

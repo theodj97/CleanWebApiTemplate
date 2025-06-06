@@ -8,12 +8,11 @@ using Testcontainers.MsSql;
 using CleanWebApiTemplate.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Configuration;
 using CleanWebApiTemplate.Testing.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using CleanWebApiTemplate.Domain.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Builder;
+using System.Text.Json;
 
 namespace CleanWebApiTemplate.Testing;
 
@@ -25,6 +24,8 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
     public HttpClient HttpClient { get; private set; } = null!;
     public IServiceScopeFactory ServiceScopeFactory { get; set; } = null!;
     private const string DataBaseName = "Todo";
+    private readonly JsonSerializerOptions JsonOpts = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private string? PathToTestAppSettings = null;
 
     public TestServerFixture()
     {
@@ -34,30 +35,25 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
             if (sender is not MsSqlContainer sqlContainer)
                 throw new Exception("Sender is not an MsSqlContainer.");
 
-            InitDatabase(sqlContainer.GetConnectionString());
+            InitDatabase(sqlContainer.GetConnectionString()).Wait();
         };
+    }
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Constants.TEST_ENVIRONMNET);
+        builder.UseEnvironment(Constants.TEST_ENVIRONMNET);
+        CreateJsonTestFile();
+        return base.CreateHost(builder);
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Constants.TEST_ENVIRONMNET);
-
-        builder.ConfigureAppConfiguration((context, builder) =>
-        {
-            builder.Sources.Clear();
-            builder.AddEnvironmentVariables();
-        });
-
-        builder.UseEnvironment(Constants.TEST_ENVIRONMNET);
         builder.ConfigureTestServices(services =>
         {
             var authDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IAuthenticationService));
             if (authDescriptor is not null) services.Remove(authDescriptor);
             services.AddAuthentication(TestAuthHandler.SchemeName).AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, null);
-
-            var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<SqlDbContext>));
-            if (descriptor is not null) services.Remove(descriptor);
-            services.AddDbContext<SqlDbContext>(options => options.UseSqlServer(SqlServerCnnString));
 
             var serviceProvider = services.BuildServiceProvider();
             ServiceScopeFactory = serviceProvider.GetService<IServiceScopeFactory>()
@@ -73,10 +69,41 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
         HttpClient = Server.CreateClient();
     }
 
-    Task IAsyncLifetime.DisposeAsync() => SqlServerContainer.DisposeAsync().AsTask();
+    Task IAsyncLifetime.DisposeAsync()
+    {
+        SqlServerContainer.DisposeAsync().AsTask();
+        if (string.IsNullOrEmpty(PathToTestAppSettings) is false && !string.IsNullOrEmpty(PathToTestAppSettings) && File.Exists(PathToTestAppSettings))
+        {
+            try
+            {
+                File.Delete(PathToTestAppSettings);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting {PathToTestAppSettings}", ex);
+            }
+        }
+        return Task.CompletedTask;
+    }
 
+    private void CreateJsonTestFile()
+    {
+        var appSettings = new AppSettings()
+        {
+            ConnectionStrings = new() { SqlServer = SqlServerCnnString },
+            CorsAllow = ["*"],
+            ValidIssuers = ["localhost"]
+        };
 
-    private async void InitDatabase(string sqlConnectionStr)
+        string path = AppContext.BaseDirectory;
+        var appSettingsJson = JsonSerializer.Serialize(appSettings, JsonOpts);
+
+        PathToTestAppSettings = Path.Combine(path, $"appsettings.{Constants.TEST_ENVIRONMNET}.json");
+        if (File.Exists(PathToTestAppSettings)) File.Delete(PathToTestAppSettings);
+        File.WriteAllText(PathToTestAppSettings, appSettingsJson);
+    }
+
+    private async Task InitDatabase(string sqlConnectionStr)
     {
         SqlServerCnnString = sqlConnectionStr.Replace("Database=master", $"Database={DataBaseName}");
 
