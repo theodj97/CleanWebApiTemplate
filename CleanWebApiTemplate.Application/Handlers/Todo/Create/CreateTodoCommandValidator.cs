@@ -6,7 +6,7 @@ namespace CleanWebApiTemplate.Application.Handlers.Todo.Create;
 
 public class CreateTodoCommandValidator : TodoValidator<CreateTodoCommand>
 {
-    public CreateTodoCommandValidator(IBaseRepository<TodoEntity> repository) : base(repository)
+    public CreateTodoCommandValidator(IBaseQueryRepository<TodoEntity> repository) : base(repository)
     {
         RuleFor(x => x.Title)
             .Custom(NotNullNotEmpty)

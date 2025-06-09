@@ -22,8 +22,8 @@ public static class ConfigureServices
         // services.AddDbContextPool<MongoDbContext>(options =>
         //     options.UseMongoDB(mongoDbCnnStrings.ToString(), mongoDbCnnStrings.DatabaseName));
 
-        services.AddTransient(typeof(IBaseRepository<>), typeof(BaseRepository<>));
-        // services.AddTransient(typeof(IBaseRepository<>), typeof(BaseMongoRepository<>));
+        services.AddTransient(typeof(IBaseQueryRepository<>), typeof(BaseQueryRepository<>));
+        services.AddTransient(typeof(IBaseCommandRepository<>), typeof(BaseCommandRepository<>));
 
         return services;
     }

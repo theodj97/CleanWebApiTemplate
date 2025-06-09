@@ -11,9 +11,9 @@ public sealed record GetTodoByIdQuery : IRequest<Result<TodoDto?>>
     public required string Id { get; set; }
 }
 
-internal sealed class GetTodoByIdQueryHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<GetTodoByIdQuery, Result<TodoDto?>>
+internal sealed class GetTodoByIdQueryHandler(IBaseQueryRepository<TodoEntity> repository) : IRequestHandler<GetTodoByIdQuery, Result<TodoDto?>>
 {
-    private readonly IBaseRepository<TodoEntity> repository = repository;
+    private readonly IBaseQueryRepository<TodoEntity> repository = repository;
 
     public async Task<Result<TodoDto?>> Handle(GetTodoByIdQuery request, CancellationToken cancellationToken)
     {

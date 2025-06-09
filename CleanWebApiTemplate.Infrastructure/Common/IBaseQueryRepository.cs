@@ -1,8 +1,9 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
+using CleanWebApiTemplate.Domain.Models;
 
 namespace CleanWebApiTemplate.Infrastructure.Common;
 
-public interface IBaseRepository<TEntity> where TEntity : class
+public interface IBaseQueryRepository<TEntity> where TEntity : BaseEntity
 {
     public Task<List<TEntity>> FilterAsync(Expression<Func<TEntity, bool>> expression,
                                            Expression<Func<TEntity, object>>? orderBy = null,
@@ -35,18 +36,4 @@ public interface IBaseRepository<TEntity> where TEntity : class
     public Task<TOutput?> GetByIdAsync<TOutput>(string id,
                                                 Expression<Func<TEntity, TOutput>> selector,
                                                 CancellationToken cancellationToken = default);
-    public Task<TEntity> CreateAsync(TEntity entity,
-                                     CancellationToken cancellationToken = default);
-    public Task<bool> BulkInsertAsync(IEnumerable<TEntity> entities,
-                                      CancellationToken cancellationToken = default);
-    public bool BulkInsert(IEnumerable<TEntity> entities);
-    public Task<TEntity> UpdateAsync(TEntity entity,
-                                     CancellationToken cancellationToken = default);
-    public Task<bool> BulkUpdateAsync(IEnumerable<TEntity> entities,
-                                      CancellationToken cancellationToken = default);
-    public Task<bool> DeleteAsync(string id,
-                                  CancellationToken cancellationToken = default);
-    public bool Delete(string id);
-    public Task<bool> BulkDeleteAsync(IEnumerable<string> ids,
-                                      CancellationToken cancellationToken = default);
 }

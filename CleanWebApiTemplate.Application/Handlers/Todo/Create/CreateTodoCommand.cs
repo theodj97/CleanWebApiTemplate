@@ -23,9 +23,9 @@ public sealed record CreateTodoCommand : IRequest<Result<TodoDto?>>
     };
 }
 
-internal sealed class CreateTodoCommandHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<CreateTodoCommand, Result<TodoDto?>>
+internal sealed class CreateTodoCommandHandler(IBaseCommandRepository<TodoEntity> repository) : IRequestHandler<CreateTodoCommand, Result<TodoDto?>>
 {
-    private readonly IBaseRepository<TodoEntity> repository = repository;
+    private readonly IBaseCommandRepository<TodoEntity> repository = repository;
 
     public async Task<Result<TodoDto?>> Handle(CreateTodoCommand request, CancellationToken cancellationToken)
     {

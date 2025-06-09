@@ -10,9 +10,9 @@ public sealed record DeleteTodoCommand : IRequest<Result<bool>>
     public required string Id { get; set; }
 }
 
-internal sealed class DeleteTodoCommandHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<DeleteTodoCommand, Result<bool>>
+internal sealed class DeleteTodoCommandHandler(IBaseCommandRepository<TodoEntity> repository) : IRequestHandler<DeleteTodoCommand, Result<bool>>
 {
-    private readonly IBaseRepository<TodoEntity> repository = repository;
+    private readonly IBaseCommandRepository<TodoEntity> repository = repository;
 
     public async Task<Result<bool>> Handle(DeleteTodoCommand request, CancellationToken cancellationToken)
     {

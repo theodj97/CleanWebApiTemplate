@@ -7,7 +7,7 @@ namespace CleanWebApiTemplate.Application.Handlers.Todo.GetTitles;
 
 public class GetTodoTitleQueryValidator : TodoValidator<GetTodoTitleQuery>
 {
-    public GetTodoTitleQueryValidator(IBaseRepository<TodoEntity> repository) : base(repository)
+    public GetTodoTitleQueryValidator(IBaseQueryRepository<TodoEntity> repository) : base(repository)
     {
         RuleFor(x => x.PageNumber).Must(value => value is not null && value > 0)
             .When(x => x.PageSize is not null || x.PageNumber is not null)

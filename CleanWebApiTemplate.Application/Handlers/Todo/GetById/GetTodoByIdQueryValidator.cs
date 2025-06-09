@@ -6,7 +6,7 @@ namespace CleanWebApiTemplate.Application.Handlers.Todo.GetById;
 
 public class GetTodoByIdQueryValidator : TodoValidator<GetTodoByIdQuery>
 {
-    public GetTodoByIdQueryValidator(IBaseRepository<TodoEntity> repository) : base(repository)
+    public GetTodoByIdQueryValidator(IBaseQueryRepository<TodoEntity> repository) : base(repository)
     {
         RuleFor(x => x.Id)
             .Custom(NotNullNotEmpty)

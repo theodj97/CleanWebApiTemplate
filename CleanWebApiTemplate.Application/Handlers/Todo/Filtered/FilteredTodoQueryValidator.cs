@@ -8,7 +8,7 @@ namespace CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
 
 public class FilteredTodoQueryValidator : TodoValidator<FilteredTodoQuery>
 {
-    public FilteredTodoQueryValidator(IBaseRepository<TodoEntity> repository) : base(repository)
+    public FilteredTodoQueryValidator(IBaseQueryRepository<TodoEntity> repository) : base(repository)
     {
         RuleForEach(x => x.Ids)
             .Custom(ValidateUlid)

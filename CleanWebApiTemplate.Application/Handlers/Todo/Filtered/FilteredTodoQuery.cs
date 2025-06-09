@@ -20,9 +20,9 @@ public sealed record FilteredTodoQuery : IRequest<Result<IEnumerable<TodoDto?>>>
     public IEnumerable<KeyValuePair<string, bool>>? SortProperties { get; set; } = null;
 }
 
-internal sealed class FilteredTodoQueryHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<FilteredTodoQuery, Result<IEnumerable<TodoDto?>>>
+internal sealed class FilteredTodoQueryHandler(IBaseQueryRepository<TodoEntity> repository) : IRequestHandler<FilteredTodoQuery, Result<IEnumerable<TodoDto?>>>
 {
-    private readonly IBaseRepository<TodoEntity> repository = repository;
+    private readonly IBaseQueryRepository<TodoEntity> repository = repository;
 
     public async Task<Result<IEnumerable<TodoDto?>>> Handle(FilteredTodoQuery request, CancellationToken cancellationToken)
     {

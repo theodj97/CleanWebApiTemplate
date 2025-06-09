@@ -13,9 +13,9 @@ public sealed class GetTodoTitleQuery : IRequest<Result<IEnumerable<TodoDto?>>>
     public IEnumerable<KeyValuePair<string, bool>>? SortProperties { get; set; } = null;
 }
 
-internal sealed class GetTodoTitleQueryHandler(IBaseRepository<TodoEntity> repository) : IRequestHandler<GetTodoTitleQuery, Result<IEnumerable<TodoDto?>>>
+internal sealed class GetTodoTitleQueryHandler(IBaseQueryRepository<TodoEntity> repository) : IRequestHandler<GetTodoTitleQuery, Result<IEnumerable<TodoDto?>>>
 {
-    private readonly IBaseRepository<TodoEntity> repository = repository;
+    private readonly IBaseQueryRepository<TodoEntity> repository = repository;
 
     public async Task<Result<IEnumerable<TodoDto?>>> Handle(GetTodoTitleQuery request, CancellationToken cancellationToken)
     {

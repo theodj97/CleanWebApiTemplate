@@ -8,9 +8,9 @@ using MediatR;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo;
 
-public class TodoValidator<TCommand>(IBaseRepository<TodoEntity> repository) : BaseAbstractValidator<TCommand> where TCommand : class, IRequest<object>
+public class TodoValidator<TCommand>(IBaseQueryRepository<TodoEntity> repository) : BaseAbstractValidator<TCommand> where TCommand : class, IRequest<object>
 {
-    private readonly IBaseRepository<TodoEntity> repository = repository;
+    private readonly IBaseQueryRepository<TodoEntity> repository = repository;
 
     /// <summary>
     /// Title validation. Lenght and Uniqueness.
