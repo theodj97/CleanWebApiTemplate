@@ -6,7 +6,6 @@ using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Host.Common;
 using CleanWebApiTemplate.Host.Extensions;
 using CleanWebApiTemplate.Host.Helpers;
-using CleanWebApiTemplate.Host.Models.Interfaces;
 using CleanWebApiTemplate.Host.Models.Responses.Todo;
 using CleanWebApiTemplate.Host.Routes.Todo.Create;
 using CleanWebApiTemplate.Host.Routes.Todo.Filter;
@@ -17,9 +16,9 @@ using System.Net;
 
 namespace CleanWebApiTemplate.Host.Routes.Todo;
 
-public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRouter(httpContextAccessor), IGroupMap
+public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRouter(httpContextAccessor)
 {
-    public void MapGroup(IEndpointRouteBuilder app)
+    public override void MapGroup(IEndpointRouteBuilder app)
     {
         var userGroup = app.CreateAuthorizedGroup(RouteName, [Constants.USER_POLICY]);
         var operatorGroup = app.CreateAuthorizedGroup(RouteName, [Constants.OPERATOR_POLICY]);

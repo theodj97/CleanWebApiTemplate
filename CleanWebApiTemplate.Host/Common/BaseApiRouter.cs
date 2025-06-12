@@ -1,9 +1,10 @@
-﻿using MediatR;
+﻿using CleanWebApiTemplate.Host.Models.Interfaces;
+using MediatR;
 using System.Security.Claims;
 
 namespace CleanWebApiTemplate.Host.Common;
 
-public class BaseApiRouter
+public abstract class BaseApiRouter : IGroupMap
 {
     private readonly IHttpContextAccessor contextAccessor;
     public string UserName => contextAccessor.HttpContext!.User.Claims.First(x => x.Type == ClaimTypes.Name).Value;
@@ -24,4 +25,6 @@ public class BaseApiRouter
             ? className[..^ROUTE_TERMINATION_NAME.Length]
             : throw new ArgumentException($"Route name doesn't match syntax finishing in {ROUTE_TERMINATION_NAME}");
     }
+
+    public abstract void MapGroup(IEndpointRouteBuilder app);
 }
