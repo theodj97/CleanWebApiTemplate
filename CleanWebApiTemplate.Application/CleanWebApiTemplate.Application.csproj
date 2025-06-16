@@ -10,12 +10,13 @@
 		<PackageReference Include="ForEvolve.FluentValidation.AspNetCore.Http" Version="1.0.26" />
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
 		<PackageReference Include="FluentValidation" Version="11.11.0" />
-		<PackageReference Include="MediatR" Version="12.4.1" />
+		<PackageReference Include="theodj97.CustomMediatR" Version="1.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\CleanWebApiTemplate.Domain\CleanWebApiTemplate.Domain.csproj" />
-		<ProjectReference Include="..\CleanWebApiTemplate.Infrastructure\CleanWebApiTemplate.Infrastructure.csproj" />
+		<ProjectReference
+			Include="..\CleanWebApiTemplate.Infrastructure\CleanWebApiTemplate.Infrastructure.csproj" />
 	</ItemGroup>
 
 </Project>

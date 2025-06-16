@@ -1,6 +1,7 @@
 ﻿using CleanWebApiTemplate.Domain.ResultModel;
+using CustomMediatR;
 using FluentValidation;
-using MediatR;
+
 
 namespace CleanWebApiTemplate.Application.Behaviours;
 

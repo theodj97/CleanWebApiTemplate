@@ -1,7 +1,7 @@
 ﻿using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Common;
-using MediatR;
+using CustomMediatR;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Delete;
 

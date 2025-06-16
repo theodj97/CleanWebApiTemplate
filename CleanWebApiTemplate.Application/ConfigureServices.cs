@@ -1,6 +1,6 @@
 ﻿using CleanWebApiTemplate.Application.Behaviours;
 using FluentValidation;
-using MediatR;
+using CustomMediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -12,7 +12,7 @@ public static class ConfigureServices
     {
         var assembly = Assembly.GetExecutingAssembly();
 
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(ConfigureServices).Assembly))
+        services.AddMediatR(typeof(ConfigureServices).Assembly)
                 .AddValidatorsFromAssembly(assembly, ServiceLifetime.Transient)
                 .AddTransient(typeof(IPipelineBehavior<,>), typeof(FluentValidationBehavior<,>));
 

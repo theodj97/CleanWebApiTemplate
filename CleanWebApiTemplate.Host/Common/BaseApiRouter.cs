@@ -1,5 +1,5 @@
 ﻿using CleanWebApiTemplate.Host.Models.Interfaces;
-using MediatR;
+using CustomMediatR;
 using System.Security.Claims;
 
 namespace CleanWebApiTemplate.Host.Common;

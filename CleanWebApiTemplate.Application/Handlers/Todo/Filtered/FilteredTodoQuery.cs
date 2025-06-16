@@ -2,7 +2,7 @@
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Common;
-using MediatR;
+using CustomMediatR;
 using System.Linq.Expressions;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Filtered;

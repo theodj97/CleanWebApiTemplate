@@ -4,7 +4,7 @@ using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Infrastructure.Common;
 using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
 using FluentValidation;
-using MediatR;
+using CustomMediatR;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo;
 
