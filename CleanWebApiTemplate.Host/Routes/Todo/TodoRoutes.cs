@@ -20,8 +20,8 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
 {
     public override void MapGroup(IEndpointRouteBuilder app)
     {
-        var userGroup = app.CreateAuthorizedGroup(RouteName, [Constants.USER_POLICY]);
-        var operatorGroup = app.CreateAuthorizedGroup(RouteName, [Constants.OPERATOR_POLICY]);
+        var userGroup = app.CreateGroup(RouteName, [Constants.USER_POLICY]);
+        var operatorGroup = app.CreateGroup(RouteName, [Constants.OPERATOR_POLICY]);
 
         userGroup.MapGet("/{id}", async (string id, CancellationToken cancellationToken) =>
         {

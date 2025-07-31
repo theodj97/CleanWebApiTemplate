@@ -8,20 +8,13 @@ using CustomMediatR;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo;
 
-public class TodoValidator<TCommand>(IBaseQueryRepository<TodoEntity> repository) : BaseAbstractValidator<TCommand> where TCommand : class, IRequest<object>
+public class TodoValidator<TMessage>(IBaseQueryRepository<TodoEntity> repository) : BaseAbstractValidator<TMessage> where TMessage : class, IRequest<object>
 {
     private readonly IBaseQueryRepository<TodoEntity> repository = repository;
 
-    /// <summary>
-    /// Title validation. Lenght and Uniqueness.
-    /// </summary>
-    /// <param name="title"></param>
-    /// <param name="context"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
     protected async Task ValidateTitle(string title,
-                                       ValidationContext<TCommand> context,
-                                       CancellationToken cancellationToken)
+                                   ValidationContext<TMessage> context,
+                                   CancellationToken cancellationToken)
     {
         if (title.Length > TodoEntityConfiguration.TitleLenght)
             AddFailure(context,
@@ -32,56 +25,47 @@ public class TodoValidator<TCommand>(IBaseQueryRepository<TodoEntity> repository
                        $"Property '{context.DisplayName}' is already in use!");
     }
 
-    /// <summary>
-    /// Title validation for updates. You recieve the ID of the element you want to update to not take it's title in the validation.
-    /// </summary>
-    /// <typeparam name="TCommand"></typeparam>
-    /// <param name="idAndTitleType"></param>
-    /// <param name="context"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    protected async Task ValidateTitle(IdAndTitleType idAndTitleType,
-                                       ValidationContext<TCommand> context,
+    protected async Task ValidateTitle(dynamic idAndTitle,
+                                       ValidationContext<TMessage> context,
                                        CancellationToken cancellationToken)
     {
-        if (idAndTitleType.Title.Length > TodoEntityConfiguration.TitleLenght)
-            AddFailure(context,
-                       $"Property '{nameof(idAndTitleType.Title)}' max length is {TodoEntityConfiguration.TitleLenght}.",
-                       nameof(idAndTitleType.Title));
+        var id = idAndTitle.Id;
+        if (id is null) AddFailure(context, $"Property '{context.DisplayName}' must be provided.", nameof(idAndTitle.Id));
+        var title = idAndTitle.Title;
+        if (title is null) AddFailure(context, $"Property '{context.DisplayName}' must be provided.", nameof(idAndTitle.Title));
 
-        if (await TitleIsUnique(idAndTitleType.Title, idAndTitleType.Id, cancellationToken) is false)
+        if (title!.Length > TodoEntityConfiguration.TitleLenght)
             AddFailure(context,
-                       $"Property '{nameof(idAndTitleType.Title)}' is already in use!",
-                       nameof(idAndTitleType.Title));
+                       $"Property '{nameof(title)}' max length is {TodoEntityConfiguration.TitleLenght}.",
+                       nameof(title));
+
+        if (await TitleIsUnique(title, id, cancellationToken) is false)
+            AddFailure(context,
+                       $"Property '{nameof(title)}' is already in use!",
+                       nameof(title));
     }
 
     protected void ValidateDescription(string description,
-                                       ValidationContext<TCommand> context)
+                                       ValidationContext<TMessage> context)
     {
         if (description.Length > TodoEntityConfiguration.DescriptionLenght)
             AddFailure(context, $"Property '{context.DisplayName}' max length is {TodoEntityConfiguration.DescriptionLenght}.");
     }
 
     protected void ValidateUserEmail(string createdBy,
-                                     ValidationContext<TCommand> context)
+                                     ValidationContext<TMessage> context)
     {
         if (IsValidEmail(createdBy) is false)
             AddFailure(context, $"Property '{context.DisplayName}' is not a valid email.");
     }
 
     protected void ValidateStatus(int status,
-                                  ValidationContext<TCommand> context)
+                                  ValidationContext<TMessage> context)
     {
         if (Enum.IsDefined(typeof(ETodoStatus), status) is false)
             AddFailure(context, $"Property '{context.DisplayName}' wasn't a registered {nameof(ETodoStatus)}.");
     }
 
-    /// <summary>
-    /// Title uniqueness DB validation.
-    /// </summary>
-    /// <param name="title"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>Validation result</returns>
     private async Task<bool> TitleIsUnique(string title,
                                            string? todoId = null,
                                            CancellationToken cancellationToken = default)
@@ -94,11 +78,5 @@ public class TodoValidator<TCommand>(IBaseQueryRepository<TodoEntity> repository
 
         Ulid id = Ulid.Parse(todoId);
         return (await repository.FilterAsync(x => x.Title == title && x.Id != id, cancellationToken: cancellationToken)).Count is 0;
-    }
-
-    public struct IdAndTitleType(string? id, string? title)
-    {
-        public string Id = id ?? "";
-        public string Title = title ?? "";
     }
 }

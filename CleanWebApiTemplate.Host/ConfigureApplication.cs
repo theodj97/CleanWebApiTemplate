@@ -44,11 +44,6 @@ public static class ConfigureApplication
         {
             Predicate = check => check.Tags.Contains("sqlServerDb")
         });
-
-        // app.MapHealthChecks("/health/mongoDb", new HealthCheckOptions
-        // {
-        //     Predicate = check => check.Tags.Contains("mongoDb")
-        // });
     }
 
 }

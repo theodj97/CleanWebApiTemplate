@@ -4,7 +4,6 @@ using CleanWebApiTemplate.Infrastructure.Context;
 using CleanWebApiTemplate.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-// using MongoDB.Driver;
 
 namespace CleanWebApiTemplate.Infrastructure;
 
@@ -18,9 +17,6 @@ public static class ConfigureServices
             options.UseSqlServer(connectionStrings.SqlServer,
                 b => b.MigrationsAssembly(assembly)
             ));
-
-        // services.AddDbContextPool<MongoDbContext>(options =>
-        //     options.UseMongoDB(mongoDbCnnStrings.ToString(), mongoDbCnnStrings.DatabaseName));
 
         services.AddTransient(typeof(IBaseQueryRepository<>), typeof(BaseQueryRepository<>));
         services.AddTransient(typeof(IBaseCommandRepository<>), typeof(BaseCommandRepository<>));

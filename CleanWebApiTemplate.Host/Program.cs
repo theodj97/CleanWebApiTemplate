@@ -1,7 +1,6 @@
 using CleanWebApiTemplate.Application;
 using CleanWebApiTemplate.Host.Helpers;
 using CleanWebApiTemplate.Infrastructure;
-// using MongoDB.Driver;
 
 namespace CleanWebApiTemplate.Host;
 
@@ -15,8 +14,14 @@ public class Program
 
         var appSettings = AppConfigurationHelper.LoadAndRegisterAppSettings(builder, environment);
 
-        builder.Services.AddHostServices(builder.Configuration, environment, appSettings.CorsAllow, appSettings.ValidIssuers, appSettings.ConnectionStrings);
+        builder.Services.AddHostServices(builder.Configuration,
+                                         environment,
+                                         appSettings.CorsAllow,
+                                         appSettings.ValidIssuers,
+                                         appSettings.ConnectionStrings);
+
         builder.Services.AddInfrastructureServices(appSettings.ConnectionStrings);
+
         builder.Services.AddApplicationServices();
 
         builder.AddFluentValidationEndpointFilter();

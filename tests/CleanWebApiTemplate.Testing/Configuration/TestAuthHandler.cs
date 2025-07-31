@@ -37,7 +37,7 @@ public class TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> option
 
     internal static void SetRole(string role)
     {
-        if (Constants.AUTHORIZATION_POLICIES.Any(x => x == role) is false) throw new ArgumentException($"Invalid authPolicy: {role}.");
+        if (Constants.AuthorizationPolicies.Any(x => x == role) is false) throw new ArgumentException($"Invalid authPolicy: {role}.");
 
         Role = role;
     }

@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- <PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="9.0.0" /> -->
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.67.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.1" />
@@ -19,8 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CleanWebApiTemplate.Application\CleanWebApiTemplate.Application.csproj" />
-    <ProjectReference Include="..\CleanWebApiTemplate.Infrastructure\CleanWebApiTemplate.Infrastructure.csproj" />
+    <ProjectReference
+      Include="..\CleanWebApiTemplate.Application\CleanWebApiTemplate.Application.csproj" />
+    <ProjectReference
+      Include="..\CleanWebApiTemplate.Infrastructure\CleanWebApiTemplate.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
-// using MongoDB.Driver;
 using System.Reflection;
 using System.Text;
 
@@ -133,4 +132,3 @@ public static class ConfigureServices
         return services;
     }
 }
-

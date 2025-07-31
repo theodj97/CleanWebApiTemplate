@@ -11,7 +11,7 @@ public class UpdateTodoCommandValidator : TodoValidator<UpdateTodoCommand>
         RuleFor(x => x.Id)
             .Custom(ValidateUlid);
 
-        RuleFor(x => new IdAndTitleType(x.Id, x.Title))
+        RuleFor(x => new { x.Id, x.Title })
             .CustomAsync(ValidateTitle!)
             .When(x => string.IsNullOrEmpty(x.Title) is false && Ulid.TryParse(x.Id, out _) is true);
 

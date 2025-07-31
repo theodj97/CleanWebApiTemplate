@@ -11,9 +11,6 @@ public static class Constants
 
     // Envs variables
     public const string API_KEY = "ApiKey";
-    public const string SQLSERVER_CNNSTRING = "SqlServerCnnString";
-    public const string MONGODB_CNNSTRING = "MongoDbCnnString";
-
     public const string DEFAULT_CORS_POLICY_NAME = "DefaultCorsPolicy";
 
     // User authorization policies.
@@ -22,11 +19,18 @@ public static class Constants
     public const string USER_POLICY = "User";
     public const string EXTERNAL_POLICY = "External";
 
-    public static readonly string[] AUTHORIZATION_POLICIES =
+    public static readonly string[] AuthorizationPolicies =
     [
         ADMIN_POLICY,
         OPERATOR_POLICY,
         USER_POLICY,
         EXTERNAL_POLICY
+    ];
+
+    // Authentication Schemes.
+    public const string AUTHENTICATION_SCHEME = "JWTBearer";
+    public static readonly string[] AuthenticationPolicies =
+    [
+        AUTHENTICATION_SCHEME
     ];
 }
