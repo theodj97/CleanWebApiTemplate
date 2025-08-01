@@ -6,7 +6,7 @@ namespace CleanWebApiTemplate.Host;
 
 public static class ConfigureApplication
 {
-    public static void ConfigureHostApplication(this IApplicationBuilder app)
+    public static void ConfigureHostApplication(this WebApplication app, string environment)
     {
         app.UseExceptionHandler();
         app.UseResponseCompression();
@@ -14,9 +14,12 @@ public static class ConfigureApplication
 
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.ConfigureRoutes(environment);
+        app.MapCustomHealthChecks();
     }
 
-    public static void ConfigureRoutes(this WebApplication app, string environment)
+    private static void ConfigureRoutes(this WebApplication app, string environment)
     {
         if (environment is not Constants.PRODUCTION_ENVIRONMENT)
         {
@@ -32,7 +35,7 @@ public static class ConfigureApplication
         app.MapRoutes();
     }
 
-    public static void MapCustomHealthChecks(this WebApplication app)
+    private static void MapCustomHealthChecks(this WebApplication app)
     {
 
         app.MapHealthChecks("/health/api", new HealthCheckOptions
@@ -45,5 +48,4 @@ public static class ConfigureApplication
             Predicate = check => check.Tags.Contains("sqlServerDb")
         });
     }
-
 }

@@ -5,7 +5,6 @@ using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Host.Common;
 using CleanWebApiTemplate.Host.Extensions;
-using CleanWebApiTemplate.Host.Helpers;
 using CleanWebApiTemplate.Host.Models.Responses.Todo;
 using CleanWebApiTemplate.Host.Routes.Todo.Create;
 using CleanWebApiTemplate.Host.Routes.Todo.Filter;
@@ -20,8 +19,8 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
 {
     public override void MapGroup(IEndpointRouteBuilder app)
     {
-        var userGroup = app.CreateGroup(RouteName, [Constants.USER_POLICY]);
-        var operatorGroup = app.CreateGroup(RouteName, [Constants.OPERATOR_POLICY]);
+        var userGroup = CreateAuthorizedRouteGroupBuilder(app, [Constants.USER_POLICY]);
+        var operatorGroup = CreateAuthorizedRouteGroupBuilder(app, [Constants.OPERATOR_POLICY]);
 
         userGroup.MapGet("/{id}", async (string id, CancellationToken cancellationToken) =>
         {
@@ -55,6 +54,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
             var result = await Mediator.Send(command, cancellationToken);
             return result.ToResponse<TodoDto?, TodoResponse>();
         }).Produces<TodoResponse>((int)HttpStatusCode.Created)
+        .Produces<TodoResponse>((int)HttpStatusCode.Conflict)
         .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest);
 
         userGroup.MapPut("/{id}", async (string id, UpdateTodoRequest request, CancellationToken cancellationToken) =>

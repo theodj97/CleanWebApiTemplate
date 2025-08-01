@@ -27,11 +27,7 @@ public class Program
         builder.AddFluentValidationEndpointFilter();
 
         var app = builder.Build();
-
-        app.ConfigureHostApplication();
-        app.ConfigureRoutes(environment);
-        app.MapCustomHealthChecks();
-
+        app.ConfigureHostApplication(environment);
         app.Run();
     }
 }
