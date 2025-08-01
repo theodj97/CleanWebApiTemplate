@@ -10,7 +10,6 @@ using CleanWebApiTemplate.Host.Routes.Todo.Create;
 using CleanWebApiTemplate.Host.Routes.Todo.Filter;
 using CleanWebApiTemplate.Host.Routes.Todo.Get;
 using CleanWebApiTemplate.Host.Routes.Todo.Update;
-using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
 namespace CleanWebApiTemplate.Host.Routes.Todo;
@@ -27,26 +26,21 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
             GetTodoByIdQuery query = new() { Id = id };
             Result<TodoDto?> result = await Mediator.Send(query, cancellationToken);
             return result.ToResponse<TodoDto?, TodoResponse>();
-        }).Produces<TodoResponse>((int)HttpStatusCode.OK)
-        .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest)
-        .Produces<ProblemDetails>((int)HttpStatusCode.NoContent)
-        .Produces<ProblemDetails>((int)HttpStatusCode.MethodNotAllowed);
+        }).Produces<TodoResponse>((int)HttpStatusCode.OK);
 
-        userGroup.MapPost("/filter", async ([FromBody] FilteredTodoRequest request, CancellationToken cancellationToken) =>
+        userGroup.MapPost("/filter", async (FilteredTodoRequest request, CancellationToken cancellationToken) =>
         {
             var query = request.ToQuery();
             var result = await Mediator.Send(query, cancellationToken);
             return result.ToResponse<TodoDto?, TodoResponse>();
-        }).Produces<IEnumerable<TodoResponse>>((int)HttpStatusCode.OK)
-        .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest);
+        }).Produces<IEnumerable<TodoResponse>>((int)HttpStatusCode.OK);
 
-        userGroup.MapPost("/titles", async ([FromBody] GetTodoTitlesRequest request, CancellationToken cancellationToken) =>
+        userGroup.MapPost("/titles", async (GetTodoTitlesRequest request, CancellationToken cancellationToken) =>
         {
             var query = request.ToQuery();
             var result = await Mediator.Send(query, cancellationToken);
             return result.ToResponse<TodoDto?, TodoTitleResponse>();
-        }).Produces<IEnumerable<TodoTitleResponse>>((int)HttpStatusCode.OK)
-        .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest);
+        }).Produces<IEnumerable<TodoTitleResponse>>((int)HttpStatusCode.OK);
 
         userGroup.MapPost("/", async (CreateTodoRequest request, CancellationToken cancellationToken) =>
         {
@@ -54,25 +48,21 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
             var result = await Mediator.Send(command, cancellationToken);
             return result.ToResponse<TodoDto?, TodoResponse>();
         }).Produces<TodoResponse>((int)HttpStatusCode.Created)
-        .Produces<TodoResponse>((int)HttpStatusCode.Conflict)
-        .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest);
+        .Produces<TodoResponse>((int)HttpStatusCode.Conflict);
 
         userGroup.MapPut("/{id}", async (string id, UpdateTodoRequest request, CancellationToken cancellationToken) =>
         {
             var command = request.ToCommand(id, UserEmail);
             var result = await Mediator.Send(command, cancellationToken);
             return result.ToResponse<TodoDto?, TodoResponse>();
-        }).Produces<TodoResponse>((int)HttpStatusCode.OK)
-        .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest)
-        .Produces<ProblemDetails>((int)HttpStatusCode.NotFound);
+        }).Produces<TodoResponse>((int)HttpStatusCode.OK);
 
         operatorGroup.MapDelete("/{id}", async (string id, CancellationToken cancellationToken) =>
         {
             var command = new DeleteTodoCommand() { Id = id };
             var result = await Mediator.Send(command, cancellationToken);
             return result.ToResponse();
-        }).Produces<bool>((int)HttpStatusCode.OK)
-        .Produces<ProblemDetails>((int)HttpStatusCode.BadRequest);
+        }).Produces<bool>((int)HttpStatusCode.OK);
     }
 }
 

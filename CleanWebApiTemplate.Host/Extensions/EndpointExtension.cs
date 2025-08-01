@@ -6,7 +6,8 @@ namespace CleanWebApiTemplate.Host.Extensions;
 
 public static class EndpointExtension
 {
-    public static IServiceCollection AddEndpoints(this IServiceCollection services, Assembly assembly)
+    public static IServiceCollection RegisterMinimalEndpoints(this IServiceCollection services,
+                                                              Assembly assembly)
     {
         var endpointTypes = assembly.GetTypes()
         .Where(t => typeof(IGroupMap).IsAssignableFrom(t)

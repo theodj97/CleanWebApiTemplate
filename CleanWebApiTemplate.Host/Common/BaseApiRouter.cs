@@ -34,17 +34,19 @@ public abstract class BaseApiRouter : IGroupMap
     /// Create a group of api routes with authorization, and fluentValidationFilter.
     /// </summary>
     /// <param name="authPolicy"></param>
-    /// <param name="excludeFromSwagger"></param>
+    /// <param name="addOpenApiMetadata"></param>
     /// <param name="openApiParameters"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     internal RouteGroupBuilder CreateAuthorizedRouteGroupBuilder(IEndpointRouteBuilder app,
                                                                  string[]? authPolicy = null,
-                                                                 bool excludeFromSwagger = false,
+                                                                 bool addOpenApiMetadata = true,
                                                                  OpenApiParameter[]? openApiParameters = null)
     {
-        RouteGroupBuilder routeGroupBuilder = CreateBaseRouteGroupBuilder(app, excludeFromSwagger, openApiParameters);
-        routeGroupBuilder.ProducesProblem((int)HttpStatusCode.Unauthorized);
+        RouteGroupBuilder routeGroupBuilder = CreateBaseRouteGroupBuilder(app, addOpenApiMetadata, openApiParameters);
+
+        if (addOpenApiMetadata is true)
+            routeGroupBuilder.ProducesProblem((int)HttpStatusCode.Unauthorized);
 
         if (authPolicy is not null && authPolicy.Length != 0)
         {
@@ -63,29 +65,35 @@ public abstract class BaseApiRouter : IGroupMap
     /// Create a group of api routes with fluentValidationFilter.
     /// </summary>
     /// <param name="authPolicy"></param>
-    /// <param name="excludeFromSwagger"></param>
+    /// <param name="addOpenApiMetadata"></param>
     /// <param name="openApiParameters"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     internal RouteGroupBuilder CreateBaseRouteGroupBuilder(IEndpointRouteBuilder app,
-                                                           bool excludeFromSwagger = false,
+                                                           bool addOpenApiMetadata = true,
                                                            OpenApiParameter[]? openApiParameters = null)
     {
         RouteGroupBuilder routeGroupBuilder = app.MapGroup($"/api/{RouteName}")
             .WithTags(RouteName)
-            .AddFluentValidationFilter()
-            .ProducesProblem((int)HttpStatusCode.InternalServerError);
+            .AddFluentValidationFilter();
 
-        if (excludeFromSwagger)
+        if (addOpenApiMetadata is false)
             routeGroupBuilder.WithMetadata(new ExcludeFromDescriptionAttribute());
-        else if (excludeFromSwagger is false && openApiParameters is not null && openApiParameters.Length != 0)
+        else
         {
-            routeGroupBuilder.WithOpenApi(operation =>
+            routeGroupBuilder
+                .ProducesProblem((int)HttpStatusCode.InternalServerError)
+                .ProducesProblem((int)HttpStatusCode.BadRequest);
+
+            if (addOpenApiMetadata && openApiParameters is not null && openApiParameters.Length != 0)
             {
-                foreach (var parameter in openApiParameters)
-                    operation.Parameters.Add(parameter);
-                return operation;
-            });
+                routeGroupBuilder.WithOpenApi(operation =>
+                {
+                    foreach (var parameter in openApiParameters)
+                        operation.Parameters.Add(parameter);
+                    return operation;
+                });
+            }
         }
 
         return routeGroupBuilder;

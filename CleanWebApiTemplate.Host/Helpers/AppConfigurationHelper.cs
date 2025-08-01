@@ -6,8 +6,10 @@ namespace CleanWebApiTemplate.Host.Helpers;
 
 public static class AppConfigurationHelper
 {
-    public static AppSettings LoadAndRegisterAppSettings(WebApplicationBuilder builder, string environment)
+    public static (AppSettings appSettings, string environment) LoadWebApiSettings(this WebApplicationBuilder builder)
     {
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? throw new Exception("No environment variable was setted!");
+
         ConfigureSources(builder, environment);
 
         var appSettings = builder.Configuration.Get<AppSettings>()
@@ -18,10 +20,11 @@ public static class AppConfigurationHelper
 
         if (validationResult.Failed) throw new OptionsValidationException(nameof(AppSettings), typeof(AppSettings), validationResult.Failures!);
 
-        return appSettings;
+        return (appSettings, environment);
     }
 
-    private static void ConfigureSources(WebApplicationBuilder builder, string environment)
+    private static void ConfigureSources(WebApplicationBuilder builder,
+                                         string environment)
     {
         var basePath = AppContext.BaseDirectory;
         builder.Configuration.SetBasePath(basePath);

@@ -47,7 +47,7 @@ public static class ConfigureServices
 
         services.AddHttpContextAccessor();
 
-        services.AddEndpoints(Assembly.GetExecutingAssembly());
+        services.RegisterMinimalEndpoints(Assembly.GetExecutingAssembly());
 
         return services;
     }

@@ -10,32 +10,24 @@ public static class ApiResultExtensions
         where TResponse : class, IBaseResponse<TDto, TResponse>
         where TDto : class?
     {
-        if (result.IsFailure) return ResolveError(result.Error!);
-        if (result.IsNoContent) return Results.NoContent();
-
-        var response = TResponse.ToResponseModel(result.Value);
-        if (result.IsCreated) return Results.Created(string.Empty, response);
-        else return Results.Ok(response);
+        return result.ToResponseCore(res => res.IsCreated
+            ? Results.Created(string.Empty, TResponse.ToResponseModel(res.Value))
+            : Results.Ok(TResponse.ToResponseModel(res.Value)));
     }
 
     public static IResult ToResponse<TDto, TResponse>(this Result<IEnumerable<TDto>> result)
         where TResponse : IBaseResponse<TDto, TResponse>
     {
-        if (result.IsFailure) return ResolveError(result.Error!);
-        if (result.IsNoContent) return Results.NoContent();
-
-        var response = result.Value?.Select(TResponse.ToResponseModel);
-        if (result.IsCreated) return Results.Created(string.Empty, response);
-        else return Results.Ok(response);
+        return result.ToResponseCore(res => res.IsCreated
+            ? Results.Created(string.Empty, (result.Value ?? []).Select(TResponse.ToResponseModel))
+            : Results.Ok((result.Value ?? []).Select(TResponse.ToResponseModel)));
     }
 
     public static IResult ToResponse(this Result<bool> result)
     {
-        if (result.IsFailure) return ResolveError(result.Error!);
-        if (result.IsNoContent) return Results.NoContent();
-
-        if (result.IsCreated) return Results.Created(string.Empty, result.Value);
-        else return Results.Ok(result.Value);
+        return result.ToResponseCore(res => res.IsCreated
+            ? Results.Created(string.Empty, res.Value)
+            : Results.Ok(res.Value));
     }
 
     private static IResult ResolveError(Error error) => error switch
@@ -54,4 +46,15 @@ public static class ApiResultExtensions
                         detail: error.Description,
                         statusCode: statusCode,
                         type: error.GetType().Name);
+
+    private static IResult ToResponseCore<T>(this Result<T> result, Func<Result<T>, IResult> successAction)
+    {
+        if (result.IsFailure)
+            return ResolveError(result.Error!);
+
+        if (result.IsNoContent)
+            return Results.NoContent();
+
+        return successAction(result);
+    }
 }

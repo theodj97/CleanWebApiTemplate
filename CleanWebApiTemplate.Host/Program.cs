@@ -10,9 +10,7 @@ public class Program
     {
         var builder = WebApplication.CreateSlimBuilder(args);
 
-        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? throw new Exception("No environment variable was setted!");
-
-        var appSettings = AppConfigurationHelper.LoadAndRegisterAppSettings(builder, environment);
+        var (appSettings, environment) = builder.LoadWebApiSettings();
 
         builder.Services.AddHostServices(builder.Configuration,
                                          environment,
