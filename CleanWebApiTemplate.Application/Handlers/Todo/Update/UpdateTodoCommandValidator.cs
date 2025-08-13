@@ -6,7 +6,7 @@ namespace CleanWebApiTemplate.Application.Handlers.Todo.Update;
 
 public class UpdateTodoCommandValidator : TodoValidator<UpdateTodoCommand>
 {
-    public UpdateTodoCommandValidator(IBaseQueryRepository<TodoEntity> repository) : base(repository)
+    public UpdateTodoCommandValidator(IBaseQueryRepository<TodoEntity, Ulid> repository) : base(repository)
     {
         RuleFor(x => x.Id)
             .Custom(ValidateUlid);

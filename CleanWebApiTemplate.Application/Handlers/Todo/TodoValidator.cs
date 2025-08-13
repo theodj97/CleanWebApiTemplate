@@ -1,16 +1,16 @@
 ﻿using CleanWebApiTemplate.Application.Helpers.Validators;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
-using CleanWebApiTemplate.Infrastructure.Common;
 using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
 using FluentValidation;
 using CustomMediatR;
+using CleanWebApiTemplate.Infrastructure.Common;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo;
 
-public class TodoValidator<TMessage>(IBaseQueryRepository<TodoEntity> repository) : BaseAbstractValidator<TMessage> where TMessage : class, IRequest<object>
+public class TodoValidator<TMessage>(IBaseQueryRepository<TodoEntity, Ulid> repository) : BaseAbstractValidator<TMessage> where TMessage : class, IRequest<object>
 {
-    private readonly IBaseQueryRepository<TodoEntity> repository = repository;
+    private readonly IBaseQueryRepository<TodoEntity, Ulid> repository = repository;
 
     protected async Task ValidateTitle(string title,
                                    ValidationContext<TMessage> context,

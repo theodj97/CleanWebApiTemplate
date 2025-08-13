@@ -6,16 +6,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanWebApiTemplate.Infrastructure.Repository;
 
-public class BaseQueryRepository<TEntity>(SqlDbContext context) : IBaseQueryRepository<TEntity> where TEntity : BaseEntity
+public class BaseQueryRepository<TEntity, TKey>(SqlDbContext context) : IBaseQueryRepository<TEntity, TKey> where TEntity : BaseEntity<TKey>
 {
     private readonly SqlDbContext context = context;
 
     public async Task<List<TEntity>> FilterAsync(Expression<Func<TEntity, bool>> expression,
-                                                     Expression<Func<TEntity, object>>? orderBy = null,
-                                                     bool descending = false,
-                                                     int? pageNumber = null,
-                                                     int? pageSize = null,
-                                                     CancellationToken cancellationToken = default) =>
+                                                 Expression<Func<TEntity, object>>? orderBy = null,
+                                                 bool descending = false,
+                                                 int? pageNumber = null,
+                                                 int? pageSize = null,
+                                                 CancellationToken cancellationToken = default) =>
             await context.Set<TEntity>()
                          .AsNoTracking()
                          .Where(expression)
@@ -66,16 +66,19 @@ public class BaseQueryRepository<TEntity>(SqlDbContext context) : IBaseQueryRepo
                      .ManagePagination(pageNumber, pageSize)
                      .ToListAsync(cancellationToken);
 
-    public async Task<TEntity?> GetByIdAsync(string id, CancellationToken cancellationToken = default) =>
+    public async Task<TEntity?> GetByIdAsync(TKey id,
+                                             CancellationToken cancellationToken = default) =>
         await context.Set<TEntity>()
                      .AsNoTracking()
-                     .FirstOrDefaultAsync(x => x.Id == Ulid.Parse(id), cancellationToken);
+                     .FirstOrDefaultAsync(x => x.Id!.Equals(id), cancellationToken);
 
 
-    public async Task<TOutput?> GetByIdAsync<TOutput>(string id, Expression<Func<TEntity, TOutput>> selector, CancellationToken cancellationToken = default) =>
+    public async Task<TOutput?> GetByIdAsync<TOutput>(TKey id,
+                                                      Expression<Func<TEntity, TOutput>> selector,
+                                                      CancellationToken cancellationToken = default) =>
         await context.Set<TEntity>()
                      .AsNoTracking()
-                     .Where(x => x.Id == Ulid.Parse(id))
+                     .Where(x => x.Id!.Equals(id))
                      .Select(selector)
                      .FirstOrDefaultAsync(cancellationToken);
 }

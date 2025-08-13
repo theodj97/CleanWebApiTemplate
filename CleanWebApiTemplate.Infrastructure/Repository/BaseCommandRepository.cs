@@ -5,16 +5,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanWebApiTemplate.Infrastructure.Repository;
 
-public class BaseCommandRepository<TEntity>(SqlDbContext context) : IBaseCommandRepository<TEntity> where TEntity : BaseEntity
+public class BaseCommandRepository<TEntity, TKey>(SqlDbContext context) : IBaseCommandRepository<TEntity, TKey> where TEntity : BaseEntity<TKey>
 {
     private readonly SqlDbContext context = context;
 
-    public async Task<bool> BulkDeleteAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
-    {
-        var idsParsed = ids.Select(Ulid.Parse).ToList();
-
-        return await context.Set<TEntity>().Where(x => idsParsed.Contains(x.Id)).ExecuteDeleteAsync(cancellationToken) > 0;
-    }
+    public async Task<bool> BulkDeleteAsync(IEnumerable<TKey> ids, CancellationToken cancellationToken = default) =>
+    await context.Set<TEntity>().Where(x => ids.Contains(x.Id!)).ExecuteDeleteAsync(cancellationToken) > 0;
 
     public bool BulkInsert(IEnumerable<TEntity> entities)
     {
@@ -45,12 +41,12 @@ public class BaseCommandRepository<TEntity>(SqlDbContext context) : IBaseCommand
         throw new Exception($"Failed to create entity: {result}");
     }
 
-    public bool Delete(string id) => context.Set<TEntity>().Where(x => x.Id == Ulid.Parse(id)).ExecuteDelete() > 0;
+    public bool Delete(TKey id) => context.Set<TEntity>().Where(x => x.Id!.Equals(id)).ExecuteDelete() > 0;
 
-    public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default) =>
+    public async Task<bool> DeleteAsync(TKey id, CancellationToken cancellationToken = default) =>
         await context.Set<TEntity>()
                      .AsNoTracking()
-                     .Where(x => x.Id == Ulid.Parse(id))
+                     .Where(x => x.Id!.Equals(id))
                      .ExecuteDeleteAsync(cancellationToken: cancellationToken) > 0;
 
     public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)

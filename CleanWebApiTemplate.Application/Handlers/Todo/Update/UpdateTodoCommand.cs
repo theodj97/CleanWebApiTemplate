@@ -42,16 +42,16 @@ public sealed class UpdateTodoCommand : IRequest<Result<TodoDto?>>
 
 }
 
-internal sealed class UpdateTodoCommandHandler(IBaseQueryRepository<TodoEntity> queryRepository,
-                                               IBaseCommandRepository<TodoEntity> commandRepository) : IRequestHandler<UpdateTodoCommand, Result<TodoDto?>>
+internal sealed class UpdateTodoCommandHandler(IBaseQueryRepository<TodoEntity, Ulid> queryRepository,
+                                               IBaseCommandRepository<TodoEntity, Ulid> commandRepository) : IRequestHandler<UpdateTodoCommand, Result<TodoDto?>>
 {
-    private readonly IBaseQueryRepository<TodoEntity> queryRepository = queryRepository;
+    private readonly IBaseQueryRepository<TodoEntity, Ulid> queryRepository = queryRepository;
 
-    private readonly IBaseCommandRepository<TodoEntity> commandRepository = commandRepository;
+    private readonly IBaseCommandRepository<TodoEntity, Ulid> commandRepository = commandRepository;
 
     public async Task<Result<TodoDto?>> Handle(UpdateTodoCommand request, CancellationToken cancellationToken)
     {
-        var todoDb = await queryRepository.GetByIdAsync(request.Id, cancellationToken);
+        var todoDb = await queryRepository.GetByIdAsync(Ulid.Parse(request.Id), cancellationToken);
         if (todoDb is null)
             return Result<TodoDto?>.Failure(new NotFoundError("ID was not found."));
 

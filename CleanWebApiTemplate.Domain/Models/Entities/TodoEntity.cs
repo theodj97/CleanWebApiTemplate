@@ -3,7 +3,7 @@ using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 
 namespace CleanWebApiTemplate.Domain.Models.Entities;
 
-public sealed class TodoEntity : BaseEntity
+public sealed class TodoEntity : BaseUlidEntity
 {
     public required string Title { get; set; }
     public string Description { get; set; } = string.Empty;

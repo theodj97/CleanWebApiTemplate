@@ -6,7 +6,7 @@ namespace CleanWebApiTemplate.Application.Handlers.Todo.Delete;
 
 public class DeleteTodoCommandValidator : TodoValidator<DeleteTodoCommand>
 {
-    public DeleteTodoCommandValidator(IBaseQueryRepository<TodoEntity> repository) : base(repository)
+    public DeleteTodoCommandValidator(IBaseQueryRepository<TodoEntity, Ulid> repository) : base(repository)
     {
         RuleFor(x => x.Id)
             .Custom(NotNullNotEmpty)

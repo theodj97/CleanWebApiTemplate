@@ -1,6 +1,6 @@
 ﻿namespace CleanWebApiTemplate.Domain.Models;
 
-public abstract class BaseEntity
+public abstract class BaseEntity<TKey> : IBaseEntity<TKey>
 {
-    public Ulid Id { get; set; } = Ulid.NewUlid();
+    public TKey Id { get; set; } = default!;
 }
