@@ -22,7 +22,7 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
     private static string SqlServerCnnString = string.Empty;
     private readonly TaskCompletionSource<bool> DBSetupCompletionSource = new();
     public HttpClient HttpClient { get; private set; } = null!;
-    public IServiceScopeFactory ServiceScopeFactory { get; set; } = null!;
+    private IServiceScopeFactory ServiceScopeFactory { get; set; } = null!;
     private const string DataBaseName = "Todo";
     private readonly JsonSerializerOptions JsonOpts = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private string? PathToTestAppSettings = null;

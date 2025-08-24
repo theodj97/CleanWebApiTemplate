@@ -5,9 +5,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanWebApiTemplate.Infrastructure.Repository;
 
-public class BaseCommandRepository<TEntity, TKey>(SqlDbContext context) : IBaseCommandRepository<TEntity, TKey> where TEntity : BaseEntity<TKey>
+public class BaseCommandRepository<TEntity, TKey> : IBaseCommandRepository<TEntity, TKey> where TEntity : BaseEntity<TKey>
 {
-    private readonly SqlDbContext context = context;
+    private readonly SqlDbContext context;
+    public BaseCommandRepository(SqlDbContext context)
+    {
+        if (context is null)
+            throw new ArgumentNullException(nameof(context), $"While initiating {nameof(BaseCommandRepository<TEntity, TKey>)}, the service {typeof(SqlDbContext)} was not found!");
+
+        this.context = context;
+    }
 
     public async Task<bool> BulkDeleteAsync(IEnumerable<TKey> ids, CancellationToken cancellationToken = default) =>
     await context.Set<TEntity>().Where(x => ids.Contains(x.Id!)).ExecuteDeleteAsync(cancellationToken) > 0;

@@ -36,4 +36,10 @@ public interface IBaseQueryRepository<TEntity, TKey> where TEntity : BaseEntity<
     Task<TOutput?> GetByIdAsync<TOutput>(TKey id,
                                          Expression<Func<TEntity, TOutput>> selector,
                                          CancellationToken cancellationToken = default);
+
+    Task<TEntity?> GetByIdATAsync(TKey id,
+                                  CancellationToken cancellationToken = default);
+
+    Task<List<TEntity>> FilterATAsync(Expression<Func<TEntity, bool>> expression,
+                                      CancellationToken cancellationToken = default);
 }

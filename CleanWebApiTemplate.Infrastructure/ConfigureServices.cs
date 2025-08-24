@@ -18,8 +18,8 @@ public static class ConfigureServices
                 b => b.MigrationsAssembly(assembly)
             ));
 
-        services.AddTransient(typeof(IBaseQueryRepository<,>), typeof(BaseQueryRepository<,>));
-        services.AddTransient(typeof(IBaseCommandRepository<,>), typeof(BaseCommandRepository<,>));
+        services.AddScoped(typeof(IBaseQueryRepository<,>), typeof(BaseQueryRepository<,>));
+        services.AddScoped(typeof(IBaseCommandRepository<,>), typeof(BaseCommandRepository<,>));
 
         return services;
     }

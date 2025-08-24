@@ -6,9 +6,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanWebApiTemplate.Infrastructure.Repository;
 
-public class BaseQueryRepository<TEntity, TKey>(SqlDbContext context) : IBaseQueryRepository<TEntity, TKey> where TEntity : BaseEntity<TKey>
+public class BaseQueryRepository<TEntity, TKey> : IBaseQueryRepository<TEntity, TKey> where TEntity : BaseEntity<TKey>
 {
-    private readonly SqlDbContext context = context;
+    private readonly SqlDbContext context;
+
+    public BaseQueryRepository(SqlDbContext context)
+    {
+        if (context is null)
+            throw new ArgumentNullException(nameof(context),
+                                            $"While initiating {nameof(BaseQueryRepository<TEntity, TKey>)}, the service {typeof(SqlDbContext)} was not found!");
+
+        this.context = context;
+    }
 
     public async Task<List<TEntity>> FilterAsync(Expression<Func<TEntity, bool>> expression,
                                                  Expression<Func<TEntity, object>>? orderBy = null,
@@ -16,12 +25,12 @@ public class BaseQueryRepository<TEntity, TKey>(SqlDbContext context) : IBaseQue
                                                  int? pageNumber = null,
                                                  int? pageSize = null,
                                                  CancellationToken cancellationToken = default) =>
-            await context.Set<TEntity>()
-                         .AsNoTracking()
-                         .Where(expression)
-                         .OrderBy(orderBy, descending)
-                         .ManagePagination(pageNumber, pageSize)
-                         .ToListAsync(cancellationToken);
+        await context.Set<TEntity>()
+                     .AsNoTracking()
+                     .Where(expression)
+                     .OrderBy(orderBy, descending)
+                     .ManagePagination(pageNumber, pageSize)
+                     .ToListAsync(cancellationToken);
 
 
     public async Task<List<TOutput>> FilterAsync<TOutput>(Expression<Func<TEntity, bool>> expression,
@@ -39,6 +48,10 @@ public class BaseQueryRepository<TEntity, TKey>(SqlDbContext context) : IBaseQue
                      .ManagePagination(pageNumber, pageSize)
                      .ToListAsync(cancellationToken);
 
+    public async Task<List<TEntity>> FilterATAsync(Expression<Func<TEntity, bool>> expression, CancellationToken cancellationToken = default) =>
+        await context.Set<TEntity>()
+                     .Where(expression)
+                     .ToListAsync(cancellationToken);
 
     public async Task<List<TEntity>> FilterSortAsync(Expression<Func<TEntity, bool>> expression,
                                                      IEnumerable<KeyValuePair<string, bool>>? sortProperties,
@@ -80,5 +93,10 @@ public class BaseQueryRepository<TEntity, TKey>(SqlDbContext context) : IBaseQue
                      .AsNoTracking()
                      .Where(x => x.Id!.Equals(id))
                      .Select(selector)
+                     .FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<TEntity?> GetByIdATAsync(TKey id, CancellationToken cancellationToken = default) =>
+        await context.Set<TEntity>()
+                     .Where(x => x.Id!.Equals(id))
                      .FirstOrDefaultAsync(cancellationToken);
 }
