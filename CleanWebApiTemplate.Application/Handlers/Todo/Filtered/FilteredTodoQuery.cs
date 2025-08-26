@@ -2,7 +2,9 @@
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Common;
+using CleanWebApiTemplate.Infrastructure.Context;
 using CustomMediatR;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
@@ -20,9 +22,9 @@ public sealed record FilteredTodoQuery : IRequest<Result<IEnumerable<TodoDto?>>>
     public IEnumerable<KeyValuePair<string, bool>>? SortProperties { get; set; } = null;
 }
 
-internal sealed class FilteredTodoQueryHandler(IBaseQueryRepository<TodoEntity, Ulid> repository) : IRequestHandler<FilteredTodoQuery, Result<IEnumerable<TodoDto?>>>
+internal sealed class FilteredTodoQueryHandler(SqlDbContext dbContext) : IRequestHandler<FilteredTodoQuery, Result<IEnumerable<TodoDto?>>>
 {
-    private readonly IBaseQueryRepository<TodoEntity, Ulid> repository = repository;
+    private readonly SqlDbContext dbContext = dbContext;
 
     public async Task<Result<IEnumerable<TodoDto?>>> Handle(FilteredTodoQuery request, CancellationToken cancellationToken)
     {
@@ -67,11 +69,11 @@ internal sealed class FilteredTodoQueryHandler(IBaseQueryRepository<TodoEntity, 
 
         filter = Expression.Lambda<Func<TodoEntity, bool>>(queryBody, parameter);
 
-        List<TodoEntity> todosDb = await repository.FilterSortAsync(filter,
-                                                                    request.SortProperties,
-                                                                    request.PageNumber,
-                                                                    request.PageSize,
-                                                                    cancellationToken: cancellationToken);
+        var todosDb = await dbContext.TodoDb.Where(filter)
+                                            .AsNoTracking()
+                                            .DynamicOrderBy(request.SortProperties)
+                                            .ManagePagination(request.PageNumber, request.PageSize)
+                                            .ToListAsync(cancellationToken);
 
         return Result<IEnumerable<TodoDto?>>.Success(todosDb.Select(x => x.ToDto()));
     }

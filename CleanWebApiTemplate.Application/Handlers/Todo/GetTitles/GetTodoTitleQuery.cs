@@ -1,8 +1,9 @@
 using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
-using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Common;
+using CleanWebApiTemplate.Infrastructure.Context;
 using CustomMediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.GetTitles;
 
@@ -13,18 +14,17 @@ public sealed class GetTodoTitleQuery : IRequest<Result<IEnumerable<TodoDto?>>>
     public IEnumerable<KeyValuePair<string, bool>>? SortProperties { get; set; } = null;
 }
 
-internal sealed class GetTodoTitleQueryHandler(IBaseQueryRepository<TodoEntity, Ulid> repository) : IRequestHandler<GetTodoTitleQuery, Result<IEnumerable<TodoDto?>>>
+internal sealed class GetTodoTitleQueryHandler(SqlDbContext dbContext) : IRequestHandler<GetTodoTitleQuery, Result<IEnumerable<TodoDto?>>>
 {
-    private readonly IBaseQueryRepository<TodoEntity, Ulid> repository = repository;
+    private readonly SqlDbContext dbContext = dbContext;
 
     public async Task<Result<IEnumerable<TodoDto?>>> Handle(GetTodoTitleQuery request, CancellationToken cancellationToken)
     {
-        List<TodoDto> projectedTodos = await repository.FilterSortAsync(x => true,
-                                                                        p => new TodoDto { Id = p.Id, Title = p.Title, },
-                                                                        request.SortProperties,
-                                                                        request.PageNumber,
-                                                                        request.PageSize,
-                                                                        cancellationToken);
+        List<TodoDto> projectedTodos = await dbContext.TodoDb.Where(x => true)
+                                                             .Select(p => new TodoDto { Id = p.Id, Title = p.Title, })
+                                                             .DynamicOrderBy(request.SortProperties)
+                                                             .ManagePagination(request.PageNumber, request.PageSize)
+                                                             .ToListAsync(cancellationToken);
 
         return Result<IEnumerable<TodoDto?>>.Success(projectedTodos);
     }

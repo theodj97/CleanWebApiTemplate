@@ -1,16 +1,16 @@
 ﻿using CleanWebApiTemplate.Application.Helpers.Validators;
-using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
 using FluentValidation;
 using CustomMediatR;
-using CleanWebApiTemplate.Infrastructure.Common;
+using CleanWebApiTemplate.Infrastructure.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo;
 
-public class TodoValidator<TMessage>(IBaseQueryRepository<TodoEntity, Ulid> repository) : BaseAbstractValidator<TMessage> where TMessage : class, IRequest<object>
+public class TodoValidator<TMessage>(SqlDbContext dbContext) : BaseAbstractValidator<TMessage> where TMessage : class, IRequest<object>
 {
-    private readonly IBaseQueryRepository<TodoEntity, Ulid> repository = repository;
+    private readonly SqlDbContext dbContext = dbContext;
 
     protected async Task ValidateTitle(string title,
                                    ValidationContext<TMessage> context,
@@ -74,9 +74,9 @@ public class TodoValidator<TMessage>(IBaseQueryRepository<TodoEntity, Ulid> repo
             return true;
 
         if (todoId is null)
-            return (await repository.FilterAsync(x => x.Title == title, cancellationToken: cancellationToken)).Count is 0;
+            return (await dbContext.TodoDb.Where(x => x.Title == title).ToListAsync(cancellationToken)).Count is 0;
 
         Ulid id = Ulid.Parse(todoId);
-        return (await repository.FilterAsync(x => x.Title == title && x.Id != id, cancellationToken: cancellationToken)).Count is 0;
+        return (await dbContext.TodoDb.Where(x => x.Title == title && x.Id != id).ToListAsync(cancellationToken)).Count is 0;
     }
 }

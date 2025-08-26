@@ -5,15 +5,19 @@ namespace CleanWebApiTemplate.Infrastructure.Common;
 
 public static class RepositoryExtension
 {
-    public static IQueryable<TValue> ManagePagination<TValue>(this IQueryable<TValue> query, int? pageNumber, int? pageSize)
+    public static IQueryable<TValue> ManagePagination<TValue>(this IQueryable<TValue> query,
+                                                              int? pageNumber,
+                                                              int? pageSize)
     {
         if (pageNumber is not null && pageSize is not null)
         {
             if (pageNumber < 1)
-                throw new ArgumentOutOfRangeException(nameof(pageNumber), "Page number must be greater than or equal to 1.");
+                throw new ArgumentOutOfRangeException(nameof(pageNumber),
+                                                      "Page number must be greater than or equal to 1.");
 
             if (pageSize < 1)
-                throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be greater than or equal to 1.");
+                throw new ArgumentOutOfRangeException(nameof(pageSize),
+                                                      "Page size must be greater than or equal to 1.");
 
             query = query.Skip((pageNumber.Value - 1) * pageSize.Value).Take(pageSize.Value);
         }
@@ -21,7 +25,9 @@ public static class RepositoryExtension
         return query;
     }
 
-    public static IQueryable<T> OrderBy<T>(this IQueryable<T> query, Expression<Func<T, object>>? orderBy, bool descending = false)
+    public static IQueryable<T> OrderElementsBy<T>(this IQueryable<T> query,
+                                                   Expression<Func<T, object>>? orderBy,
+                                                   bool descending = false)
     {
         if (orderBy is not null)
             query = descending ? query.OrderByDescending(orderBy) : query.OrderBy(orderBy);
@@ -32,6 +38,7 @@ public static class RepositoryExtension
     public static IQueryable<T> DynamicOrderBy<T>(this IQueryable<T> source,
                                                   params IEnumerable<KeyValuePair<string, bool>>? sortProperties)
     {
+        ArgumentNullException.ThrowIfNull(source);
         if (sortProperties is null || sortProperties.Any() is false) return source;
 
         var entityType = typeof(T);

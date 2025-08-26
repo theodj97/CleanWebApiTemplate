@@ -1,7 +1,5 @@
 ﻿using CleanWebApiTemplate.Domain.Configuration;
-using CleanWebApiTemplate.Infrastructure.Common;
 using CleanWebApiTemplate.Infrastructure.Context;
-using CleanWebApiTemplate.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,9 +15,6 @@ public static class ConfigureServices
             options.UseSqlServer(connectionStrings.SqlServer,
                 b => b.MigrationsAssembly(assembly)
             ));
-
-        services.AddScoped(typeof(IBaseQueryRepository<,>), typeof(BaseQueryRepository<,>));
-        services.AddScoped(typeof(IBaseCommandRepository<,>), typeof(BaseCommandRepository<,>));
 
         return services;
     }

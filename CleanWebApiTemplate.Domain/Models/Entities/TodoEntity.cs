@@ -3,7 +3,7 @@ using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 
 namespace CleanWebApiTemplate.Domain.Models.Entities;
 
-public sealed class TodoEntity : BaseUlidEntity
+public sealed class TodoEntity : BaseEntity<Ulid>
 {
     public required string Title { get; set; }
     public string Description { get; set; } = string.Empty;
@@ -12,6 +12,7 @@ public sealed class TodoEntity : BaseUlidEntity
     public int Status { get; set; } = (int)ETodoStatus.Pending;
     public string CreatedBy { get; set; } = string.Empty;
     public string UpdatedBy { get; set; } = string.Empty;
+    public override Ulid Id { get; set; } = Ulid.NewUlid();
 
     public TodoDto ToDto() => new()
     {

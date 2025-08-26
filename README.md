@@ -11,10 +11,9 @@ This project serves as a template for creating a Web API focused on microservice
 This template adheres to the principles of Clean Architecture, ensuring separation of concerns and dependency inversion. Key features include:
 
 - **Minimal Api**: A very easy and low code .
-- **CQRS Pattern**: Utilizing the MediatR library, the template separates read and write operations for more scalable and maintainable code.
 - **Result Pattern**: This pattern encapsulates operation outcomes in C#, indicating success or failure with associated data or errors. It simplifies error handling and improves code clarity, especially in API responses.
 - **Clean Architecture**: Organized into clear layers, the project structure promotes clean separation of concerns.
-- **JWT Auth (Soon)**: Authentication and authorization already configured for the project, just need to set up environment vars on your machine.
+- **JWT Auth**: Authentication and authorization already configured for the project, just need to set up environment vars on your machine.
 - **Functional, Integration & Unitary Testing**: Robust testing setup to ensure code reliability and ease of maintenance.
 - **Migrations**: Code first implementation in the SQL Server variant of this template, used Migrations also in functional testing.
 - **ULID Sql**: ULID Id to provide faster, non sequential and fragmentation preventive implementation.
@@ -24,18 +23,14 @@ This template adheres to the principles of Clean Architecture, ensuring separati
 The project leverages several high-quality libraries and frameworks, including:
 - **MediatR**: For implementing the CQRS pattern.
 - **FluentValidation**: For building strongly-typed validation rules.
-- **FluentAssertions**: For more readable assertion syntax in tests.
-- **EntityFramework**: For ORM capabilities, implemented for SQL Server and MongoDB.
-- **AutoMapper**: For object-to-object mapping.
-- **NSubstitute**: For creating mock objects in unit tests.
-- **NUnit and XUnit**: For comprehensive testing frameworks.
-- **Serilog**: For sophisticated logging and diagnostics.
+- **EntityFramework**: For ORM capabilities, implemented for SQL Server and soon MongoDB.
+- **XUnit**: For comprehensive testing frameworks.
 - **TestContainers**: For creating throwaway instances of databases inside the testing layer.
 - **Swashbuckle Swagger**: For Web API documentation.
 
 ## About the Author
 
-Hi, my name is Theo, a seasoned C# .NET Core backend software developer. With extensive experience in developing robust and efficient backend systems, I have integrated a wealth of best practices and tools into this template. The architectures and patterns used reflects a commitment to high-quality software development.
+Hi, my name is Theo, a seasoned .NET Core backend software developer. With extensive experience in developing robust and efficient backend systems, I have integrated a wealth of best practices and tools into this template. The architectures and patterns used reflects a commitment to high-quality software development.
 
 
 # Installation

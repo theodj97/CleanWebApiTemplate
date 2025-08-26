@@ -1,12 +1,11 @@
-﻿using CleanWebApiTemplate.Domain.Models.Entities;
-using CleanWebApiTemplate.Infrastructure.Common;
+﻿using CleanWebApiTemplate.Infrastructure.Context;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Update;
 
 public class UpdateTodoCommandValidator : TodoValidator<UpdateTodoCommand>
 {
-    public UpdateTodoCommandValidator(IBaseQueryRepository<TodoEntity, Ulid> repository) : base(repository)
+    public UpdateTodoCommandValidator(SqlDbContext dbContext) : base(dbContext)
     {
         RuleFor(x => x.Id)
             .Custom(ValidateUlid);

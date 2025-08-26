@@ -1,13 +1,12 @@
 using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
-using CleanWebApiTemplate.Domain.Models.Entities;
-using CleanWebApiTemplate.Infrastructure.Common;
+using CleanWebApiTemplate.Infrastructure.Context;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.GetTitles;
 
 public class GetTodoTitleQueryValidator : TodoValidator<GetTodoTitleQuery>
 {
-    public GetTodoTitleQueryValidator(IBaseQueryRepository<TodoEntity, Ulid> repository) : base(repository)
+    public GetTodoTitleQueryValidator(SqlDbContext dbContext) : base(dbContext)
     {
         RuleFor(x => x.PageNumber).Must(value => value is not null && value > 0)
             .When(x => x.PageSize is not null || x.PageNumber is not null)

@@ -1,6 +1,5 @@
 ﻿using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
-using CleanWebApiTemplate.Domain.Models.Entities;
-using CleanWebApiTemplate.Infrastructure.Common;
+using CleanWebApiTemplate.Infrastructure.Context;
 using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
 using FluentValidation;
 
@@ -8,7 +7,7 @@ namespace CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
 
 public class FilteredTodoQueryValidator : TodoValidator<FilteredTodoQuery>
 {
-    public FilteredTodoQueryValidator(IBaseQueryRepository<TodoEntity, Ulid> repository) : base(repository)
+    public FilteredTodoQueryValidator(SqlDbContext dbContext) : base(dbContext)
     {
         RuleForEach(x => x.Ids)
             .Custom(ValidateUlid)
