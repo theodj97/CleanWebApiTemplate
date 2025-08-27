@@ -74,8 +74,7 @@ public abstract class BaseApiRouter : IGroupMap
                                                            OpenApiParameter[]? openApiParameters = null)
     {
         RouteGroupBuilder routeGroupBuilder = app.MapGroup($"/api/{RouteName}")
-            .WithTags(RouteName)
-            .AddFluentValidationFilter();
+            .WithTags(RouteName);
 
         if (addOpenApiMetadata is false)
             routeGroupBuilder.WithMetadata(new ExcludeFromDescriptionAttribute());

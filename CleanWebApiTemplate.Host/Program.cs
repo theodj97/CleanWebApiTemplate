@@ -22,7 +22,7 @@ public class Program
 
         builder.Services.AddApplicationServices();
 
-        builder.AddFluentValidationEndpointFilter();
+        // builder.AddFluentValidationEndpointFilter();
 
         var app = builder.Build();
         app.ConfigureHostApplication(environment);

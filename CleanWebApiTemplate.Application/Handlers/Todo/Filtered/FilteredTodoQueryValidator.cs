@@ -34,7 +34,7 @@ public class FilteredTodoQueryValidator : TodoValidator<FilteredTodoQuery>
             .Custom(ValidateDateTime!)
             .When(x => x.EndDate is not null);
 
-        RuleFor(x => new StartDateEndDateType(x.StartDate, x.EndDate))
+        RuleFor(x => new { x.StartDate, x.EndDate })
             .Custom(ValidateStartDateAndEndDate);
 
         RuleFor(x => x.PageNumber).Must(value => value is not null && value > 0)
