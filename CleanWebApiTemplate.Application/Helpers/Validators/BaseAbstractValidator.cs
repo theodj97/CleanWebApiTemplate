@@ -54,7 +54,7 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     /// </summary>
     /// <param name="startDateEndDate"></param>
     /// <param name="context"></param>
-    protected void ValidateStartDateAndEndDate(StartDateEndDateType startDateEndDate, ValidationContext<TCommand> context)
+    protected void ValidateStartDateAndEndDate(dynamic startDateEndDate, ValidationContext<TCommand> context)
     {
         if (string.IsNullOrEmpty(startDateEndDate.StartDate)
             && string.IsNullOrEmpty(startDateEndDate.EndDate) is false)
@@ -64,12 +64,22 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
         && string.IsNullOrEmpty(startDateEndDate.StartDate) is false)
             AddFailure(context, $"{nameof(startDateEndDate.EndDate)} can't be null or empty when {nameof(startDateEndDate.StartDate)} has value");
 
-        if (DateTime.TryParse(startDateEndDate.StartDate, out var startDate) &&
-                        DateTime.TryParse(startDateEndDate.EndDate, out var endDate))
+        bool isStartDateValid = DateTime.TryParse(startDateEndDate.StartDate, out DateTime startDate);
+        bool isEndDateValid = DateTime.TryParse(startDateEndDate.EndDate, out DateTime endDate);
+
+        if (isStartDateValid && isEndDateValid)
             if (startDate > endDate)
                 AddFailure(context, $"{nameof(startDateEndDate.StartDate)} must be earlier than {nameof(startDateEndDate.EndDate)}");
+
     }
 
+
+    /// <summary>
+    /// Validate the sorting properties.
+    /// </summary>
+    /// <param name="sortProperty"></param>
+    /// <param name="typeToSortBy"></param>
+    /// <param name="context"></param>
     protected void ValidateSortBy(IEnumerable<KeyValuePair<string, bool>>? sortProperty,
                                   Type typeToSortBy,
                                   ValidationContext<TCommand> context)
@@ -129,11 +139,5 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
         builder.Append(errorMessage);
 
         context.AddFailure(builder.ToString());
-    }
-
-    public class StartDateEndDateType(string? startDate, string? endDate)
-    {
-        public string StartDate = startDate ?? "";
-        public string EndDate = endDate ?? "";
     }
 }

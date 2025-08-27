@@ -13,8 +13,8 @@ public class TodoValidator<TMessage>(SqlDbContext dbContext) : BaseAbstractValid
     private readonly SqlDbContext dbContext = dbContext;
 
     protected async Task ValidateTitle(string title,
-                                   ValidationContext<TMessage> context,
-                                   CancellationToken cancellationToken)
+                                       ValidationContext<TMessage> context,
+                                       CancellationToken cancellationToken)
     {
         if (title.Length > TodoEntityConfiguration.TitleLenght)
             AddFailure(context,

@@ -5,23 +5,33 @@ namespace CleanWebApiTemplate.Testing.Extension;
 
 public static class RequestExtension
 {
-    public static async Task<HttpResponseMessage> PostAsync(this HttpClient client, string url, object obj)
+    public static async Task<HttpResponseMessage> PostAsync(this HttpClient client,
+                                                            string url,
+                                                            object obj,
+                                                            Encoding? encoding = null,
+                                                            string mediaType = "application/json",
+                                                            CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(obj);
-        var content = ToJsonContent(json);
-        return await client.PostAsync(url, content);
+        var content = ToJsonContent(json, encoding, mediaType);
+        return await client.PostAsync(url, content, cancellationToken);
     }
 
-    public static async Task<HttpResponseMessage> PostAsync(this HttpClient client, string url) => await client.PostAsync(url);
-
-    public static async Task<HttpResponseMessage> PutAsync(this HttpClient client, string url, object obj)
+    public static async Task<HttpResponseMessage> PutAsync(this HttpClient client,
+                                                           string url,
+                                                           object obj,
+                                                           Encoding? encoding = null,
+                                                           string mediaType = "application/json",
+                                                           CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(obj);
-        var content = ToJsonContent(json);
-        return await client.PutAsync(url, content);
+        var content = ToJsonContent(json, encoding, mediaType);
+        return await client.PutAsync(url, content, cancellationToken);
     }
 
-    public static HttpClient AddHeader(this HttpClient client, string key, string value)
+    public static HttpClient AddHeader(this HttpClient client,
+                                       string key,
+                                       string value)
     {
         client.DefaultRequestHeaders.Remove(key);
         client.DefaultRequestHeaders.Add(key, value);

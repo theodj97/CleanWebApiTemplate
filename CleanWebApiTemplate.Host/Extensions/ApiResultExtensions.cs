@@ -23,7 +23,7 @@ public static class ApiResultExtensions
             : Results.Ok((result.Value ?? []).Select(TResponse.ToResponseModel)));
     }
 
-    public static IResult ToResponse(this Result<bool> result)
+    public static IResult ToResponse<T>(this Result<T> result)
     {
         return result.ToResponseCore(res => res.IsCreated
             ? Results.Created(string.Empty, res.Value)

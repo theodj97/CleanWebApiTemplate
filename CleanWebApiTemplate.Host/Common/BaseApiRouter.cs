@@ -13,7 +13,7 @@ public abstract class BaseApiRouter : IGroupMap
     public string UserName => contextAccessor.HttpContext!.User.Claims.First(x => x.Type == ClaimTypes.Name).Value;
     public string UserEmail => contextAccessor.HttpContext!.User.Claims.First(x => x.Type == ClaimTypes.Email).Value;
     public string Role => contextAccessor.HttpContext!.User.Claims.First(x => x.Type == ClaimTypes.Role).Value;
-    public string RouteName { get; private set; }
+    public required string RouteName { get; init; }
     private const string ROUTE_TERMINATION_NAME = "Routes";
     protected IMediator Mediator => contextAccessor.HttpContext!.RequestServices.GetRequiredService<IMediator>()
         ?? throw new Exception("Unable finding IMediator service");
@@ -81,9 +81,7 @@ public abstract class BaseApiRouter : IGroupMap
             routeGroupBuilder.WithMetadata(new ExcludeFromDescriptionAttribute());
         else
         {
-            routeGroupBuilder
-                .ProducesProblem((int)HttpStatusCode.InternalServerError)
-                .ProducesProblem((int)HttpStatusCode.BadRequest);
+            routeGroupBuilder.ProducesProblem((int)HttpStatusCode.InternalServerError);
 
             if (addOpenApiMetadata && openApiParameters is not null && openApiParameters.Length != 0)
             {
