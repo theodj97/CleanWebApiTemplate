@@ -13,7 +13,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\CleanWebApiTemplate.Domain\CleanWebApiTemplate.Domain.csproj" />
+		<ProjectReference
+			Include="..\CleanWebApiTemplate.Domain\CleanWebApiTemplate.Domain.csproj" />
 		<ProjectReference
 			Include="..\CleanWebApiTemplate.Infrastructure\CleanWebApiTemplate.Infrastructure.csproj" />
 	</ItemGroup>

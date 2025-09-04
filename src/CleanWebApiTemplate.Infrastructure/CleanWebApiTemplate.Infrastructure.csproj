@@ -12,7 +12,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\CleanWebApiTemplate.Domain\CleanWebApiTemplate.Domain.csproj" />
+		<ProjectReference
+			Include="..\CleanWebApiTemplate.Domain\CleanWebApiTemplate.Domain.csproj" />
 	</ItemGroup>
 
 </Project>
