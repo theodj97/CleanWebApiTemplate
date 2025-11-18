@@ -2,15 +2,15 @@
 using CleanWebApiTemplate.Application.Handlers.Todo.GetById;
 using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
-using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Host.Common;
-using CleanWebApiTemplate.Host.Extensions;
 using CleanWebApiTemplate.Host.Models.Responses.Todo;
 using CleanWebApiTemplate.Host.Routes.Todo.Create;
 using CleanWebApiTemplate.Host.Routes.Todo.Filter;
 using CleanWebApiTemplate.Host.Routes.Todo.Get;
 using CleanWebApiTemplate.Host.Routes.Todo.Update;
 using System.Net;
+using MinimalWebApiCleanExtensions.Extensions;
+using MinimalWebApiCleanExtensions.ResultPattern;
 
 namespace CleanWebApiTemplate.Host.Routes.Todo;
 

@@ -1,10 +1,10 @@
 ﻿using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.Models.Entities;
-using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Common;
 using CleanWebApiTemplate.Infrastructure.Context;
 using CustomMediatR;
 using Microsoft.EntityFrameworkCore;
+using MinimalWebApiCleanExtensions.ResultPattern;
 using System.Linq.Expressions;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Filtered;

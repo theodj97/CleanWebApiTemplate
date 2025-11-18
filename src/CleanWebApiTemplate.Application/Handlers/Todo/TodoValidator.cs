@@ -1,10 +1,10 @@
-﻿using CleanWebApiTemplate.Application.Helpers.Validators;
-using CleanWebApiTemplate.Domain.Models.Enums.Todo;
+﻿using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
 using FluentValidation;
 using CustomMediatR;
 using CleanWebApiTemplate.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
+using MinimalWebApiCleanExtensions.Abstractions;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo;
 
@@ -64,6 +64,20 @@ public class TodoValidator<TMessage>(SqlDbContext dbContext) : BaseAbstractValid
     {
         if (Enum.IsDefined(typeof(ETodoStatus), status) is false)
             AddFailure(context, $"Property '{context.DisplayName}' wasn't a registered {nameof(ETodoStatus)}.");
+    }
+
+    /// <summary>
+    /// Common ULID validation logic.
+    /// </summary>
+    /// <param name="id">The ID value to validate</param>
+    /// <param name="context">Validation context</param>
+    protected void ValidateUlid(string id, ValidationContext<TMessage> context)
+    {
+        if (Ulid.TryParse(id, out _) is false)
+            AddFailure(context, $"Property '{context.DisplayName}' must be a valid ULID");
+
+        if (id.Length is not 26)
+            AddFailure(context, $"Property '{context.DisplayName}' must have exactly 26 characters");
     }
 
     private async Task<bool> TitleIsUnique(string title,

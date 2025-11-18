@@ -1,12 +1,12 @@
 ﻿using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Host.Configuration;
-using CleanWebApiTemplate.Host.Extensions;
 using CleanWebApiTemplate.Host.Helpers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
+using MinimalWebApiCleanExtensions.Extensions;
 using System.Reflection;
 using System.Text;
 

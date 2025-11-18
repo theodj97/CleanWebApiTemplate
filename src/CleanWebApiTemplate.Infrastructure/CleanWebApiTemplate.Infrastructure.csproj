@@ -7,13 +7,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.7" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.7" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.8" />
+		<PackageReference Include="theodj97.MinimalWebApiCleanExtensions" Version="1.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference
-			Include="..\CleanWebApiTemplate.Domain\CleanWebApiTemplate.Domain.csproj" />
+		<ProjectReference Include="..\CleanWebApiTemplate.Domain\CleanWebApiTemplate.Domain.csproj" />
 	</ItemGroup>
 
 </Project>

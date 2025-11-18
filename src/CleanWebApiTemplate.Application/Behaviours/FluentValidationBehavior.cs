@@ -1,6 +1,6 @@
-﻿using CleanWebApiTemplate.Domain.ResultModel;
-using CustomMediatR;
+﻿using CustomMediatR;
 using FluentValidation;
+using MinimalWebApiCleanExtensions.ResultPattern;
 
 
 namespace CleanWebApiTemplate.Application.Behaviours;

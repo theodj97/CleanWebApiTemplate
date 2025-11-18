@@ -1,7 +1,7 @@
 ﻿using CleanWebApiTemplate.Domain.Configuration;
-using CleanWebApiTemplate.Host.Models.Interfaces;
 using CustomMediatR;
 using Microsoft.OpenApi.Models;
+using MinimalWebApiCleanExtensions.Interfaces;
 using System.Net;
 using System.Security.Claims;
 

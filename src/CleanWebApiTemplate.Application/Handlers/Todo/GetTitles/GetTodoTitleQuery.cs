@@ -1,9 +1,9 @@
 using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
-using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Common;
 using CleanWebApiTemplate.Infrastructure.Context;
 using CustomMediatR;
 using Microsoft.EntityFrameworkCore;
+using MinimalWebApiCleanExtensions.ResultPattern;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.GetTitles;
 

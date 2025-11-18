@@ -1,4 +1,5 @@
 ﻿using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
+using MinimalWebApiCleanExtensions.Interfaces;
 
 namespace CleanWebApiTemplate.Host.Models.Responses.Todo;
 
