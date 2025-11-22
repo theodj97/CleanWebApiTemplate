@@ -19,7 +19,7 @@ public class Result<T>
         if (value is null) IsNoContent = true;
         if (value is IEnumerable<T> listValue && !listValue.Any()) IsNoContent = true;
 
-        // Posibles códigos de respuesta que también son correctos, es decir, no puede ser isCreated e isNoContent a la vez, por ejemplo.
+        // Response codes that are also valid, i.e., isCreated and isNoContent cannot be true at the same time.
         var countPossibleResponses = new[] { isCreated, IsNoContent }.Count(x => x);
         if (countPossibleResponses > 1)
             throw new InvalidOperationException();

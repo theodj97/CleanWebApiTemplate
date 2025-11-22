@@ -1,7 +1,6 @@
 ﻿using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Host.Models.Interfaces;
-using CustomMediatR;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using System.Net;
 using System.Security.Claims;
 
@@ -15,8 +14,6 @@ public abstract class BaseApiRouter : IGroupMap
     public string Role => contextAccessor.HttpContext!.User.Claims.First(x => x.Type == ClaimTypes.Role).Value;
     public required string RouteName { get; init; }
     private const string ROUTE_TERMINATION_NAME = "Routes";
-    protected IMediator Mediator => contextAccessor.HttpContext!.RequestServices.GetRequiredService<IMediator>()
-        ?? throw new Exception("Unable finding IMediator service");
 
     public BaseApiRouter(IHttpContextAccessor contextAccessor)
     {
@@ -49,12 +46,7 @@ public abstract class BaseApiRouter : IGroupMap
             routeGroupBuilder.ProducesProblem((int)HttpStatusCode.Unauthorized);
 
         if (authPolicy is not null && authPolicy.Length != 0)
-        {
-            if (authPolicy.Where(policy => !Constants.AuthorizationPolicies.Contains(policy)).Any())
-                throw new ArgumentException($"Invalid authPolicy in policies: {string.Join(", ", authPolicy)}.");
-
             routeGroupBuilder.RequireAuthorization(authPolicy);
-        }
         else
             routeGroupBuilder.RequireAuthorization();
 
@@ -83,14 +75,14 @@ public abstract class BaseApiRouter : IGroupMap
             routeGroupBuilder.ProducesProblem((int)HttpStatusCode.InternalServerError);
 
             if (addOpenApiMetadata && openApiParameters is not null && openApiParameters.Length != 0)
-            {
-                routeGroupBuilder.WithOpenApi(operation =>
+                routeGroupBuilder.AddOpenApiOperationTransformer((operation, context, ct) =>
                 {
+                    operation.Parameters ??= [];
                     foreach (var parameter in openApiParameters)
                         operation.Parameters.Add(parameter);
-                    return operation;
+
+                    return Task.CompletedTask;
                 });
-            }
         }
 
         return routeGroupBuilder;

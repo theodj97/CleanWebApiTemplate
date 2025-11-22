@@ -1,21 +1,20 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
-		<PackageReference Include="FluentValidation" Version="12.0.0" />
+		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.0" />
+		<PackageReference Include="FluentValidation" Version="12.1.0" />
 		<PackageReference Include="theodj97.CustomMediatR" Version="2.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\CleanWebApiTemplate.Domain\CleanWebApiTemplate.Domain.csproj" />
-		<ProjectReference
-			Include="..\CleanWebApiTemplate.Infrastructure\CleanWebApiTemplate.Infrastructure.csproj" />
+		<ProjectReference Include="..\CleanWebApiTemplate.Infrastructure\CleanWebApiTemplate.Infrastructure.csproj" />
 	</ItemGroup>
 
 </Project>
