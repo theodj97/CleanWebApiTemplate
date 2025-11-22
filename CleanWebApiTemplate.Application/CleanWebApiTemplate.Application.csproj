@@ -4,6 +4,7 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -14,7 +15,8 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\CleanWebApiTemplate.Domain\CleanWebApiTemplate.Domain.csproj" />
-		<ProjectReference Include="..\CleanWebApiTemplate.Infrastructure\CleanWebApiTemplate.Infrastructure.csproj" />
+		<ProjectReference
+			Include="..\CleanWebApiTemplate.Infrastructure\CleanWebApiTemplate.Infrastructure.csproj" />
 	</ItemGroup>
 
 </Project>
