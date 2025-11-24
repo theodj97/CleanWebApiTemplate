@@ -13,7 +13,7 @@ public sealed class FluentValidationBehavior<TRequest, TResponse>(IEnumerable<IV
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        if (!validators.Any())
+        if (validators.Any() is false)
             return await next();
 
         var context = new ValidationContext<TRequest>(request);
@@ -39,7 +39,7 @@ public sealed class FluentValidationBehavior<TRequest, TResponse>(IEnumerable<IV
                 var valueType = resultType.GetGenericArguments()[0];
                 var result = typeof(Result<>)
                     .MakeGenericType(valueType)
-                    .GetMethod(nameof(Result<int>.Failure))!
+                    .GetMethod(nameof(Result<>.Failure))!
                     .Invoke(null, [error]);
 
                 return (result as TResponse) ?? throw new Exception("Could not invoke Failure method in Result<> class.");
