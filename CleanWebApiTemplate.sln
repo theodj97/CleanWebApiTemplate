@@ -3,17 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanWebApiTemplate.Host", "CleanWebApiTemplate.Host\CleanWebApiTemplate.Host.csproj", "{925D08AF-EFB8-4AF6-8243-7AA40B4E7561}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanWebApiTemplate.Host", "src\CleanWebApiTemplate.Host\CleanWebApiTemplate.Host.csproj", "{925D08AF-EFB8-4AF6-8243-7AA40B4E7561}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanWebApiTemplate.Domain", "CleanWebApiTemplate.Domain\CleanWebApiTemplate.Domain.csproj", "{4997AE02-5C4F-4DB2-B2F1-51FF823B596D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanWebApiTemplate.Domain", "src\CleanWebApiTemplate.Domain\CleanWebApiTemplate.Domain.csproj", "{4997AE02-5C4F-4DB2-B2F1-51FF823B596D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanWebApiTemplate.Application", "CleanWebApiTemplate.Application\CleanWebApiTemplate.Application.csproj", "{492AFEB9-F702-4903-9B9C-A14A4EDC4D5F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanWebApiTemplate.Application", "src\CleanWebApiTemplate.Application\CleanWebApiTemplate.Application.csproj", "{492AFEB9-F702-4903-9B9C-A14A4EDC4D5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanWebApiTemplate.Infrastructure", "CleanWebApiTemplate.Infrastructure\CleanWebApiTemplate.Infrastructure.csproj", "{3F66D8FB-1E7E-4887-ADB5-6F49FF10E146}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanWebApiTemplate.Infrastructure", "src\CleanWebApiTemplate.Infrastructure\CleanWebApiTemplate.Infrastructure.csproj", "{3F66D8FB-1E7E-4887-ADB5-6F49FF10E146}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanWebApiTemplate.Testing", "tests\CleanWebApiTemplate.Testing\CleanWebApiTemplate.Testing.csproj", "{9B1E09D2-75E8-45ED-9AFF-82045425A300}"
+EndProjectz
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -90,6 +92,10 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+	    {925D08AF-EFB8-4AF6-8243-7AA40B4E7561} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+    	{4997AE02-5C4F-4DB2-B2F1-51FF823B596D} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+    	{492AFEB9-F702-4903-9B9C-A14A4EDC4D5F} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+    	{3F66D8FB-1E7E-4887-ADB5-6F49FF10E146} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{9B1E09D2-75E8-45ED-9AFF-82045425A300} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

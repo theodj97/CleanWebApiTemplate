@@ -22,8 +22,6 @@ public class Program
 
         builder.Services.AddApplicationServices();
 
-        // builder.AddFluentValidationEndpointFilter();
-
         var app = builder.Build();
         app.ConfigureHostApplication(environment);
         app.Run();

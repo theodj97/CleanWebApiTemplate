@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../CleanWebApiTemplate.Host/CleanWebApiTemplate.Host.csproj" />
+    <ProjectReference Include="../../src/CleanWebApiTemplate.Host/CleanWebApiTemplate.Host.csproj" />
   </ItemGroup>
 
   <ItemGroup>
