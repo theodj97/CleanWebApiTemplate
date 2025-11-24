@@ -41,8 +41,8 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Constants.TEST_ENVIRONMNET);
-        builder.UseEnvironment(Constants.TEST_ENVIRONMNET);
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Constants.TEST_ENVIRONMENT);
+        builder.UseEnvironment(Constants.TEST_ENVIRONMENT);
         CreateJsonTestFile();
         return base.CreateHost(builder);
     }
@@ -98,7 +98,7 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
         string path = AppContext.BaseDirectory;
         var appSettingsJson = JsonSerializer.Serialize(appSettings, JsonOpts);
 
-        PathToTestAppSettings = Path.Combine(path, $"appsettings.{Constants.TEST_ENVIRONMNET}.json");
+        PathToTestAppSettings = Path.Combine(path, $"appsettings.{Constants.TEST_ENVIRONMENT}.json");
         if (File.Exists(PathToTestAppSettings)) File.Delete(PathToTestAppSettings);
         File.WriteAllText(PathToTestAppSettings, appSettingsJson);
     }

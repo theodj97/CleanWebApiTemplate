@@ -106,7 +106,7 @@ public class ConfigureHostServiceTests
         // Act
         services = ConfigureServices.AddHostServices(services,
                                                      config,
-                                                     Constants.TEST_ENVIRONMNET,
+                                                     Constants.TEST_ENVIRONMENT,
                                                      corsAllow,
                                                      validIssuers,
                                                      sqlConnectionString);
