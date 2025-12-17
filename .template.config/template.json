@@ -7,15 +7,16 @@
   },
   "classifications": [
     "WebApi",
+    "ASP.NET Core",
     "CleanArchitecture",
     "Result Pattern",
     "REPR Pattern",
-    "CQRS Pattern",
+    "Minimal API",
     "Testing"
   ],
   "identity": "CleanWebApiTemplate",
   "name": "Minimal WebApi Template CA",
-  "description": "Dotnet9 minimal WebApi Template with clean architecture focused based on microservices implementations",
+  "description": "Dotnet10 minimal WebApi Template with clean architecture focused based on microservices implementations",
   "shortName": "CleanWebApiTemplate",
   "sourceName": "CleanWebApiTemplate",
   "tags": {

@@ -11,16 +11,14 @@
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference
-      Include="..\CleanWebApiTemplate.Application\CleanWebApiTemplate.Application.csproj" />
-    <ProjectReference
-      Include="..\CleanWebApiTemplate.Infrastructure\CleanWebApiTemplate.Infrastructure.csproj" />
+    <ProjectReference Include="..\CleanWebApiTemplate.Application\CleanWebApiTemplate.Application.csproj" />
+    <ProjectReference Include="..\CleanWebApiTemplate.Infrastructure\CleanWebApiTemplate.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
