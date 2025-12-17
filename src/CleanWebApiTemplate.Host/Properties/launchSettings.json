@@ -8,7 +8,7 @@
       "launchUrl": "swagger",
       "applicationUrl": "http://localhost:5000",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "DEVELOPMENT"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "Integration": {
@@ -18,7 +18,7 @@
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:5001/,http://localhost:5000",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "INTEGRATION"
+        "ASPNETCORE_ENVIRONMENT": "Integration"
       }
     },
     "Staging": {
@@ -28,7 +28,7 @@
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:5001/,http://localhost:5000",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "STAGING"
+        "ASPNETCORE_ENVIRONMENT": "Staging"
       }
     },
     "Production": {
@@ -37,7 +37,7 @@
       "launchBrowser": false,
       "applicationUrl": "https://localhost:5001/,http://localhost:5000",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "PRODUCTION"
+        "ASPNETCORE_ENVIRONMENT": "Production"
       }
     }
   }
