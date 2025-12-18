@@ -11,7 +11,6 @@ using Microsoft.Extensions.Hosting;
 using System.Text.Json;
 using Testcontainers.MariaDb;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using MySqlConnector;
 using System.Text;
 
@@ -19,24 +18,24 @@ namespace CleanWebApiTemplate.Testing;
 
 public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly MariaDbContainer MariaDbServerContainer;
-    private static string MariaDbServerCnnString = string.Empty;
-    private readonly TaskCompletionSource<bool> DBSetupCompletionSource = new();
+    private readonly MariaDbContainer mariaDbServerContainer;
+    private static string mariaDbServerConnectionString = string.Empty;
+    private readonly TaskCompletionSource<bool> dbSetupCompletionSource = new();
     public HttpClient HttpClient { get; private set; } = null!;
-    private IServiceScopeFactory ServiceScopeFactory { get; set; } = null!;
-    private const string DataBaseName = "TodoDB";
-    private readonly JsonSerializerOptions JsonOpts = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-    private string? PathToTestAppSettings = null;
+    private IServiceScopeFactory serviceScopeFactory = null!;
+    private const string DatabaseName = "TodoDB";
+    private readonly JsonSerializerOptions jsonOptions = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    private string? pathToTestAppSettings;
 
     public TestServerFixture()
     {
-        MariaDbServerContainer = new MariaDbBuilder().WithImage("mariadb:10.10").Build();
-        MariaDbServerContainer.Started += (sender, args) =>
+        mariaDbServerContainer = new MariaDbBuilder().WithImage("mariadb:10.10").Build();
+        mariaDbServerContainer.Started += async (sender, _) =>
         {
             if (sender is not MariaDbContainer mariaDbContainer)
-                throw new Exception("Sender is not an MariaDbContainer.");
+                throw new InvalidOperationException("Sender is not a MariaDbContainer.");
 
-            InitDatabase(mariaDbContainer.GetConnectionString()).Wait();
+            await InitDatabase(mariaDbContainer.GetConnectionString());
         };
     }
 
@@ -57,108 +56,120 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
             services.AddAuthentication(TestAuthHandler.SchemeName).AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, null);
 
             var serviceProvider = services.BuildServiceProvider();
-            ServiceScopeFactory = serviceProvider.GetService<IServiceScopeFactory>()
-            ?? throw new Exception("ServiceScopeFactory not found.");
+            serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
         });
     }
 
     public async Task InitializeAsync()
     {
-        await MariaDbServerContainer.StartAsync();
-        await DBSetupCompletionSource.Task;
+        await mariaDbServerContainer.StartAsync();
+        await dbSetupCompletionSource.Task;
 
-        HttpClient = Server.CreateClient();
+        HttpClient = CreateClient();
     }
 
-    Task IAsyncLifetime.DisposeAsync()
+    async Task IAsyncLifetime.DisposeAsync()
     {
-        MariaDbServerContainer.DisposeAsync().AsTask();
-        if (string.IsNullOrEmpty(PathToTestAppSettings) is false && !string.IsNullOrEmpty(PathToTestAppSettings) && File.Exists(PathToTestAppSettings))
+        await mariaDbServerContainer.DisposeAsync();
+
+        if (!string.IsNullOrEmpty(pathToTestAppSettings) && File.Exists(pathToTestAppSettings))
         {
             try
             {
-                File.Delete(PathToTestAppSettings);
+                File.Delete(pathToTestAppSettings);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error deleting {PathToTestAppSettings}", ex);
+                Console.WriteLine($"Error deleting {pathToTestAppSettings}: {ex.Message}");
             }
         }
-        return Task.CompletedTask;
     }
 
     private void CreateJsonTestFile()
     {
-        var appSettings = new AppSettings()
+        var appSettings = new AppSettings
         {
-            ConnectionStrings = new() { MariaDb = MariaDbServerCnnString },
+            ConnectionStrings = new() { MariaDb = mariaDbServerConnectionString },
             CorsAllow = ["*"],
             ValidIssuers = ["localhost"]
         };
 
-        string path = AppContext.BaseDirectory;
-        var appSettingsJson = JsonSerializer.Serialize(appSettings, JsonOpts);
+        var appSettingsJson = JsonSerializer.Serialize(appSettings, jsonOptions);
 
-        PathToTestAppSettings = Path.Combine(path, $"appsettings.{Constants.TEST_ENVIRONMENT}.json");
-        if (File.Exists(PathToTestAppSettings)) File.Delete(PathToTestAppSettings);
-        File.WriteAllText(PathToTestAppSettings, appSettingsJson);
+        pathToTestAppSettings = Path.Combine(AppContext.BaseDirectory, $"appsettings.{Constants.TEST_ENVIRONMENT}.json");
+        if (File.Exists(pathToTestAppSettings))
+            File.Delete(pathToTestAppSettings);
+
+        File.WriteAllText(pathToTestAppSettings, appSettingsJson);
     }
 
     private async Task InitDatabase(string mariaDbConnectionStr)
     {
-        MariaDbServerCnnString = mariaDbConnectionStr.Replace("Database=master", $"Database={DataBaseName}");
+        try
+        {
+            mariaDbServerConnectionString = mariaDbConnectionStr.Replace("Database=master", $"Database={DatabaseName}");
 
-        var optionsBuilder = new DbContextOptionsBuilder<MariaDbContext>();
-        MariaDbServerVersion serverVersion = new(new Version(10, 10, 0));
-        optionsBuilder.UseMySql(MariaDbServerCnnString, serverVersion)
-                      .EnableDetailedErrors()
-                      .EnableSensitiveDataLogging();
+            var options = new DbContextOptionsBuilder<MariaDbContext>()
+                .UseMySql(mariaDbServerConnectionString, new MariaDbServerVersion(new Version(10, 10, 0)))
+                .EnableDetailedErrors()
+                .EnableSensitiveDataLogging()
+                .Options;
 
-        using var context = new MariaDbContext(optionsBuilder.Options);
-        await context.Database.EnsureCreatedAsync();
-        await context.Database.MigrateAsync();
+            await using var context = new MariaDbContext(options);
 
-        DBSetupCompletionSource.SetResult(true);
+            var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+            if (pendingMigrations.Any())
+                await context.Database.MigrateAsync();
+            else
+                await context.Database.EnsureCreatedAsync();
+
+            dbSetupCompletionSource.SetResult(true);
+        }
+        catch (Exception ex)
+        {
+            dbSetupCompletionSource.SetException(ex);
+            throw;
+        }
     }
 
     internal static async Task ResetDatabaseAsync()
     {
-        using MySqlConnection connection = new(MariaDbServerCnnString);
+        await using var connection = new MySqlConnection(mariaDbServerConnectionString);
         await connection.OpenAsync();
 
-        using (MySqlCommand disableFkCommand = new("SET FOREIGN_KEY_CHECKS = 0;", connection))
+        await using (var disableFkCommand = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 0;", connection))
             await disableFkCommand.ExecuteNonQueryAsync();
 
         var tableNames = new List<string>();
         const string getTablesSql = "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_type = 'BASE TABLE';";
 
-        using (MySqlCommand getTablesCommand = new(getTablesSql, connection))
-        using (var reader = await getTablesCommand.ExecuteReaderAsync())
+        await using (var getTablesCommand = new MySqlCommand(getTablesSql, connection))
+        await using (var reader = await getTablesCommand.ExecuteReaderAsync())
+        {
             while (await reader.ReadAsync())
                 tableNames.Add(reader.GetString(0));
+        }
 
         if (tableNames.Count > 0)
         {
-            StringBuilder truncateScript = new();
+            var truncateScript = new StringBuilder();
             foreach (var table in tableNames)
                 truncateScript.Append($"TRUNCATE TABLE `{table}`; ");
 
-
-            using MySqlCommand truncateCommand = new(truncateScript.ToString(), connection);
+            await using var truncateCommand = new MySqlCommand(truncateScript.ToString(), connection);
             await truncateCommand.ExecuteNonQueryAsync();
         }
 
-        using MySqlCommand enableFkCommand = new("SET FOREIGN_KEY_CHECKS = 1;", connection);
+        await using var enableFkCommand = new MySqlCommand("SET FOREIGN_KEY_CHECKS = 1;", connection);
         await enableFkCommand.ExecuteNonQueryAsync();
     }
 
     public async Task ExecuteDbContextAsync(Func<MariaDbContext, Task> function) =>
-        await ExecuteScopeAsync(sp => function(sp.GetService<MariaDbContext>() ?? throw new InvalidOperationException("No DbContext was provided")));
-
+        await ExecuteScopeAsync(sp => function(sp.GetRequiredService<MariaDbContext>()));
 
     private async Task ExecuteScopeAsync(Func<IServiceProvider, Task> function)
     {
-        using var scope = ServiceScopeFactory.CreateScope();
+        using var scope = serviceScopeFactory.CreateScope();
         await function(scope.ServiceProvider);
     }
 }
