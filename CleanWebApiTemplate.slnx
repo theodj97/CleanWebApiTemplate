@@ -1,0 +1,16 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/CleanWebApiTemplate.Application/CleanWebApiTemplate.Application.csproj" />
+    <Project Path="src/CleanWebApiTemplate.Domain/CleanWebApiTemplate.Domain.csproj" />
+    <Project Path="src/CleanWebApiTemplate.Host/CleanWebApiTemplate.Host.csproj" />
+    <Project Path="src/CleanWebApiTemplate.Infrastructure/CleanWebApiTemplate.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CleanWebApiTemplate.Testing/CleanWebApiTemplate.Testing.csproj" />
+  </Folder>
+</Solution>
