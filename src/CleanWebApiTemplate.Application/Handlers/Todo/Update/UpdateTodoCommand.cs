@@ -43,9 +43,9 @@ public sealed class UpdateTodoCommand : IRequest<Result<TodoDto?>>
 
 }
 
-internal sealed class UpdateTodoCommandHandler(SqlDbContext dbContext) : IRequestHandler<UpdateTodoCommand, Result<TodoDto?>>
+internal sealed class UpdateTodoCommandHandler(MariaDbContext dbContext) : IRequestHandler<UpdateTodoCommand, Result<TodoDto?>>
 {
-    private readonly SqlDbContext dbContext = dbContext;
+    private readonly MariaDbContext dbContext = dbContext;
 
     public async Task<Result<TodoDto?>> Handle(UpdateTodoCommand request, CancellationToken cancellationToken)
     {

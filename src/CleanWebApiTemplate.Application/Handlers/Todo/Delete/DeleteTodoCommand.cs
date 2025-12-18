@@ -10,9 +10,9 @@ public sealed record DeleteTodoCommand : IRequest<Result<bool>>
     public required string Id { get; set; }
 }
 
-internal sealed class DeleteTodoCommandHandler(SqlDbContext dbContext) : IRequestHandler<DeleteTodoCommand, Result<bool>>
+internal sealed class DeleteTodoCommandHandler(MariaDbContext dbContext) : IRequestHandler<DeleteTodoCommand, Result<bool>>
 {
-    private readonly SqlDbContext dbContext = dbContext;
+    private readonly MariaDbContext dbContext = dbContext;
 
     public async Task<Result<bool>> Handle(DeleteTodoCommand request, CancellationToken cancellationToken)
     {

@@ -27,15 +27,13 @@ public class ConfigureHostServiceTests
         var config = new ConfigurationBuilder().Build();
         string[]? corsAllow = ["test.com"];
         string[]? validIssuers = ["localhost"];
-        ConnectionStringsSection sqlConnectionString = new() { SqlServer = "Server=localhost;Database=TestDb;User Id=testuser;Password=testpassword" };
 
         // Act
         services = ConfigureServices.AddHostServices(services,
                                                      config,
                                                      Constants.DEV_ENVIRONMNET,
                                                      corsAllow,
-                                                     validIssuers,
-                                                     sqlConnectionString);
+                                                     validIssuers);
 
         // Assert
         var healthCheckService = services.FirstOrDefault(sd =>
@@ -101,15 +99,13 @@ public class ConfigureHostServiceTests
         var config = new ConfigurationBuilder().Build();
         string[]? corsAllow = ["test.com"];
         string[]? validIssuers = ["localhost"];
-        ConnectionStringsSection sqlConnectionString = new() { SqlServer = "Server=localhost;Database=TestDb;User Id=testuser;Password=testpassword" };
 
         // Act
         services = ConfigureServices.AddHostServices(services,
                                                      config,
                                                      Constants.TEST_ENVIRONMENT,
                                                      corsAllow,
-                                                     validIssuers,
-                                                     sqlConnectionString);
+                                                     validIssuers);
 
         // Assert
         var healthCheckService = services.FirstOrDefault(sd =>

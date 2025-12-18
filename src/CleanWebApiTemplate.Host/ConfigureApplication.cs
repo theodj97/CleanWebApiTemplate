@@ -37,15 +37,9 @@ public static class ConfigureApplication
 
     private static void MapCustomHealthChecks(this WebApplication app)
     {
-
         app.MapHealthChecks("/health/api", new HealthCheckOptions
         {
             Predicate = check => check.Tags.Contains("api")
-        });
-
-        app.MapHealthChecks("/health/sqlServerDb", new HealthCheckOptions
-        {
-            Predicate = check => check.Tags.Contains("sqlServerDb")
         });
     }
 }

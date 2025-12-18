@@ -1,4 +1,10 @@
-USER SECRETS
+DOCKER (local dev)
+--------------------------------
+
+docker run --name TodoDB -e MARIADB_ROOT_PASSWORD=passwd -p 3306:3306 -d mariadb:12.1
+
+
+USER SECRETS (local dev)
 ---------------------------------
 
 {
@@ -10,32 +16,30 @@ USER SECRETS
     }
   },
   "ConnectionStrings": {
-    "SqlServer": "Server=localhost,1433;Database=Todo;User Id=sa;Password=yourStrong(!)Password;Encrypt=False;TrustServerCertificate=True;",
-    "MongoDb": "mongodb://admin:adminpass@localhost:27017/"
+    "MariaDb": "Server=localhost;Port=3306;Database=TodoDB;Uid=root;Pwd=passwd;AllowUserVariables=true;TreatTinyAsBoolean=true;"
   }
 }
 
 --------------------------------
 
-SQL SERVER SCRIPTS
+MARIADB SCRIPTS (local dev)
 
 --------------------------------
 
-IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'db')
-BEGIN
-    EXEC('CREATE SCHEMA [db]')
-END
+CREATE DATABASE IF NOT EXISTS `db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `db`;
+
+CREATE TABLE `Todo` (
+    `Id` BINARY(16) NOT NULL,
+    `Title` VARCHAR(200) NOT NULL,
+    `Description` TEXT NULL,
+    `CreatedAt` DATETIME(6) NOT NULL,
+    `UpdatedAt` DATETIME(6) NOT NULL,
+    `Status` INT NOT NULL,
+    `CreatedBy` VARCHAR(100) NOT NULL,
+    `UpdatedBy` VARCHAR(100) NOT NULL,
+    PRIMARY KEY (`Id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 GO
 
-CREATE TABLE [db].[Todo] (
-    [Id] BINARY(16) NOT NULL,          
-    [Title] NVARCHAR(200) NOT NULL,    
-    [Description] NVARCHAR(MAX) NULL,  
-    [CreatedAt] DATETIME2 NOT NULL,    
-    [UpdatedAt] DATETIME2 NOT NULL,    
-    [Status] INT NOT NULL,            
-    [CreatedBy] NVARCHAR(100) NOT NULL,
-    [UpdatedBy] NVARCHAR(100) NOT NULL,
-    CONSTRAINT [PK_Todo] PRIMARY KEY ([Id])
-);
-GO
+--------------------------------

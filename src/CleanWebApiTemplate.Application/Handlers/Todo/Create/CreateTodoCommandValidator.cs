@@ -5,7 +5,7 @@ namespace CleanWebApiTemplate.Application.Handlers.Todo.Create;
 
 public class CreateTodoCommandValidator : TodoValidator<CreateTodoCommand>
 {
-    public CreateTodoCommandValidator(SqlDbContext dbContext) : base(dbContext)
+    public CreateTodoCommandValidator(MariaDbContext dbContext) : base(dbContext)
     {
         RuleFor(x => x.Title)
             .Custom(NotNullNotEmpty)

@@ -15,10 +15,10 @@ public class Program
         builder.Services.AddHostServices(builder.Configuration,
                                          environment,
                                          appSettings.CorsAllow,
-                                         appSettings.ValidIssuers,
-                                         appSettings.ConnectionStrings);
+                                         appSettings.ValidIssuers);
 
-        builder.Services.AddInfrastructureServices(appSettings.ConnectionStrings);
+        builder.Services.AddInfrastructureServices(appSettings.ConnectionStrings,
+                                                   environment);
 
         builder.Services.AddApplicationServices();
 

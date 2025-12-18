@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace CleanWebApiTemplate.Infrastructure.Context;
 
-public class SqlDbContext(DbContextOptions<SqlDbContext> options) : DbContext(options)
+public class MariaDbContext(DbContextOptions<MariaDbContext> options) : DbContext(options)
 {
     public DbSet<TodoEntity> TodoDb { get; set; }
 

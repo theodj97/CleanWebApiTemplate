@@ -23,9 +23,9 @@ public sealed record CreateTodoCommand : IRequest<Result<TodoDto?>>
     };
 }
 
-internal sealed class CreateTodoCommandHandler(SqlDbContext dbContext) : IRequestHandler<CreateTodoCommand, Result<TodoDto?>>
+internal sealed class CreateTodoCommandHandler(MariaDbContext dbContext) : IRequestHandler<CreateTodoCommand, Result<TodoDto?>>
 {
-    private readonly SqlDbContext dbContext = dbContext;
+    private readonly MariaDbContext dbContext = dbContext;
 
     public async Task<Result<TodoDto?>> Handle(CreateTodoCommand request, CancellationToken cancellationToken)
     {

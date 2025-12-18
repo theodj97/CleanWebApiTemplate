@@ -12,7 +12,8 @@
     "Result Pattern",
     "REPR Pattern",
     "Minimal API",
-    "Testing"
+    "Testing",
+    "MariaDBWebApi"
   ],
   "identity": "CleanWebApiTemplate",
   "name": "Minimal WebApi Template CA",
@@ -24,74 +25,6 @@
     "type": "project"
   },
   "preferNameDirectory": true,
-  "symbols": {
-    "ApiHealthCheck": {
-      "type": "parameter",
-      "description": "Add Api HealthCheck endpoint",
-      "datatype": "bool",
-      "defaultValue": "true"
-    },
-    "DataBase": {
-      "type": "parameter",
-      "description": "Select the DB to consume in your project",
-      "datatype": "choice",
-      "choices": [
-        {
-          "choice": "SQLServer"
-        },
-        {
-          "choice": "MongoDB"
-        }
-      ],
-      "defaultValue": "SQLServer"
-    },
-    "IsSQLServer": {
-      "type": "computed",
-      "value": "(DataBase == \"SQLServer\")"
-    },
-    "IsMongoDB": {
-      "type": "computed",
-      "value": "(DataBase == \"MongoDB\")"
-    },
-    "ApplicationHttspUrl": {
-      "type": "parameter",
-      "datatype": "text",
-      "description": "Specify the app SSL URL, by default https://localhost:5001",
-      "replaces": "{ApplicationHttpUrl}",
-      "defaultValue": "https://localhost:5001"
-    },
-    "ApplicationHttpUrl": {
-      "type": "parameter",
-      "datatype": "text",
-      "description": "Specify the app URL, by default http://localhost:5000",
-      "replaces": "{ApplicationHttpUrl}",
-      "defaultValue": "http://localhost:5000"
-    }
-  },
-  "sources": [
-    {
-      "modifiers": [
-        {
-          "exclude": [
-            ".git/**",
-            ".gitignore",
-            ".vs/**",
-            "README.md"
-          ]
-        },
-        {
-          "condition": "IsSQLServer",
-          "exclude": [
-            ""
-          ]
-        },
-        {
-          "condition": "IsMongoDB",
-          "exclude": [
-            ""
-          ]
-        }
-      ]
-    }
-  ]
+  "symbols": {},
+  "sources": []
 }

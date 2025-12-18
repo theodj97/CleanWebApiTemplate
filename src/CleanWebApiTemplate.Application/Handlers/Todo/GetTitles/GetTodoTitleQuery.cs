@@ -14,9 +14,9 @@ public sealed class GetTodoTitleQuery : IRequest<Result<IEnumerable<TodoDto?>>>
     public IEnumerable<KeyValuePair<string, bool>>? SortProperties { get; set; } = null;
 }
 
-internal sealed class GetTodoTitleQueryHandler(SqlDbContext dbContext) : IRequestHandler<GetTodoTitleQuery, Result<IEnumerable<TodoDto?>>>
+internal sealed class GetTodoTitleQueryHandler(MariaDbContext dbContext) : IRequestHandler<GetTodoTitleQuery, Result<IEnumerable<TodoDto?>>>
 {
-    private readonly SqlDbContext dbContext = dbContext;
+    private readonly MariaDbContext dbContext = dbContext;
 
     public async Task<Result<IEnumerable<TodoDto?>>> Handle(GetTodoTitleQuery request, CancellationToken cancellationToken)
     {

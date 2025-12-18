@@ -7,7 +7,7 @@ namespace CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
 
 public class FilteredTodoQueryValidator : TodoValidator<FilteredTodoQuery>
 {
-    public FilteredTodoQueryValidator(SqlDbContext dbContext) : base(dbContext)
+    public FilteredTodoQueryValidator(MariaDbContext dbContext) : base(dbContext)
     {
         RuleForEach(x => x.Ids)
             .Custom(ValidateUlid)

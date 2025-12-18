@@ -8,9 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo;
 
-public class TodoValidator<TMessage>(SqlDbContext dbContext) : BaseAbstractValidator<TMessage> where TMessage : class, IRequest<object>
+public class TodoValidator<TMessage>(MariaDbContext dbContext) : BaseAbstractValidator<TMessage> where TMessage : class, IRequest<object>
 {
-    private readonly SqlDbContext dbContext = dbContext;
+    private readonly MariaDbContext dbContext = dbContext;
 
     protected async Task ValidateTitle(string title,
                                        ValidationContext<TMessage> context,

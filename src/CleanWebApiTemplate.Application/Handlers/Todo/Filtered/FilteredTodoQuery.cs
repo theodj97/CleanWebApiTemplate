@@ -22,9 +22,9 @@ public sealed record FilteredTodoQuery : IRequest<Result<IEnumerable<TodoDto?>>>
     public IEnumerable<KeyValuePair<string, bool>>? SortProperties { get; set; } = null;
 }
 
-internal sealed class FilteredTodoQueryHandler(SqlDbContext dbContext) : IRequestHandler<FilteredTodoQuery, Result<IEnumerable<TodoDto?>>>
+internal sealed class FilteredTodoQueryHandler(MariaDbContext dbContext) : IRequestHandler<FilteredTodoQuery, Result<IEnumerable<TodoDto?>>>
 {
-    private readonly SqlDbContext dbContext = dbContext;
+    private readonly MariaDbContext dbContext = dbContext;
 
     public async Task<Result<IEnumerable<TodoDto?>>> Handle(FilteredTodoQuery request, CancellationToken cancellationToken)
     {

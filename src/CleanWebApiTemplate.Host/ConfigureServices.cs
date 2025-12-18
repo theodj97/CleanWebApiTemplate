@@ -18,17 +18,10 @@ public static class ConfigureServices
                                                      IConfiguration configuration,
                                                      string environment,
                                                      string[] corsAllow,
-                                                     string[] validIssuers,
-                                                     ConnectionStringsSection connectionStrings)
+                                                     string[] validIssuers)
     {
         services.AddHealthChecks()
-                .AddCheck("api-health-check", () => HealthCheckResult.Healthy("API is up and running"), tags: ["api"])
-                .AddSqlServer(
-                    connectionString: connectionStrings.SqlServer,
-                    name: "sqlserver-check",
-                    failureStatus: HealthStatus.Unhealthy,
-                    tags: ["sqlServerDb", "sql"]
-                );
+                .AddCheck("api-health-check", () => HealthCheckResult.Healthy("API is up and running"), tags: ["api"]);
 
         services.ConfigureCors(environment, corsAllow);
 

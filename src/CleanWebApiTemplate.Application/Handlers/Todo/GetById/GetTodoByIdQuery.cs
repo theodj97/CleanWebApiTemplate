@@ -11,9 +11,9 @@ public sealed record GetTodoByIdQuery : IRequest<Result<TodoDto?>>
     public required string Id { get; set; }
 }
 
-internal sealed class GetTodoByIdQueryHandler(SqlDbContext dbContext) : IRequestHandler<GetTodoByIdQuery, Result<TodoDto?>>
+internal sealed class GetTodoByIdQueryHandler(MariaDbContext dbContext) : IRequestHandler<GetTodoByIdQuery, Result<TodoDto?>>
 {
-    private readonly SqlDbContext dbContext = dbContext;
+    private readonly MariaDbContext dbContext = dbContext;
 
     public async Task<Result<TodoDto?>> Handle(GetTodoByIdQuery request, CancellationToken cancellationToken)
     {

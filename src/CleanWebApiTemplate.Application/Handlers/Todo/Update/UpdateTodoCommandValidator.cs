@@ -5,7 +5,7 @@ namespace CleanWebApiTemplate.Application.Handlers.Todo.Update;
 
 public class UpdateTodoCommandValidator : TodoValidator<UpdateTodoCommand>
 {
-    public UpdateTodoCommandValidator(SqlDbContext dbContext) : base(dbContext)
+    public UpdateTodoCommandValidator(MariaDbContext dbContext) : base(dbContext)
     {
         RuleFor(x => x.Id)
             .Custom(ValidateUlid);
