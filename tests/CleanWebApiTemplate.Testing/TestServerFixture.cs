@@ -24,7 +24,7 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
     private readonly TaskCompletionSource<bool> DBSetupCompletionSource = new();
     public HttpClient HttpClient { get; private set; } = null!;
     private IServiceScopeFactory ServiceScopeFactory { get; set; } = null!;
-    private const string DataBaseName = "Todo";
+    private const string DataBaseName = "TodoDB";
     private readonly JsonSerializerOptions JsonOpts = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private string? PathToTestAppSettings = null;
 
@@ -109,8 +109,10 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
         MariaDbServerCnnString = mariaDbConnectionStr.Replace("Database=master", $"Database={DataBaseName}");
 
         var optionsBuilder = new DbContextOptionsBuilder<MariaDbContext>();
-        optionsBuilder.UseMySql(MariaDbServerCnnString, ServerVersion.AutoDetect(MariaDbServerCnnString));
-        optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+        MariaDbServerVersion serverVersion = new(new Version(10, 10, 0));
+        optionsBuilder.UseMySql(MariaDbServerCnnString, serverVersion)
+                      .EnableDetailedErrors()
+                      .EnableSensitiveDataLogging();
 
         using var context = new MariaDbContext(optionsBuilder.Options);
         await context.Database.EnsureCreatedAsync();

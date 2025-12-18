@@ -43,3 +43,10 @@ CREATE TABLE `Todo` (
 GO
 
 --------------------------------
+
+
+MARIADB MIGRATION (local dev, other way to create the local database)
+
+--------------------------------
+
+dotnet ef migrations add InitialCreate --startup-project ../CleanWebApiTemplate.Host --output-dir LocalDevMigrations

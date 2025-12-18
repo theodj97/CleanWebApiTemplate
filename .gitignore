@@ -490,5 +490,5 @@ $RECYCLE.BIN/
 **/coverage-report/
 **/TestResults/
 
-# Entity Framework Core Migrations
+# Entity Framework Core local Migrations
 **/Migrations/
