@@ -5,6 +5,9 @@ namespace CleanWebApiTemplate.Testing;
 
 public static class TestServerFixtureExtension
 {
+    private static readonly object IdLock = new();
+    private static byte[] lastIdBytes = new byte[16]; // Starts as Ulid.MinValue
+
     public static async Task<TodoEntity> AddDefaultTodo(this TestServerFixture testServerFixture,
                                                         string title = "defaultTitle",
                                                         string description = "defaultDescription",
@@ -16,6 +19,7 @@ public static class TestServerFixtureExtension
     {
         TodoEntity todoEntity = new()
         {
+            Id = NewMonotonicUlid(),
             Title = title,
             Description = description,
             CreatedAt = createdAt ?? DateTime.UtcNow,
@@ -44,6 +48,33 @@ public static class TestServerFixtureExtension
         return todoDb;
     }
 
+
+    /// <summary>
+    /// Generates ULIDs that are monotonically increasing by creation order.
+    /// Ulid.NewUlid() alone is not sortable when several rows are created within
+    /// the same millisecond (common against a fast local SQLite file), so the
+    /// random part is incremented when the timestamp does not advance.
+    /// </summary>
+    private static Ulid NewMonotonicUlid()
+    {
+        lock (IdLock)
+        {
+            var candidate = Ulid.NewUlid();
+            var last = new Ulid(lastIdBytes);
+            if (candidate.CompareTo(last) <= 0)
+                candidate = new Ulid(Increment(lastIdBytes));
+
+            lastIdBytes = candidate.ToByteArray();
+            return candidate;
+        }
+    }
+
+    private static byte[] Increment(byte[] bytes)
+    {
+        var copy = (byte[])bytes.Clone();
+        for (int i = copy.Length - 1; i >= 0 && ++copy[i] == 0; i--) { }
+        return copy;
+    }
 
     /// <summary>
     /// Generates a random string of the specified length.

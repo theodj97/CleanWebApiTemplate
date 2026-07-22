@@ -23,11 +23,11 @@ public static class ConfigureServices
     {
         services.AddHealthChecks()
                 .AddCheck("api-health-check", () => HealthCheckResult.Healthy("API is up and running"), tags: ["api"])
-                .AddSqlServer(
-                    connectionString: connectionStrings.SqlServer,
-                    name: "sqlserver-check",
+                .AddSqlite(
+                    connectionStrings.Sqlite,
+                    name: "sqlite-check",
                     failureStatus: HealthStatus.Unhealthy,
-                    tags: ["sqlServerDb", "sql"]
+                    tags: ["sqliteDb", "sql"]
                 );
 
         services.ConfigureCors(environment, corsAllow);

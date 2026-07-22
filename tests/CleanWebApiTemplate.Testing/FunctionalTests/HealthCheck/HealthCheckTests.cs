@@ -7,7 +7,7 @@ public class HealthCheckTests(TestServerFixture fixture)
 {
     private readonly TestServerFixture Fixture = fixture;
     private const string API_HEALTH_URL = "/health/api";
-    private const string SQL_SERVER_DB_HEALTH_URL = "/health/sqlServerDb";
+    private const string SQLITE_DB_HEALTH_URL = "/health/sqliteDb";
 
     [Fact]
     public async Task CheckApiHealth_Should_Return_Ok()
@@ -21,10 +21,10 @@ public class HealthCheckTests(TestServerFixture fixture)
     }
 
     [Fact]
-    public async Task CheckSqlServerDbHealth_Should_Return_Ok()
+    public async Task CheckSqliteDbHealth_Should_Return_Ok()
     {
         // Act
-        var response = await Fixture.HttpClient.GetAsync(SQL_SERVER_DB_HEALTH_URL);
+        var response = await Fixture.HttpClient.GetAsync(SQLITE_DB_HEALTH_URL);
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);

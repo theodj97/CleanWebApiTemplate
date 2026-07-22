@@ -9,11 +9,11 @@ public class TodoEntityConfiguration : IEntityTypeConfiguration<TodoEntity>
 {
     public void Configure(EntityTypeBuilder<TodoEntity> builder)
     {
-        builder.ToTable(name: SqlDbConstants.TODO_TABLE, schema: SqlDbConstants.DB_SCHEMA);
+        builder.ToTable(name: SqlDbConstants.TODO_TABLE);
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id)
               .HasColumnName(nameof(TodoEntity.Id))
-              .HasColumnType("binary(16)")
+              .HasColumnType("BLOB")
               .HasConversion(
                   ulid => ulid.ToByteArray(),
                   bytes => new Ulid(bytes)
@@ -21,38 +21,38 @@ public class TodoEntityConfiguration : IEntityTypeConfiguration<TodoEntity>
 
         builder.Property(e => e.Title)
             .HasColumnName(nameof(TodoEntity.Title))
-            .HasColumnType("NVARCHAR")
+            .HasColumnType("TEXT")
             .HasMaxLength(TitleLenght)
             .IsRequired();
 
         builder.Property(e => e.Description)
             .HasColumnName(nameof(TodoEntity.Description))
-            .HasColumnType("NVARCHAR")
+            .HasColumnType("TEXT")
             .HasMaxLength(DescriptionLenght)
             .IsRequired(false);
 
         builder.Property(e => e.CreatedAt)
             .HasColumnName(nameof(TodoEntity.CreatedAt))
-            .HasColumnType("datetime2")
+            .HasColumnType("TEXT")
             .IsRequired();
 
         builder.Property(e => e.UpdatedAt)
             .HasColumnName(nameof(TodoEntity.UpdatedAt))
-            .HasColumnType("datetime2");
+            .HasColumnType("TEXT");
 
         builder.Property(e => e.Status)
             .HasColumnName(nameof(TodoEntity.Status))
-            .HasColumnType("tinyint");
+            .HasColumnType("INTEGER");
 
         builder.Property(e => e.CreatedBy)
             .HasColumnName(nameof(TodoEntity.CreatedBy))
-            .HasColumnType("NVARCHAR")
+            .HasColumnType("TEXT")
             .HasMaxLength(CreatedByLenght)
             .IsRequired();
 
         builder.Property(e => e.UpdatedBy)
             .HasColumnName(nameof(TodoEntity.UpdatedBy))
-            .HasColumnType("NVARCHAR")
+            .HasColumnType("TEXT")
             .HasMaxLength(UpdatedByLenght)
             .IsRequired();
     }

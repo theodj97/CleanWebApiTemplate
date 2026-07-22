@@ -4,7 +4,7 @@
 
 Welcome to the Clean Architecture WebAPI Template for .NET Core 9! This template is designed to provide a solid starting point for building scalable and maintainable web applications using the .NET Core framework and ASP NET Core. Tailored for .NET Core 9, it incorporates best practices and design patterns to kickstart your project.
 
-This project serves as a template for creating a Web API focused on microservices architecture. It provides flexibility for use with different databases, including SQL Server and MongoDB, with fully implemented, unique configurations for each, selectable by parameters.
+This project serves as a template for creating a Web API focused on microservices architecture. It provides flexibility for use with different databases, including SQLite and MongoDB, with fully implemented, unique configurations for each, selectable by parameters.
 
 ## Description
 
@@ -15,7 +15,7 @@ This template adheres to the principles of Clean Architecture, ensuring separati
 - **Clean Architecture**: Organized into clear layers, the project structure promotes clean separation of concerns.
 - **JWT Auth**: Authentication and authorization already configured for the project, just need to set up environment vars on your machine.
 - **Functional, Integration & Unitary Testing**: Robust testing setup to ensure code reliability and ease of maintenance.
-- **Migrations**: Code first implementation in the SQL Server variant of this template, used Migrations also in functional testing.
+- **Migrations**: Code first implementation in the SQLite variant of this template, used Migrations also in functional testing.
 - **ULID Sql**: ULID Id to provide faster, non sequential and fragmentation preventive implementation.
 
 ### Libraries and Frameworks
@@ -23,9 +23,9 @@ This template adheres to the principles of Clean Architecture, ensuring separati
 The project leverages several high-quality libraries and frameworks, including:
 - **MediatR**: For implementing the CQRS pattern.
 - **FluentValidation**: For building strongly-typed validation rules.
-- **EntityFramework**: For ORM capabilities, implemented for SQL Server and soon MongoDB.
+- **EntityFramework**: For ORM capabilities, implemented for SQLite and soon MongoDB.
 - **XUnit**: For comprehensive testing frameworks.
-- **TestContainers**: For creating throwaway instances of databases inside the testing layer.
+- **SQLite**: Serverless, file-based database engine, also used in the testing layer with no need for external containers or services.
 - **Swashbuckle Swagger**: For Web API documentation.
 
 ## About the Author
@@ -65,13 +65,11 @@ To create your own project using this template, follow these steps:
 
     **NOTE:** It's important that you close the CleanWebApiTemplate from your IDE, otherwise there can be problems creating the project
 
-5. You want to test the created WebApi against a database in DEVELOPMENT mode? Don't forget to create a container DB:
+5. You want to test the created WebApi against a database in DEVELOPMENT mode?
 
-    - If you selected SQL Server:
+    - If you selected SQLite:
 
-    ```console
-    docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=yourStrong(!)Password" -p 1433:1433 --name sqlserver -d mcr.microsoft.com/mssql/server:latest
-    ```
+    No external service is needed, SQLite is a serverless, file-based database. A `database.db` file is included at the root of the repository, and it will be created automatically on first run if missing.
 
     - If you selected MongoDB
     ```console

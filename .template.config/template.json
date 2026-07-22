@@ -37,17 +37,17 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "SQLServer"
+          "choice": "SQLite"
         },
         {
           "choice": "MongoDB"
         }
       ],
-      "defaultValue": "SQLServer"
+      "defaultValue": "SQLite"
     },
-    "IsSQLServer": {
+    "IsSQLite": {
       "type": "computed",
-      "value": "(DataBase == \"SQLServer\")"
+      "value": "(DataBase == \"SQLite\")"
     },
     "IsMongoDB": {
       "type": "computed",
@@ -80,7 +80,7 @@
           ]
         },
         {
-          "condition": "IsSQLServer",
+          "condition": "IsSQLite",
           "exclude": [
             ""
           ]
