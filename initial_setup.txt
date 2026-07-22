@@ -10,32 +10,25 @@ USER SECRETS
     }
   },
   "ConnectionStrings": {
-    "SqlServer": "Server=localhost,1433;Database=Todo;User Id=sa;Password=yourStrong(!)Password;Encrypt=False;TrustServerCertificate=True;",
+    "Sqlite": "Data Source=database.db",
     "MongoDb": "mongodb://admin:adminpass@localhost:27017/"
   }
 }
 
 --------------------------------
 
-SQL SERVER SCRIPTS
+SQLITE SCRIPTS
 
 --------------------------------
 
-IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'db')
-BEGIN
-    EXEC('CREATE SCHEMA [db]')
-END
-GO
-
-CREATE TABLE [db].[Todo] (
-    [Id] BINARY(16) NOT NULL,          
-    [Title] NVARCHAR(200) NOT NULL,    
-    [Description] NVARCHAR(MAX) NULL,  
-    [CreatedAt] DATETIME2 NOT NULL,    
-    [UpdatedAt] DATETIME2 NOT NULL,    
-    [Status] INT NOT NULL,            
-    [CreatedBy] NVARCHAR(100) NOT NULL,
-    [UpdatedBy] NVARCHAR(100) NOT NULL,
-    CONSTRAINT [PK_Todo] PRIMARY KEY ([Id])
+CREATE TABLE IF NOT EXISTS "Todo" (
+    "Id"          BLOB    NOT NULL,
+    "Title"       TEXT    NOT NULL,
+    "Description" TEXT    NULL,
+    "CreatedAt"   TEXT    NOT NULL,
+    "UpdatedAt"   TEXT    NOT NULL,
+    "Status"      INTEGER NOT NULL,
+    "CreatedBy"   TEXT    NOT NULL,
+    "UpdatedBy"   TEXT    NOT NULL,
+    CONSTRAINT "PK_Todo" PRIMARY KEY ("Id")
 );
-GO

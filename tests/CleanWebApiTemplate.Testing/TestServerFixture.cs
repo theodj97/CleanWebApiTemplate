@@ -2,9 +2,8 @@ using CleanWebApiTemplate.Host;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Data.SqlClient;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
-using Testcontainers.MsSql;
 using CleanWebApiTemplate.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -18,26 +17,13 @@ namespace CleanWebApiTemplate.Testing;
 
 public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly MsSqlContainer SqlServerContainer;
-    private static string SqlServerCnnString = string.Empty;
-    private readonly TaskCompletionSource<bool> DBSetupCompletionSource = new();
+    private const string DataBaseName = "Todo";
+    private static readonly string DbFilePath = Path.Combine(Path.GetTempPath(), $"{DataBaseName}_{Guid.NewGuid():N}.db");
+    private static readonly string SqliteCnnString = $"Data Source={DbFilePath}";
     public HttpClient HttpClient { get; private set; } = null!;
     private IServiceScopeFactory ServiceScopeFactory { get; set; } = null!;
-    private const string DataBaseName = "Todo";
     private readonly JsonSerializerOptions JsonOpts = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private string? PathToTestAppSettings = null;
-
-    public TestServerFixture()
-    {
-        SqlServerContainer = new MsSqlBuilder().WithImage("mcr.microsoft.com/mssql/server:latest").Build();
-        SqlServerContainer.Started += (sender, args) =>
-        {
-            if (sender is not MsSqlContainer sqlContainer)
-                throw new Exception("Sender is not an MsSqlContainer.");
-
-            InitDatabase(sqlContainer.GetConnectionString()).Wait();
-        };
-    }
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
@@ -63,15 +49,13 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await SqlServerContainer.StartAsync();
-        await DBSetupCompletionSource.Task;
+        await InitDatabase(SqliteCnnString);
 
         HttpClient = Server.CreateClient();
     }
 
     Task IAsyncLifetime.DisposeAsync()
     {
-        SqlServerContainer.DisposeAsync().AsTask();
         if (string.IsNullOrEmpty(PathToTestAppSettings) is false && !string.IsNullOrEmpty(PathToTestAppSettings) && File.Exists(PathToTestAppSettings))
         {
             try
@@ -83,6 +67,17 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
                 Console.WriteLine($"Error deleting {PathToTestAppSettings}", ex);
             }
         }
+
+        try
+        {
+            SqliteConnection.ClearAllPools();
+            if (File.Exists(DbFilePath)) File.Delete(DbFilePath);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting {DbFilePath}", ex);
+        }
+
         return Task.CompletedTask;
     }
 
@@ -90,7 +85,7 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
     {
         var appSettings = new AppSettings()
         {
-            ConnectionStrings = new() { SqlServer = SqlServerCnnString },
+            ConnectionStrings = new() { Sqlite = SqliteCnnString },
             CorsAllow = ["*"],
             ValidIssuers = ["localhost"]
         };
@@ -103,43 +98,47 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
         File.WriteAllText(PathToTestAppSettings, appSettingsJson);
     }
 
-    private async Task InitDatabase(string sqlConnectionStr)
+    private static async Task InitDatabase(string sqliteConnectionStr)
     {
-        SqlServerCnnString = sqlConnectionStr.Replace("Database=master", $"Database={DataBaseName}");
-
         var optionsBuilder = new DbContextOptionsBuilder<SqlDbContext>();
-        optionsBuilder.UseSqlServer(SqlServerCnnString);
+        optionsBuilder.UseSqlite(sqliteConnectionStr);
         optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
 
         using var context = new SqlDbContext(optionsBuilder.Options);
         await context.Database.EnsureCreatedAsync();
         await context.Database.MigrateAsync();
-
-        DBSetupCompletionSource.SetResult(true);
     }
 
     internal static async Task ResetDatabaseAsync()
     {
-        using SqlConnection connection = new(SqlServerCnnString);
+        using SqliteConnection connection = new(SqliteCnnString);
         await connection.OpenAsync();
 
-        // Disable all constraints
-        using SqlCommand removeCnstaitCommand = new(
-            "EXEC sp_msforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'",
-            connection);
-        await removeCnstaitCommand.ExecuteNonQueryAsync();
+        // Disable foreign key constraints
+        using SqliteCommand disableFkCommand = new("PRAGMA foreign_keys = OFF;", connection);
+        await disableFkCommand.ExecuteNonQueryAsync();
+
+        // Get all table names
+        List<string> tables = [];
+        using (SqliteCommand getTablesCommand = new(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name <> '__EFMigrationsHistory';",
+            connection))
+        using (var reader = await getTablesCommand.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+                tables.Add(reader.GetString(0));
+        }
 
         // Drop all tables data
-        using SqlCommand dropTablesDataCommand = new(
-            "EXEC sp_msforeachtable 'TRUNCATE TABLE ?'",
-            connection);
-        await dropTablesDataCommand.ExecuteNonQueryAsync();
+        foreach (var table in tables)
+        {
+            using SqliteCommand dropTablesDataCommand = new($"DELETE FROM \"{table}\";", connection);
+            await dropTablesDataCommand.ExecuteNonQueryAsync();
+        }
 
-        // Re-enable constraints
-        using SqlCommand reEnableCnstaitCommand = new(
-            "EXEC sp_msforeachtable 'ALTER TABLE ? CHECK CONSTRAINT ALL'",
-            connection);
-        await reEnableCnstaitCommand.ExecuteNonQueryAsync();
+        // Re-enable foreign key constraints
+        using SqliteCommand enableFkCommand = new("PRAGMA foreign_keys = ON;", connection);
+        await enableFkCommand.ExecuteNonQueryAsync();
     }
 
     public async Task ExecuteDbContextAsync(Func<SqlDbContext, Task> function) =>

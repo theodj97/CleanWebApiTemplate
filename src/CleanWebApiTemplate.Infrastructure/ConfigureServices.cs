@@ -12,7 +12,7 @@ public static class ConfigureServices
         var assembly = typeof(ConfigureServices).Assembly;
 
         services.AddDbContextPool<SqlDbContext>(options =>
-            options.UseSqlServer(connectionStrings.SqlServer,
+            options.UseSqlite(connectionStrings.Sqlite,
                 b => b.MigrationsAssembly(assembly)
             ));
 

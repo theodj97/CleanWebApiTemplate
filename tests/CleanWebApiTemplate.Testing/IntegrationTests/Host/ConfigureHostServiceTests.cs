@@ -27,7 +27,7 @@ public class ConfigureHostServiceTests
         var config = new ConfigurationBuilder().Build();
         string[]? corsAllow = ["test.com"];
         string[]? validIssuers = ["localhost"];
-        ConnectionStringsSection sqlConnectionString = new() { SqlServer = "Server=localhost;Database=TestDb;User Id=testuser;Password=testpassword" };
+        ConnectionStringsSection sqliteConnectionString = new() { Sqlite = "Data Source=TestDb.db" };
 
         // Act
         services = ConfigureServices.AddHostServices(services,
@@ -35,7 +35,7 @@ public class ConfigureHostServiceTests
                                                      Constants.DEV_ENVIRONMNET,
                                                      corsAllow,
                                                      validIssuers,
-                                                     sqlConnectionString);
+                                                     sqliteConnectionString);
 
         // Assert
         var healthCheckService = services.FirstOrDefault(sd =>
@@ -101,7 +101,7 @@ public class ConfigureHostServiceTests
         var config = new ConfigurationBuilder().Build();
         string[]? corsAllow = ["test.com"];
         string[]? validIssuers = ["localhost"];
-        ConnectionStringsSection sqlConnectionString = new() { SqlServer = "Server=localhost;Database=TestDb;User Id=testuser;Password=testpassword" };
+        ConnectionStringsSection sqliteConnectionString = new() { Sqlite = "Data Source=TestDb.db" };
 
         // Act
         services = ConfigureServices.AddHostServices(services,
@@ -109,7 +109,7 @@ public class ConfigureHostServiceTests
                                                      Constants.TEST_ENVIRONMENT,
                                                      corsAllow,
                                                      validIssuers,
-                                                     sqlConnectionString);
+                                                     sqliteConnectionString);
 
         // Assert
         var healthCheckService = services.FirstOrDefault(sd =>
