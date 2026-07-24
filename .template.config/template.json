@@ -32,27 +32,20 @@
       "defaultValue": "true"
     },
     "DataBase": {
-      "type": "parameter",
-      "description": "Select the DB to consume in your project",
-      "datatype": "choice",
-      "choices": [
-        {
-          "choice": "SQLite"
-        },
-        {
-          "choice": "MongoDB"
-        }
-      ],
-      "defaultValue": "SQLite"
-    },
-    "IsSQLite": {
-      "type": "computed",
-      "value": "(DataBase == \"SQLite\")"
-    },
-    "IsMongoDB": {
-      "type": "computed",
-      "value": "(DataBase == \"MongoDB\")"
-    },
+       "type": "parameter",
+       "description": "Select the DB to consume in your project",
+       "datatype": "choice",
+       "choices": [
+         {
+           "choice": "SQLite"
+         }
+       ],
+       "defaultValue": "SQLite"
+     },
+     "IsSQLite": {
+       "type": "computed",
+       "value": "true"
+     },
     "ApplicationHttspUrl": {
       "type": "parameter",
       "datatype": "text",
@@ -81,12 +74,6 @@
         },
         {
           "condition": "IsSQLite",
-          "exclude": [
-            ""
-          ]
-        },
-        {
-          "condition": "IsMongoDB",
           "exclude": [
             ""
           ]
