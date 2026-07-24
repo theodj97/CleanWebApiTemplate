@@ -25,7 +25,7 @@ The project leverages several high-quality libraries and frameworks, including:
 - **FluentValidation**: For building strongly-typed validation rules.
 - **EntityFramework**: For ORM capabilities, implemented for SQLite.
 - **XUnit**: For comprehensive testing frameworks.
-- **SQLite**: Serverless, file-based database engine, also used in the testing layer with no need for external containers or services.
+- **SQLite**: Serverless, file-based database engine.
 - **Swashbuckle Swagger**: For Web API documentation.
 
 ## About the Author
