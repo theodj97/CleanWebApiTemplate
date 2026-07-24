@@ -4,7 +4,7 @@
 
 Welcome to the Clean Architecture WebAPI Template for .NET Core 9! This template is designed to provide a solid starting point for building scalable and maintainable web applications using the .NET Core framework and ASP NET Core. Tailored for .NET Core 9, it incorporates best practices and design patterns to kickstart your project.
 
-This project serves as a template for creating a Web API focused on microservices architecture. It provides flexibility for use with different databases, including SQLite and MongoDB, with fully implemented, unique configurations for each, selectable by parameters.
+This project serves as a template for creating a Web API focused on microservices architecture. It provides flexibility for use with different databases, including SQLite, with fully implemented configurations.
 
 ## Description
 
@@ -23,7 +23,7 @@ This template adheres to the principles of Clean Architecture, ensuring separati
 The project leverages several high-quality libraries and frameworks, including:
 - **MediatR**: For implementing the CQRS pattern.
 - **FluentValidation**: For building strongly-typed validation rules.
-- **EntityFramework**: For ORM capabilities, implemented for SQLite and soon MongoDB.
+- **EntityFramework**: For ORM capabilities, implemented for SQLite.
 - **XUnit**: For comprehensive testing frameworks.
 - **SQLite**: Serverless, file-based database engine, also used in the testing layer with no need for external containers or services.
 - **Swashbuckle Swagger**: For Web API documentation.
@@ -67,18 +67,9 @@ To create your own project using this template, follow these steps:
 
 5. You want to test the created WebApi against a database in DEVELOPMENT mode?
 
-    - If you selected SQLite:
+    **SQLite is the default and only supported database.**
 
     No external service is needed, SQLite is a serverless, file-based database. A `database.db` file is included at the root of the repository, and it will be created automatically on first run if missing.
-
-    - If you selected MongoDB
-    ```console
-    docker run -d -p 27017:27017 --name mongodb -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=adminpass mongo:latest
-    ```
-
-    Right click on Host -> Manage User Secrets
-
-    Paste configuration file content found inside the my_user_secrets.txt file
 
     
 ## Uninstalling the template

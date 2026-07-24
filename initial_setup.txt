@@ -10,8 +10,7 @@ USER SECRETS
     }
   },
   "ConnectionStrings": {
-    "Sqlite": "Data Source=database.db",
-    "MongoDb": "mongodb://admin:adminpass@localhost:27017/"
+    "Sqlite": "Data Source=database.db"
   }
 }
 
