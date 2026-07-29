@@ -10,7 +10,7 @@ public class Program
     {
         var builder = WebApplication.CreateSlimBuilder(args);
 
-        var (appSettings, environment) = builder.LoadWebApiSettings();
+        var (appSettings, environment) = builder.LoadAppSettings();
 
         builder.Services.AddHostServices(builder.Configuration,
                                          environment,

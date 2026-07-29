@@ -1,13 +1,13 @@
-﻿using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
+﻿using CleanWebApiTemplate.Application.Abstractions.Messages;
+using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Context;
-using CustomMediatR;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Create;
 
-public sealed record CreateTodoCommand : IRequest<Result<TodoDto?>>
+public sealed record CreateTodoCommand : ICommand<Result<TodoDto?>>
 {
     public required string Title { get; init; }
     public string Description { get; init; } = string.Empty;
@@ -23,7 +23,7 @@ public sealed record CreateTodoCommand : IRequest<Result<TodoDto?>>
     };
 }
 
-internal sealed class CreateTodoCommandHandler(SqlDbContext dbContext) : IRequestHandler<CreateTodoCommand, Result<TodoDto?>>
+internal sealed class CreateTodoCommandHandler(SqlDbContext dbContext) : ICommandHandler<CreateTodoCommand, Result<TodoDto?>>
 {
     private readonly SqlDbContext dbContext = dbContext;
 

@@ -1,16 +1,16 @@
-﻿using CleanWebApiTemplate.Domain.ResultModel;
+﻿using CleanWebApiTemplate.Application.Abstractions.Messages;
+using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Context;
-using CustomMediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Delete;
 
-public sealed record DeleteTodoCommand : IRequest<Result<bool>>
+public sealed record DeleteTodoCommand : ICommand<Result<bool>>
 {
     public required string Id { get; set; }
 }
 
-internal sealed class DeleteTodoCommandHandler(SqlDbContext dbContext) : IRequestHandler<DeleteTodoCommand, Result<bool>>
+internal sealed class DeleteTodoCommandHandler(SqlDbContext dbContext) : ICommandHandler<DeleteTodoCommand, Result<bool>>
 {
     private readonly SqlDbContext dbContext = dbContext;
 

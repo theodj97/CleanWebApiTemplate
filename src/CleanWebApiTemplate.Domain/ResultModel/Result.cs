@@ -1,6 +1,6 @@
 ﻿namespace CleanWebApiTemplate.Domain.ResultModel;
 
-public class Result<T>
+public class Result<T> : IResultFactory<Result<T>>
 {
     public bool IsSuccess { get; }
     public bool IsFailure => !IsSuccess;
