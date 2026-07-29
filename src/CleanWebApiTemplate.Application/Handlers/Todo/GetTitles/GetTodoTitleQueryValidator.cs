@@ -17,7 +17,17 @@ public class GetTodoTitleQueryValidator : TodoValidator<GetTodoTitleQuery>
             .WithMessage($"Property {nameof(GetTodoTitleQuery.PageSize)} must be greater than 0 if property {nameof(GetTodoTitleQuery.PageNumber)} is not null.");
 
         RuleFor(x => x.SortProperties).Custom((sortProperties, context) => ValidateSortBy(sortProperties,
-                                                                                          typeof(TodoDto),
-                                                                                          context)).When(x => x.SortProperties is not null);
+                                                                                           new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                                                                                           {
+                                                                                               nameof(TodoDto.Id),
+                                                                                               nameof(TodoDto.Title),
+                                                                                               nameof(TodoDto.Description),
+                                                                                               nameof(TodoDto.CreatedAt),
+                                                                                               nameof(TodoDto.UpdatedAt),
+                                                                                               nameof(TodoDto.Status),
+                                                                                               nameof(TodoDto.CreatedBy),
+                                                                                               nameof(TodoDto.UpdatedBy),
+                                                                                           },
+                                                                                           context)).When(x => x.SortProperties is not null);
     }
 }

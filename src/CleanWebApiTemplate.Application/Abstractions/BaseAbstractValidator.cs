@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using System.Net.Mail;
-using System.Reflection;
 using System.Text;
 
 namespace CleanWebApiTemplate.Application.Abstractions;
@@ -78,10 +77,10 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     /// Validate the sorting properties.
     /// </summary>
     /// <param name="sortProperty"></param>
-    /// <param name="typeToSortBy"></param>
+    /// <param name="validProperties"></param>
     /// <param name="context"></param>
     protected void ValidateSortBy(IEnumerable<KeyValuePair<string, bool>>? sortProperty,
-                                  Type typeToSortBy,
+                                  HashSet<string> validProperties,
                                   ValidationContext<TCommand> context)
     {
         if (sortProperty is null || sortProperty.Any() is false) return;
@@ -89,13 +88,9 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
         if (sortProperty!.Select(kvp => kvp.Key).Distinct().Count() != sortProperty!.Count())
             AddFailure(context, $"Property '{nameof(sortProperty)}' contains duplicated sorts.");
 
-        var typeToSortByProperties = typeToSortBy.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                                                 .Select(p => p.Name)
-                                                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
         foreach (var property in sortProperty!)
-            if (!typeToSortByProperties.Contains(property.Key))
-                AddFailure(context, $"Property '{property.Key}' is not a valid property of type {typeToSortBy.Name}.");
+            if (!validProperties.Contains(property.Key, StringComparer.OrdinalIgnoreCase))
+                AddFailure(context, $"Property '{property.Key}' is not a valid sort property.");
     }
 
     /// <summary>
