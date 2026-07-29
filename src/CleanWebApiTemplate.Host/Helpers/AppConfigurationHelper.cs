@@ -6,7 +6,7 @@ namespace CleanWebApiTemplate.Host.Helpers;
 
 public static class AppConfigurationHelper
 {
-    public static (AppSettings appSettings, string environment) LoadWebApiSettings(this WebApplicationBuilder builder)
+    public static (AppSettings appSettings, string environment) LoadAppSettings(this WebApplicationBuilder builder)
     {
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? throw new Exception("No environment variable was setted!");
 

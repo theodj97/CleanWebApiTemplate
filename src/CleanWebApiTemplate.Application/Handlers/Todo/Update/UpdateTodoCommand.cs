@@ -1,13 +1,13 @@
-﻿using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
+﻿using CleanWebApiTemplate.Application.Abstractions.Messages;
+using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Context;
-using CustomMediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Update;
 
-public sealed class UpdateTodoCommand : IRequest<Result<TodoDto?>>
+public sealed class UpdateTodoCommand : ICommand<Result<TodoDto?>>
 {
     public required string Id { get; set; }
     public string? Title { get; set; }
@@ -43,7 +43,7 @@ public sealed class UpdateTodoCommand : IRequest<Result<TodoDto?>>
 
 }
 
-internal sealed class UpdateTodoCommandHandler(SqlDbContext dbContext) : IRequestHandler<UpdateTodoCommand, Result<TodoDto?>>
+internal sealed class UpdateTodoCommandHandler(SqlDbContext dbContext) : ICommandHandler<UpdateTodoCommand, Result<TodoDto?>>
 {
     private readonly SqlDbContext dbContext = dbContext;
 

@@ -1,20 +1,20 @@
+using CleanWebApiTemplate.Application.Abstractions.Messages;
 using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Common;
 using CleanWebApiTemplate.Infrastructure.Context;
-using CustomMediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.GetTitles;
 
-public sealed class GetTodoTitleQuery : IRequest<Result<IEnumerable<TodoDto?>>>
+public sealed class GetTodoTitleQuery : IQuery<Result<IEnumerable<TodoDto?>>>
 {
     public byte? PageNumber { get; set; }
     public byte? PageSize { get; set; }
     public IEnumerable<KeyValuePair<string, bool>>? SortProperties { get; set; } = null;
 }
 
-internal sealed class GetTodoTitleQueryHandler(SqlDbContext dbContext) : IRequestHandler<GetTodoTitleQuery, Result<IEnumerable<TodoDto?>>>
+internal sealed class GetTodoTitleQueryHandler(SqlDbContext dbContext) : IQueryHandler<GetTodoTitleQuery, Result<IEnumerable<TodoDto?>>>
 {
     private readonly SqlDbContext dbContext = dbContext;
 

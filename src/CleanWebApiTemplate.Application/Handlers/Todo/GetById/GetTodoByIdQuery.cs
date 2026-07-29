@@ -1,17 +1,17 @@
-﻿using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
+﻿using CleanWebApiTemplate.Application.Abstractions.Messages;
+using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Context;
-using CustomMediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.GetById;
 
-public sealed record GetTodoByIdQuery : IRequest<Result<TodoDto?>>
+public sealed record GetTodoByIdQuery : IQuery<Result<TodoDto?>>
 {
     public required string Id { get; set; }
 }
 
-internal sealed class GetTodoByIdQueryHandler(SqlDbContext dbContext) : IRequestHandler<GetTodoByIdQuery, Result<TodoDto?>>
+internal sealed class GetTodoByIdQueryHandler(SqlDbContext dbContext) : IQueryHandler<GetTodoByIdQuery, Result<TodoDto?>>
 {
     private readonly SqlDbContext dbContext = dbContext;
 

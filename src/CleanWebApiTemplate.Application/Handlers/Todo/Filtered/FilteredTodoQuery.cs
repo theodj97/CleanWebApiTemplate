@@ -1,15 +1,15 @@
-﻿using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
+﻿using CleanWebApiTemplate.Application.Abstractions.Messages;
+using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Common;
 using CleanWebApiTemplate.Infrastructure.Context;
-using CustomMediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
 
-public sealed record FilteredTodoQuery : IRequest<Result<IEnumerable<TodoDto?>>>
+public sealed record FilteredTodoQuery : IQuery<Result<IEnumerable<TodoDto?>>>
 {
     public IEnumerable<string>? Ids { get; set; }
     public IEnumerable<string>? Title { get; set; }
@@ -22,7 +22,7 @@ public sealed record FilteredTodoQuery : IRequest<Result<IEnumerable<TodoDto?>>>
     public IEnumerable<KeyValuePair<string, bool>>? SortProperties { get; set; } = null;
 }
 
-internal sealed class FilteredTodoQueryHandler(SqlDbContext dbContext) : IRequestHandler<FilteredTodoQuery, Result<IEnumerable<TodoDto?>>>
+internal sealed class FilteredTodoQueryHandler(SqlDbContext dbContext) : IQueryHandler<FilteredTodoQuery, Result<IEnumerable<TodoDto?>>>
 {
     private readonly SqlDbContext dbContext = dbContext;
 

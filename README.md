@@ -21,7 +21,7 @@ This template adheres to the principles of Clean Architecture, ensuring separati
 ### Libraries and Frameworks
 
 The project leverages several high-quality libraries and frameworks, including:
-- **MediatR**: For implementing the CQRS pattern.
+- **Custom CQRS**: MediatR-free CQRS implementation with explicit, reflection-free DI registration and decorator-based validation (Native AOT friendly).
 - **FluentValidation**: For building strongly-typed validation rules.
 - **EntityFramework**: For ORM capabilities, implemented for SQLite.
 - **XUnit**: For comprehensive testing frameworks.

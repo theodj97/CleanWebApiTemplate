@@ -1,14 +1,14 @@
-﻿using CleanWebApiTemplate.Application.Helpers.Validators;
-using CleanWebApiTemplate.Domain.Models.Enums.Todo;
+﻿using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
 using FluentValidation;
-using CustomMediatR;
 using CleanWebApiTemplate.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
+using CleanWebApiTemplate.Application.Abstractions.Messages;
+using CleanWebApiTemplate.Application.Abstractions;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo;
 
-public class TodoValidator<TMessage>(SqlDbContext dbContext) : BaseAbstractValidator<TMessage> where TMessage : class, IRequest<object>
+public class TodoValidator<TMessage>(SqlDbContext dbContext) : BaseAbstractValidator<TMessage> where TMessage : class, IMessage
 {
     private readonly SqlDbContext dbContext = dbContext;
 

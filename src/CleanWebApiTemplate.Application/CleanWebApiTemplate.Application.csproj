@@ -8,9 +8,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
 		<PackageReference Include="FluentValidation" />
-		<PackageReference Include="theodj97.CustomMediatR" />
 	</ItemGroup>
 
 	<ItemGroup>
