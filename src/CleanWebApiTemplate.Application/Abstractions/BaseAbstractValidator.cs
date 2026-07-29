@@ -51,24 +51,24 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     /// <summary>
     /// Validate a StartDate and EndDate in a request.
     /// </summary>
-    /// <param name="startDateEndDate"></param>
+    /// <param name="dateRange"></param>
     /// <param name="context"></param>
-    protected void ValidateStartDateAndEndDate(dynamic startDateEndDate, ValidationContext<TCommand> context)
+    protected void ValidateStartDateAndEndDate(DateRange dateRange, ValidationContext<TCommand> context)
     {
-        if (string.IsNullOrEmpty(startDateEndDate.StartDate)
-            && string.IsNullOrEmpty(startDateEndDate.EndDate) is false)
-            AddFailure(context, $"{nameof(startDateEndDate.StartDate)} can't be null or empty when {nameof(startDateEndDate.EndDate)} has value");
+        if (string.IsNullOrEmpty(dateRange.StartDate)
+            && string.IsNullOrEmpty(dateRange.EndDate) is false)
+            AddFailure(context, $"{nameof(DateRange.StartDate)} can't be null or empty when {nameof(DateRange.EndDate)} has value");
 
-        if (string.IsNullOrEmpty(startDateEndDate.EndDate)
-        && string.IsNullOrEmpty(startDateEndDate.StartDate) is false)
-            AddFailure(context, $"{nameof(startDateEndDate.EndDate)} can't be null or empty when {nameof(startDateEndDate.StartDate)} has value");
+        if (string.IsNullOrEmpty(dateRange.EndDate)
+        && string.IsNullOrEmpty(dateRange.StartDate) is false)
+            AddFailure(context, $"{nameof(DateRange.EndDate)} can't be null or empty when {nameof(DateRange.StartDate)} has value");
 
-        bool isStartDateValid = DateTime.TryParse(startDateEndDate.StartDate, out DateTime startDate);
-        bool isEndDateValid = DateTime.TryParse(startDateEndDate.EndDate, out DateTime endDate);
+        bool isStartDateValid = DateTime.TryParse(dateRange.StartDate, out DateTime startDate);
+        bool isEndDateValid = DateTime.TryParse(dateRange.EndDate, out DateTime endDate);
 
         if (isStartDateValid && isEndDateValid)
             if (startDate > endDate)
-                AddFailure(context, $"{nameof(startDateEndDate.StartDate)} must be earlier than {nameof(startDateEndDate.EndDate)}");
+                AddFailure(context, $"{nameof(DateRange.StartDate)} must be earlier than {nameof(DateRange.EndDate)}");
 
     }
 
@@ -136,3 +136,9 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
         context.AddFailure(builder.ToString());
     }
 }
+
+/// <summary>
+/// Strongly-typed input for StartDate/EndDate cross-property validation.
+/// Replaces the previous anonymous type + dynamic parameter (not Native AOT compatible).
+/// </summary>
+public sealed record DateRange(string? StartDate, string? EndDate);

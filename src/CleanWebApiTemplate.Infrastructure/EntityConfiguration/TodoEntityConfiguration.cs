@@ -16,7 +16,7 @@ public class TodoEntityConfiguration : IEntityTypeConfiguration<TodoEntity>
               .HasColumnType("BLOB")
               .HasConversion(
                   ulid => ulid.ToByteArray(),
-                  bytes => new Ulid(bytes)
+                  bytes => UlidBytesConverter.FromBytes(bytes)
               );
 
         builder.Property(e => e.Title)

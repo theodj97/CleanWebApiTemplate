@@ -3,6 +3,7 @@ using CleanWebApiTemplate.Application.Decorators;
 using CleanWebApiTemplate.Domain.ResultModel;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CleanWebApiTemplate.Application.Extensions;
 
@@ -18,7 +19,7 @@ public static class CqrsRegistrationExtensions
     /// If a command must skip validation, register it directly instead:
     /// <c>services.AddTransient&lt;ICommandHandler&lt;TCommand, TResult&gt;, THandler&gt;()</c>.
     /// </summary>
-    public static IServiceCollection AddCommandHandler<TCommand, TResult, THandler>(this IServiceCollection services)
+    public static IServiceCollection AddCommandHandler<TCommand, TResult, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(this IServiceCollection services)
         where TCommand : ICommand<TResult>
         where TResult : IResultFactory<TResult>
         where THandler : class, ICommandHandler<TCommand, TResult>
@@ -39,7 +40,7 @@ public static class CqrsRegistrationExtensions
     /// If a query must skip validation, register it directly instead:
     /// <c>services.AddTransient&lt;IQueryHandler&lt;TQuery, TResult&gt;, THandler&gt;()</c>.
     /// </summary>
-    public static IServiceCollection AddQueryHandler<TQuery, TResult, THandler>(this IServiceCollection services)
+    public static IServiceCollection AddQueryHandler<TQuery, TResult, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(this IServiceCollection services)
         where TQuery : IQuery<TResult>
         where TResult : IResultFactory<TResult>
         where THandler : class, IQueryHandler<TQuery, TResult>

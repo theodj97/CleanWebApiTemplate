@@ -1,4 +1,5 @@
-﻿using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
+﻿using CleanWebApiTemplate.Application.Abstractions;
+using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Infrastructure.Context;
 using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
 using FluentValidation;
@@ -34,7 +35,7 @@ public class FilteredTodoQueryValidator : TodoValidator<FilteredTodoQuery>
             .Custom(ValidateDateTime!)
             .When(x => x.EndDate is not null);
 
-        RuleFor(x => new { x.StartDate, x.EndDate })
+        RuleFor(x => new DateRange(x.StartDate, x.EndDate))
             .Custom(ValidateStartDateAndEndDate);
 
         RuleFor(x => x.PageNumber).Must(value => value is not null && value > 0)

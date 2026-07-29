@@ -71,7 +71,7 @@ internal sealed class FilteredTodoQueryHandler(SqlDbContext dbContext) : IQueryH
 
         var todosDb = await dbContext.TodoDb.Where(filter)
                                             .AsNoTracking()
-                                            .DynamicOrderBy(request.SortProperties)
+                                            .DynamicOrderBy(request.SortProperties, TodoSortProperties.Entity)
                                             .ManagePagination(request.PageNumber, request.PageSize)
                                             .ToListAsync(cancellationToken);
 

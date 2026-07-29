@@ -25,14 +25,14 @@ public class TodoValidator<TMessage>(SqlDbContext dbContext) : BaseAbstractValid
                        $"Property '{context.DisplayName}' is already in use!");
     }
 
-    protected async Task ValidateTitle(dynamic idAndTitle,
+    protected async Task ValidateTitle(IdAndTitle idAndTitle,
                                        ValidationContext<TMessage> context,
                                        CancellationToken cancellationToken)
     {
         var id = idAndTitle.Id;
-        if (id is null) AddFailure(context, $"Property '{context.DisplayName}' must be provided.", nameof(idAndTitle.Id));
+        if (id is null) AddFailure(context, $"Property '{context.DisplayName}' must be provided.", nameof(IdAndTitle.Id));
         var title = idAndTitle.Title;
-        if (title is null) AddFailure(context, $"Property '{context.DisplayName}' must be provided.", nameof(idAndTitle.Title));
+        if (title is null) AddFailure(context, $"Property '{context.DisplayName}' must be provided.", nameof(IdAndTitle.Title));
 
         if (title!.Length > TodoEntityConfiguration.TitleLenght)
             AddFailure(context,
@@ -80,3 +80,9 @@ public class TodoValidator<TMessage>(SqlDbContext dbContext) : BaseAbstractValid
         return (await dbContext.TodoDb.Where(x => x.Title == title && x.Id != id).ToListAsync(cancellationToken)).Count is 0;
     }
 }
+
+/// <summary>
+/// Strongly-typed input for Id/Title cross-property validation.
+/// Replaces the previous anonymous type + dynamic parameter (not Native AOT compatible).
+/// </summary>
+public sealed record IdAndTitle(string? Id, string? Title);

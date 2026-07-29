@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace CleanWebApiTemplate.Infrastructure.Common;
 
@@ -35,15 +34,21 @@ public static class RepositoryExtension
         return query;
     }
 
+    /// <summary>
+    /// Orders the query by the given property names without using reflection (Native AOT friendly).
+    /// The caller provides the set of sortable properties as pre-compiled key selector expressions.
+    /// </summary>
+    /// <param name="source">The query to order.</param>
+    /// <param name="sortProperties">Property name / descending pairs, in order of precedence.</param>
+    /// <param name="sortableProperties">Map of sortable property names (case-insensitive) to their key selectors.</param>
     public static IQueryable<T> DynamicOrderBy<T>(this IQueryable<T> source,
-                                                  params IEnumerable<KeyValuePair<string, bool>>? sortProperties)
+                                                  IEnumerable<KeyValuePair<string, bool>>? sortProperties,
+                                                  IReadOnlyDictionary<string, Expression<Func<T, object>>> sortableProperties)
     {
         ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(sortableProperties);
+
         if (sortProperties is null || sortProperties.Any() is false) return source;
-
-        var entityType = typeof(T);
-
-        var parameter = Expression.Parameter(entityType, "x");
 
         bool isFirstSort = true;
         IQueryable<T> currentQuery = source;
@@ -56,32 +61,20 @@ public static class RepositoryExtension
             if (string.IsNullOrWhiteSpace(propertyName))
                 throw new ArgumentException("Property name cannot be null or whitespace.", nameof(sortProperties));
 
-            propertyName = propertyName.Trim();
-            PropertyInfo propertyInfo = entityType.GetProperty(propertyName,
-                                                               BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance) ?? throw new ArgumentException($"Property '{propertyName}' not found on type '{entityType.FullName}'.");
+            Expression<Func<T, object>> keySelector = sortableProperties.TryGetValue(propertyName.Trim(), out var selector)
+                ? selector
+                : throw new ArgumentException($"Property '{propertyName}' not found on type '{typeof(T).FullName}'.");
 
-            Expression propertyAccess = Expression.Property(parameter, propertyInfo);
-
-            var lambda = Expression.Lambda(propertyAccess, parameter);
-
-            string methodName;
             if (isFirstSort)
             {
-                methodName = descending ? nameof(Queryable.OrderByDescending) : nameof(Queryable.OrderBy);
+                currentQuery = descending ? currentQuery.OrderByDescending(keySelector) : currentQuery.OrderBy(keySelector);
                 isFirstSort = false;
             }
             else
-                methodName = descending ? nameof(Queryable.ThenByDescending) : nameof(Queryable.ThenBy);
-
-            MethodCallExpression resultExpression = Expression.Call(
-                typeof(Queryable),
-                methodName,
-                [entityType, propertyInfo.PropertyType],
-                currentQuery.Expression,
-                Expression.Quote(lambda)
-            );
-
-            currentQuery = currentQuery.Provider.CreateQuery<T>(resultExpression);
+            {
+                IOrderedQueryable<T> orderedQuery = (IOrderedQueryable<T>)currentQuery;
+                currentQuery = descending ? orderedQuery.ThenByDescending(keySelector) : orderedQuery.ThenBy(keySelector);
+            }
         }
 
         return currentQuery ?? source;

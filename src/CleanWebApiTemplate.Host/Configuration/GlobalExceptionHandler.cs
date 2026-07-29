@@ -23,7 +23,10 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         logger.LogError(eventId: new(), exception: exception, "Internal server error: {exception}", exception.Message);
 
         httpContext.Response.StatusCode = problemDetails.Status!.Value;
-        await httpContext.Response.WriteAsJsonAsync(problemDetails!, cancellationToken);
+        await httpContext.Response.WriteAsJsonAsync(problemDetails!,
+                                                    AppJsonSerializerContext.Default.ProblemDetails,
+                                                    contentType: "application/json; charset=utf-8",
+                                                    cancellationToken);
 
         return true;
     }

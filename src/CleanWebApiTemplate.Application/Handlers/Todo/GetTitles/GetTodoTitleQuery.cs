@@ -4,6 +4,7 @@ using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Common;
 using CleanWebApiTemplate.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.GetTitles;
 
@@ -18,11 +19,16 @@ internal sealed class GetTodoTitleQueryHandler(SqlDbContext dbContext) : IQueryH
 {
     private readonly SqlDbContext dbContext = dbContext;
 
+    // The member-init projection (Expression.Bind) is conservatively flagged, but the
+    // TodoDto property accessors are directly referenced (ldtoken) by this same method
+    // body, so they cannot be trimmed away.
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+        Justification = "The projected TodoDto property setters are statically referenced by the expression tree built in this method.")]
     public async Task<Result<IEnumerable<TodoDto?>>> Handle(GetTodoTitleQuery request, CancellationToken cancellationToken)
     {
         List<TodoDto> projectedTodos = await dbContext.TodoDb.Where(x => true)
                                                              .Select(p => new TodoDto { Id = p.Id, Title = p.Title, })
-                                                             .DynamicOrderBy(request.SortProperties)
+                                                             .DynamicOrderBy(request.SortProperties, TodoSortProperties.Dto)
                                                              .ManagePagination(request.PageNumber, request.PageSize)
                                                              .ToListAsync(cancellationToken);
 

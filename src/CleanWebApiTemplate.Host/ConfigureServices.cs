@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
-using System.Reflection;
 using System.Text;
 
 namespace CleanWebApiTemplate.Host;
@@ -47,7 +46,10 @@ public static class ConfigureServices
 
         services.AddHttpContextAccessor();
 
-        services.RegisterMinimalEndpoints(Assembly.GetExecutingAssembly());
+        services.ConfigureHttpJsonOptions(options =>
+            options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default));
+
+        services.RegisterMinimalEndpoints();
 
         return services;
     }

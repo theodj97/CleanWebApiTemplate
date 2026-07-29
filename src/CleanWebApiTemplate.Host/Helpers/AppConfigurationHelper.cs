@@ -12,8 +12,17 @@ public static class AppConfigurationHelper
 
         ConfigureSources(builder, environment);
 
-        var appSettings = builder.Configuration.Get<AppSettings>()
-            ?? throw new InvalidOperationException("AppSetting sconfiguration section is missing or invalid. Ensure configuration sources (appsettings.json, user secrets, or in-memory for tests) are loaded correctly and match the AppSettings structure.");
+        // Manual binding (no reflection-based ConfigurationBinder, Native AOT friendly).
+        var appSettings = new AppSettings
+        {
+            ConnectionStrings = new ConnectionStringsSection
+            {
+                Sqlite = builder.Configuration.GetSection(nameof(AppSettings.ConnectionStrings))
+                                              [nameof(ConnectionStringsSection.Sqlite)] ?? string.Empty
+            },
+            CorsAllow = GetStringArray(builder.Configuration, nameof(AppSettings.CorsAllow)),
+            ValidIssuers = GetStringArray(builder.Configuration, nameof(AppSettings.ValidIssuers))
+        };
 
         var validator = new AppSettingsValidator();
         var validationResult = validator.Validate(null, appSettings);
@@ -37,4 +46,10 @@ public static class AppConfigurationHelper
         else
             builder.Configuration.AddJsonFile($"appsettings.{environment}.json", optional: false, reloadOnChange: false);
     }
+
+    private static string[] GetStringArray(IConfiguration configuration, string sectionName) =>
+        [.. configuration.GetSection(sectionName)
+                         .GetChildren()
+                         .Select(x => x.Value)
+                         .OfType<string>()];
 }
