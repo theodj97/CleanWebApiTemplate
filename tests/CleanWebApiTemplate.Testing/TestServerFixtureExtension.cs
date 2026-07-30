@@ -1,5 +1,4 @@
 using CleanWebApiTemplate.Domain.Models.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace CleanWebApiTemplate.Testing;
 
@@ -29,10 +28,9 @@ public static class TestServerFixtureExtension
             UpdatedBy = updatedBy
         };
 
-        await testServerFixture.ExecuteDbContextAsync(async context =>
+        await testServerFixture.ExecuteRepositoryAsync(async repository =>
         {
-            await context.TodoDb.AddAsync(todoEntity);
-            await context.SaveChangesAsync();
+            await repository.InsertAsync(todoEntity);
         });
 
         return todoEntity;
@@ -41,9 +39,9 @@ public static class TestServerFixtureExtension
     public static async Task<TodoEntity?> GetTodo(this TestServerFixture testServerFixture, Ulid id)
     {
         TodoEntity? todoDb = null;
-        await testServerFixture.ExecuteDbContextAsync(async context =>
+        await testServerFixture.ExecuteRepositoryAsync(async repository =>
         {
-            todoDb = await context.Set<TodoEntity>().FirstOrDefaultAsync(x => x.Id == id);
+            todoDb = await repository.GetByIdAsync(id);
         });
         return todoDb;
     }

@@ -1,22 +1,22 @@
 ﻿using CleanWebApiTemplate.Application.Abstractions;
 using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
-using CleanWebApiTemplate.Infrastructure.Context;
-using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
+using CleanWebApiTemplate.Infrastructure.Constants;
+using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
 
 public class FilteredTodoQueryValidator : TodoValidator<FilteredTodoQuery>
 {
-    public FilteredTodoQueryValidator(SqlDbContext dbContext) : base(dbContext)
+    public FilteredTodoQueryValidator(ITodoRepository todoRepository) : base(todoRepository)
     {
         RuleForEach(x => x.Ids)
             .Custom(ValidateUlid)
             .When(x => x.Ids is not null && x.Ids.Any());
 
         RuleForEach(x => x.Title)
-            .Must(title => title.Length < TodoEntityConfiguration.TitleLenght)
-            .WithMessage($"Title must be less than {TodoEntityConfiguration.TitleLenght} characters")
+            .Must(title => title.Length < TodoTable.TitleMaxLength)
+            .WithMessage($"Title must be less than {TodoTable.TitleMaxLength} characters")
             .When(x => x.Title is not null && x.Title.Any());
 
         RuleForEach(x => x.Status)

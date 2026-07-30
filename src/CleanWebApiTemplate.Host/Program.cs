@@ -17,9 +17,7 @@ public class Program
                                          appSettings.CorsAllow,
                                          appSettings.ValidIssuers,
                                          appSettings.ConnectionStrings);
-
         builder.Services.AddInfrastructureServices(appSettings.ConnectionStrings);
-
         builder.Services.AddApplicationServices();
 
         var app = builder.Build();

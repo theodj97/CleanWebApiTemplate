@@ -47,7 +47,7 @@ public static class AppConfigurationHelper
             builder.Configuration.AddJsonFile($"appsettings.{environment}.json", optional: false, reloadOnChange: false);
     }
 
-    private static string[] GetStringArray(IConfiguration configuration, string sectionName) =>
+    private static string[] GetStringArray(ConfigurationManager configuration, string sectionName) =>
         [.. configuration.GetSection(sectionName)
                          .GetChildren()
                          .Select(x => x.Value)

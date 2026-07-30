@@ -1,11 +1,11 @@
-﻿using CleanWebApiTemplate.Infrastructure.Context;
+﻿using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Create;
 
 public class CreateTodoCommandValidator : TodoValidator<CreateTodoCommand>
 {
-    public CreateTodoCommandValidator(SqlDbContext dbContext) : base(dbContext)
+    public CreateTodoCommandValidator(ITodoRepository todoRepository) : base(todoRepository)
     {
         RuleFor(x => x.Title)
             .Custom(NotNullNotEmpty)

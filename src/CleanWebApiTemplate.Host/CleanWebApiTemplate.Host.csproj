@@ -8,13 +8,8 @@
     <UserSecretsId>a4490548-cd9d-4321-82ca-b9353e1834c4</UserSecretsId>
     <PublishAot>true</PublishAot>
     <IsAotCompatible>true</IsAotCompatible>
-    <!-- Source-generates minimal API request delegates (no runtime reflection), even when
-         PublishAot is overridden to false (e.g. by 'dotnet ef' design-time builds). -->
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
     <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
-    <!-- Application code is kept IL-warning-free (TreatWarningsAsErrors applies at build time),
-         but EF Core's own assemblies still produce trim/AOT warnings for unused code paths
-         (ExecuteUpdate, Spatialite, ...). Don't fail the native publish on those. -->
-    <ILLinkTreatWarningsAsErrors>false</ILLinkTreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,7 +17,6 @@
     <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
     <PackageReference Include="Microsoft.OpenApi" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
   </ItemGroup>

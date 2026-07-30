@@ -4,7 +4,7 @@ using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Host.Models.Responses.Todo;
 using CleanWebApiTemplate.Host.Routes.Todo.Create;
-using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
+using CleanWebApiTemplate.Infrastructure.Constants;
 using CleanWebApiTemplate.Testing.Common;
 using CleanWebApiTemplate.Testing.Common.Attributes;
 using CleanWebApiTemplate.Testing.Configuration;
@@ -95,7 +95,7 @@ public class Post(TestServerFixture fixture)
     public async Task CreateTodo_TooLongTitle_Should_Return_BadRequest()
     {
         // Arrange
-        CreateTodoRequest request = new() { Title = TestServerFixtureExtension.GenerateRandomString(TodoEntityConfiguration.TitleLenght + 1) };
+        CreateTodoRequest request = new() { Title = TestServerFixtureExtension.GenerateRandomString(TodoTable.TitleMaxLength + 1) };
 
         // Act
         var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(), request);
@@ -110,7 +110,7 @@ public class Post(TestServerFixture fixture)
     public async Task CreateTodo_TooLongoDescription_Should_Return_BadRequest()
     {
         // Arrange
-        CreateTodoRequest request = new() { Title = "testTitle", Description = TestServerFixtureExtension.GenerateRandomString(TodoEntityConfiguration.DescriptionLenght + 1) };
+        CreateTodoRequest request = new() { Title = "testTitle", Description = TestServerFixtureExtension.GenerateRandomString(TodoTable.DescriptionMaxLength + 1) };
 
         // Act
         var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(), request);

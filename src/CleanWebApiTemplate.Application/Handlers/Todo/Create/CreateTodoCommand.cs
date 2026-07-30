@@ -1,9 +1,9 @@
-﻿using CleanWebApiTemplate.Application.Abstractions.Messages;
+﻿using CleanWebApiTemplate.Application.CQRS.Messages;
 using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Domain.ResultModel;
-using CleanWebApiTemplate.Infrastructure.Context;
+using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Create;
 
@@ -23,9 +23,9 @@ public sealed record CreateTodoCommand : ICommand<Result<TodoDto?>>
     };
 }
 
-internal sealed class CreateTodoCommandHandler(SqlDbContext dbContext) : ICommandHandler<CreateTodoCommand, Result<TodoDto?>>
+internal sealed class CreateTodoCommandHandler(ITodoRepository todoRepository) : ICommandHandler<CreateTodoCommand, Result<TodoDto?>>
 {
-    private readonly SqlDbContext dbContext = dbContext;
+    private readonly ITodoRepository todoRepository = todoRepository;
 
     public async Task<Result<TodoDto?>> Handle(CreateTodoCommand request, CancellationToken cancellationToken)
     {
@@ -36,8 +36,7 @@ internal sealed class CreateTodoCommandHandler(SqlDbContext dbContext) : IComman
         todoEntity.UpdatedAt = actualUtcMoment;
         todoEntity.Status = (int)ETodoStatus.Pending;
 
-        var resultDb = await dbContext.TodoDb.AddAsync(todoEntity, cancellationToken);
-        await dbContext.SaveChangesAsync(cancellationToken);
-        return Result<TodoDto?>.Created(resultDb.Entity.ToDto());
+        var createdTodo = await todoRepository.InsertAsync(todoEntity, cancellationToken);
+        return Result<TodoDto?>.Created(createdTodo.ToDto());
     }
 }

@@ -6,7 +6,7 @@ using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Host.Models.Responses.Todo;
 using CleanWebApiTemplate.Host.Routes.Todo.Filter;
 using CleanWebApiTemplate.Host.Routes.Todo.Get;
-using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
+using CleanWebApiTemplate.Infrastructure.Constants;
 using CleanWebApiTemplate.Testing.Common;
 using CleanWebApiTemplate.Testing.Common.Attributes;
 using CleanWebApiTemplate.Testing.Extension;
@@ -276,7 +276,7 @@ public class Get(TestServerFixture fixture)
     public async Task FilteredTodo_TooLongTitle_Should_Return_BadRequest()
     {
         // Arrange
-        FilteredTodoRequest request = new() { Title = [TestServerFixtureExtension.GenerateRandomString(TodoEntityConfiguration.TitleLenght + 1)] };
+        FilteredTodoRequest request = new() { Title = [TestServerFixtureExtension.GenerateRandomString(TodoTable.TitleMaxLength + 1)] };
 
         // Act
         var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);

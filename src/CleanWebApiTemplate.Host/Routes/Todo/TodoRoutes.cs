@@ -1,4 +1,4 @@
-﻿using CleanWebApiTemplate.Application.Abstractions.Messages;
+﻿using CleanWebApiTemplate.Application.CQRS.Messages;
 using CleanWebApiTemplate.Application.Handlers.Todo.Create;
 using CleanWebApiTemplate.Application.Handlers.Todo.Delete;
 using CleanWebApiTemplate.Application.Handlers.Todo.Filtered;

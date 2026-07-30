@@ -1,7 +1,6 @@
-﻿using CleanWebApiTemplate.Application.Abstractions.Messages;
+﻿using CleanWebApiTemplate.Application.CQRS.Messages;
 using CleanWebApiTemplate.Domain.ResultModel;
-using CleanWebApiTemplate.Infrastructure.Context;
-using Microsoft.EntityFrameworkCore;
+using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Delete;
 
@@ -10,14 +9,13 @@ public sealed record DeleteTodoCommand : ICommand<Result<bool>>
     public required string Id { get; set; }
 }
 
-internal sealed class DeleteTodoCommandHandler(SqlDbContext dbContext) : ICommandHandler<DeleteTodoCommand, Result<bool>>
+internal sealed class DeleteTodoCommandHandler(ITodoRepository todoRepository) : ICommandHandler<DeleteTodoCommand, Result<bool>>
 {
-    private readonly SqlDbContext dbContext = dbContext;
+    private readonly ITodoRepository todoRepository = todoRepository;
 
     public async Task<Result<bool>> Handle(DeleteTodoCommand request, CancellationToken cancellationToken)
     {
-        var result = (await dbContext.TodoDb.Where(x => x.Id!.Equals(Ulid.Parse(request.Id)))
-            .ExecuteDeleteAsync(cancellationToken: cancellationToken)) > 0;
+        var result = await todoRepository.DeleteAsync(Ulid.Parse(request.Id), cancellationToken);
         return Result<bool>.Success(result);
     }
 }

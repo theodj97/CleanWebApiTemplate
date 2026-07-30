@@ -1,4 +1,4 @@
-namespace CleanWebApiTemplate.Application.Abstractions.Messages;
+namespace CleanWebApiTemplate.Application.CQRS.Messages;
 
 /// <summary>
 /// Handles a <typeparamref name="TQuery"/> and produces a <typeparamref name="TResult"/>.

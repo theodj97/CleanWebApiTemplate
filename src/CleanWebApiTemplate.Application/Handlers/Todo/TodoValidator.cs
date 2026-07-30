@@ -1,24 +1,23 @@
 ﻿using CleanWebApiTemplate.Domain.Models.Enums.Todo;
-using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
+using CleanWebApiTemplate.Infrastructure.Constants;
 using FluentValidation;
-using CleanWebApiTemplate.Infrastructure.Context;
-using Microsoft.EntityFrameworkCore;
-using CleanWebApiTemplate.Application.Abstractions.Messages;
 using CleanWebApiTemplate.Application.Abstractions;
+using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
+using CleanWebApiTemplate.Application.CQRS.Messages;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo;
 
-public class TodoValidator<TMessage>(SqlDbContext dbContext) : BaseAbstractValidator<TMessage> where TMessage : class, IMessage
+public class TodoValidator<TMessage>(ITodoRepository todoRepository) : BaseAbstractValidator<TMessage> where TMessage : class, IMessage
 {
-    private readonly SqlDbContext dbContext = dbContext;
+    private readonly ITodoRepository todoRepository = todoRepository;
 
     protected async Task ValidateTitle(string title,
                                        ValidationContext<TMessage> context,
                                        CancellationToken cancellationToken)
     {
-        if (title.Length > TodoEntityConfiguration.TitleLenght)
+        if (title.Length > TodoTable.TitleMaxLength)
             AddFailure(context,
-                       $"Property '{context.DisplayName}' max length is {TodoEntityConfiguration.TitleLenght}.");
+                       $"Property '{context.DisplayName}' max length is {TodoTable.TitleMaxLength}.");
 
         if (await TitleIsUnique(title, cancellationToken: cancellationToken) is false)
             AddFailure(context,
@@ -34,9 +33,9 @@ public class TodoValidator<TMessage>(SqlDbContext dbContext) : BaseAbstractValid
         var title = idAndTitle.Title;
         if (title is null) AddFailure(context, $"Property '{context.DisplayName}' must be provided.", nameof(IdAndTitle.Title));
 
-        if (title!.Length > TodoEntityConfiguration.TitleLenght)
+        if (title!.Length > TodoTable.TitleMaxLength)
             AddFailure(context,
-                       $"Property '{nameof(title)}' max length is {TodoEntityConfiguration.TitleLenght}.",
+                       $"Property '{nameof(title)}' max length is {TodoTable.TitleMaxLength}.",
                        nameof(title));
 
         if (await TitleIsUnique(title, id, cancellationToken) is false)
@@ -48,8 +47,8 @@ public class TodoValidator<TMessage>(SqlDbContext dbContext) : BaseAbstractValid
     protected void ValidateDescription(string description,
                                        ValidationContext<TMessage> context)
     {
-        if (description.Length > TodoEntityConfiguration.DescriptionLenght)
-            AddFailure(context, $"Property '{context.DisplayName}' max length is {TodoEntityConfiguration.DescriptionLenght}.");
+        if (description.Length > TodoTable.DescriptionMaxLength)
+            AddFailure(context, $"Property '{context.DisplayName}' max length is {TodoTable.DescriptionMaxLength}.");
     }
 
     protected void ValidateUserEmail(string createdBy,
@@ -73,11 +72,8 @@ public class TodoValidator<TMessage>(SqlDbContext dbContext) : BaseAbstractValid
         if (string.IsNullOrWhiteSpace(title))
             return true;
 
-        if (todoId is null)
-            return (await dbContext.TodoDb.Where(x => x.Title == title).ToListAsync(cancellationToken)).Count is 0;
-
-        Ulid id = Ulid.Parse(todoId);
-        return (await dbContext.TodoDb.Where(x => x.Title == title && x.Id != id).ToListAsync(cancellationToken)).Count is 0;
+        Ulid? excludeId = todoId is null ? null : Ulid.Parse(todoId);
+        return await todoRepository.TitleExistsAsync(title, excludeId, cancellationToken) is false;
     }
 }
 

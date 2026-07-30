@@ -1,11 +1,11 @@
-using CleanWebApiTemplate.Application.Abstractions.Messages;
-using CleanWebApiTemplate.Application.Decorators;
+using CleanWebApiTemplate.Application.CQRS.Decorators;
+using CleanWebApiTemplate.Application.CQRS.Messages;
 using CleanWebApiTemplate.Domain.ResultModel;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics.CodeAnalysis;
 
-namespace CleanWebApiTemplate.Application.Extensions;
+namespace CleanWebApiTemplate.Application.CQRS.Extensions;
 
 /// <summary>
 /// Explicit (no reflection, no assembly scanning, Native AOT friendly) registration

@@ -1,11 +1,11 @@
-﻿using CleanWebApiTemplate.Infrastructure.Context;
+﻿using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.GetById;
 
 public class GetTodoByIdQueryValidator : TodoValidator<GetTodoByIdQuery>
 {
-    public GetTodoByIdQueryValidator(SqlDbContext dbContext) : base(dbContext)
+    public GetTodoByIdQueryValidator(ITodoRepository todoRepository) : base(todoRepository)
     {
         RuleFor(x => x.Id)
             .Custom(NotNullNotEmpty)

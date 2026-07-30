@@ -4,7 +4,7 @@ using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Host.Models.Responses.Todo;
 using CleanWebApiTemplate.Host.Routes.Todo.Update;
-using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
+using CleanWebApiTemplate.Infrastructure.Constants;
 using CleanWebApiTemplate.Testing.Common;
 using CleanWebApiTemplate.Testing.Common.Attributes;
 using CleanWebApiTemplate.Testing.Configuration;
@@ -136,7 +136,7 @@ public class Put(TestServerFixture fixture)
     {
         // Arrange
         var defaultTodo = await Fixture.AddDefaultTodo(title: "defaultTitle", description: "defaultDescription", status: (int)ETodoStatus.Pending);
-        UpdateTodoRequest request = new() { Title = TestServerFixtureExtension.GenerateRandomString(TodoEntityConfiguration.TitleLenght + 1), Description = "updatedDescription", Status = (int)ETodoStatus.InProgress };
+        UpdateTodoRequest request = new() { Title = TestServerFixtureExtension.GenerateRandomString(TodoTable.TitleMaxLength + 1), Description = "updatedDescription", Status = (int)ETodoStatus.InProgress };
 
         // Act
         var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request);
@@ -152,7 +152,7 @@ public class Put(TestServerFixture fixture)
     {
         // Arrange
         var defaultTodo = await Fixture.AddDefaultTodo(title: "defaultTitle", description: "defaultDescription", status: (int)ETodoStatus.Pending);
-        UpdateTodoRequest request = new() { Title = "updatedTitle", Description = TestServerFixtureExtension.GenerateRandomString(TodoEntityConfiguration.DescriptionLenght + 1), Status = (int)ETodoStatus.InProgress };
+        UpdateTodoRequest request = new() { Title = "updatedTitle", Description = TestServerFixtureExtension.GenerateRandomString(TodoTable.DescriptionMaxLength + 1), Status = (int)ETodoStatus.InProgress };
 
         // Act
         var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request);
@@ -185,7 +185,7 @@ public class Put(TestServerFixture fixture)
     {
         // Arrange
         var defaultTodo = await Fixture.AddDefaultTodo(title: "defaultTitle", description: "defaultDescription", status: (int)ETodoStatus.Pending);
-        UpdateTodoRequest request = new() { Title = "updatedTitle", Description = TestServerFixtureExtension.GenerateRandomString(TodoEntityConfiguration.DescriptionLenght + 1), Status = Enum.GetValues<ETodoStatus>().Length + 1 };
+        UpdateTodoRequest request = new() { Title = "updatedTitle", Description = TestServerFixtureExtension.GenerateRandomString(TodoTable.DescriptionMaxLength + 1), Status = Enum.GetValues<ETodoStatus>().Length + 1 };
 
         // Act
         var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request);
