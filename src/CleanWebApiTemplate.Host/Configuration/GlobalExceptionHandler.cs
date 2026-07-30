@@ -20,7 +20,9 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             Detail = "An error occurred while processing your request."
         };
 
-        logger.LogError(eventId: new(), exception: exception, "Internal server error: {exception}", exception.Message);
+        if (logger.IsEnabled(LogLevel.Error))
+            logger.LogError(eventId: new(), exception: exception, "Internal server error: {ExceptionMessage}", exception.Message);
+
 
         httpContext.Response.StatusCode = problemDetails.Status!.Value;
         await httpContext.Response.WriteAsJsonAsync(problemDetails!,
