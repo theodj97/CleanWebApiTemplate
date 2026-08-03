@@ -46,16 +46,18 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
         });
     }
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         await InitDatabase(SqliteCnnString);
 
         HttpClient = Server.CreateClient();
     }
 
-    Task IAsyncLifetime.DisposeAsync()
+    public override async ValueTask DisposeAsync()
     {
-        if (string.IsNullOrEmpty(PathToTestAppSettings) is false && !string.IsNullOrEmpty(PathToTestAppSettings) && File.Exists(PathToTestAppSettings))
+        if (string.IsNullOrEmpty(PathToTestAppSettings) is false &&
+            !string.IsNullOrEmpty(PathToTestAppSettings) &&
+            File.Exists(PathToTestAppSettings))
         {
             try
             {
@@ -77,7 +79,8 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
             Console.WriteLine($"Error deleting {DbFilePath}", ex);
         }
 
-        return Task.CompletedTask;
+        GC.SuppressFinalize(this);
+        await base.DisposeAsync();
     }
 
     private void CreateJsonTestFile()

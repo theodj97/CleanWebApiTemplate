@@ -27,12 +27,12 @@ public class Post(TestServerFixture fixture)
         CreateTodoRequest request = new() { Title = "todoTitle", Description = "todoDescription" };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(), request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var responseModel = await response.Content.ReadFromJsonAsync<TodoResponse>();
+        var responseModel = await response.Content.ReadFromJsonAsync<TodoResponse>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(responseModel);
         Assert.Equal(request.Title, responseModel.Title);
         Assert.Equal(request.Description, responseModel.Description);
@@ -50,7 +50,7 @@ public class Post(TestServerFixture fixture)
         CreateTodoRequest request = new() { Title = string.Empty };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(), request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -66,7 +66,7 @@ public class Post(TestServerFixture fixture)
         CreateTodoRequest request = new() { Title = string.Empty };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(), request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -83,7 +83,9 @@ public class Post(TestServerFixture fixture)
         CreateTodoRequest request = new() { Title = defaultTodo.Title };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(),
+                                                          request,
+                                                          cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -98,7 +100,9 @@ public class Post(TestServerFixture fixture)
         CreateTodoRequest request = new() { Title = TestServerFixtureExtension.GenerateRandomString(TodoTable.TitleMaxLength + 1) };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(),
+                                                          request,
+                                                          cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -113,7 +117,9 @@ public class Post(TestServerFixture fixture)
         CreateTodoRequest request = new() { Title = "testTitle", Description = TestServerFixtureExtension.GenerateRandomString(TodoTable.DescriptionMaxLength + 1) };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(),
+                                                          request,
+                                                          cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -129,7 +135,9 @@ public class Post(TestServerFixture fixture)
         CreateTodoRequest request = new() { Title = "testTitle" };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Create(),
+                                                          request,
+                                                          cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);

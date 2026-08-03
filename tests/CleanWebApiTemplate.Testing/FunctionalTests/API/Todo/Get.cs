@@ -27,12 +27,13 @@ public class Get(TestServerFixture fixture)
         var defaultTodo = await Fixture.AddDefaultTodo();
 
         // Act
-        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetById(defaultTodo.Id.ToString()));
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetById(defaultTodo.Id.ToString()),
+                                                         TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var responseModel = await response.Content.ReadFromJsonAsync<TodoResponse>();
+        var responseModel = await response.Content.ReadFromJsonAsync<TodoResponse>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(responseModel);
         Assert.Equal(defaultTodo.Title, responseModel.Title);
         Assert.Equal(defaultTodo.Description, responseModel.Description);
@@ -51,7 +52,8 @@ public class Get(TestServerFixture fixture)
         // Arrange
 
         // Act
-        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetById(Ulid.NewUlid().ToString()));
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetById(Ulid.NewUlid().ToString()),
+                                                         TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);
@@ -66,7 +68,8 @@ public class Get(TestServerFixture fixture)
         string wrongId = "wrong-id";
 
         // Act
-        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetById(wrongId));
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetById(wrongId),
+                                                         TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -81,7 +84,8 @@ public class Get(TestServerFixture fixture)
         // Arrange
 
         // Act
-        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetById(Ulid.NewUlid().ToString()));
+        var response = await Fixture.HttpClient.GetAsync(ApiRoutes.Todo.GetById(Ulid.NewUlid().ToString()),
+                                                         TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -128,12 +132,14 @@ public class Get(TestServerFixture fixture)
         };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(),
+                                                          request,
+                                                          cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var responseModel = await response.Content.ReadFromJsonAsync<IEnumerable<TodoResponse>>();
+        var responseModel = await response.Content.ReadFromJsonAsync<IEnumerable<TodoResponse>>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(responseModel);
         Assert.True(responseModel.Count() is 2);
         var firstTodoResponse = responseModel.First(x => x.Id == firstTodo.Id);
@@ -184,12 +190,13 @@ public class Get(TestServerFixture fixture)
         FilteredTodoRequest request = new();
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var responseModel = await response.Content.ReadFromJsonAsync<IEnumerable<TodoResponse>>();
+        var responseModel = await response.Content.ReadFromJsonAsync<IEnumerable<TodoResponse>>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(responseModel);
         Assert.True(responseModel.Count() is 3);
         var firstTodoResponse = responseModel.First(x => x.Id == firstTodo.Id);
@@ -227,12 +234,13 @@ public class Get(TestServerFixture fixture)
         FilteredTodoRequest request = new();
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var responseModel = await response.Content.ReadFromJsonAsync<IEnumerable<TodoResponse>>();
+        var responseModel = await response.Content.ReadFromJsonAsync<IEnumerable<TodoResponse>>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(responseModel);
         Assert.Empty(responseModel);
     }
@@ -249,7 +257,8 @@ public class Get(TestServerFixture fixture)
         };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -264,7 +273,8 @@ public class Get(TestServerFixture fixture)
         FilteredTodoRequest request = new() { Ids = ["wrongUlid"] };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -279,7 +289,8 @@ public class Get(TestServerFixture fixture)
         FilteredTodoRequest request = new() { Title = [TestServerFixtureExtension.GenerateRandomString(TodoTable.TitleMaxLength + 1)] };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -303,7 +314,8 @@ public class Get(TestServerFixture fixture)
         FilteredTodoRequest request = new() { Status = [invalidStatus] };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -319,7 +331,8 @@ public class Get(TestServerFixture fixture)
         FilteredTodoRequest request = new() { CreatedBy = [invalidUserEmail] };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -335,7 +348,8 @@ public class Get(TestServerFixture fixture)
         FilteredTodoRequest request = new() { StartDate = invalidStartDate };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -350,7 +364,8 @@ public class Get(TestServerFixture fixture)
         FilteredTodoRequest request = new() { PageNumber = 0 };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -365,7 +380,8 @@ public class Get(TestServerFixture fixture)
         FilteredTodoRequest request = new() { PageSize = 0 };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -380,7 +396,8 @@ public class Get(TestServerFixture fixture)
         FilteredTodoRequest request = new() { PageSize = 1 };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -395,7 +412,8 @@ public class Get(TestServerFixture fixture)
         FilteredTodoRequest request = new() { PageNumber = 1 };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -411,7 +429,8 @@ public class Get(TestServerFixture fixture)
         FilteredTodoRequest request = new() { EndDate = invalidEndDate };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -428,7 +447,8 @@ public class Get(TestServerFixture fixture)
         FilteredTodoRequest request = new() { StartDate = startDate.ToString(), EndDate = endDate.ToString() };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -444,7 +464,8 @@ public class Get(TestServerFixture fixture)
         FilteredTodoRequest request = new() { StartDate = startDate.ToString() };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -460,7 +481,8 @@ public class Get(TestServerFixture fixture)
         FilteredTodoRequest request = new() { EndDate = endDate.ToString() };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -476,7 +498,8 @@ public class Get(TestServerFixture fixture)
         FilteredTodoRequest request = new();
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.Filter(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -497,19 +520,21 @@ public class Get(TestServerFixture fixture)
         GetTodoTitlesRequest secondRequest = new() { PageNumber = 2, PageSize = 3 };
 
         // Act
-        var firstRequestResponse = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), firstRequest);
-        var secondRequestResponse = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), secondRequest);
+        var firstRequestResponse = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), firstRequest,
+                                                                       cancellationToken: TestContext.Current.CancellationToken);
+        var secondRequestResponse = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), secondRequest,
+                                                                        cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(firstRequestResponse.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, firstRequestResponse.StatusCode);
-        var firstResponseModel = await firstRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>();
+        var firstResponseModel = await firstRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(firstResponseModel);
         Assert.Equal(3, firstResponseModel.Count());
 
         Assert.True(secondRequestResponse.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, secondRequestResponse.StatusCode);
-        var secondResponseModel = await secondRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>();
+        var secondResponseModel = await secondRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(secondResponseModel);
         Assert.Single(secondResponseModel);
 
@@ -544,19 +569,21 @@ public class Get(TestServerFixture fixture)
         GetTodoTitlesRequest secondRequest = new() { PageNumber = 2, PageSize = 3, SortProperties = [new KeyValuePair<string, bool>(nameof(TodoEntity.Title), true)] };
 
         // Act
-        var firstRequestResponse = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), firstRequest);
-        var secondRequestResponse = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), secondRequest);
+        var firstRequestResponse = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), firstRequest,
+                                                                       cancellationToken: TestContext.Current.CancellationToken);
+        var secondRequestResponse = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), secondRequest,
+                                                                        cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(firstRequestResponse.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, firstRequestResponse.StatusCode);
-        var firstResponseModel = await firstRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>();
+        var firstResponseModel = await firstRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(firstResponseModel);
         Assert.Equal(3, firstResponseModel.Count());
 
         Assert.True(secondRequestResponse.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, secondRequestResponse.StatusCode);
-        var secondResponseModel = await secondRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>();
+        var secondResponseModel = await secondRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(secondResponseModel);
         Assert.Single(secondResponseModel);
 
@@ -591,19 +618,21 @@ public class Get(TestServerFixture fixture)
         GetTodoTitlesRequest secondRequest = new() { PageNumber = 2, PageSize = 3, SortProperties = [new KeyValuePair<string, bool>(nameof(TodoEntity.Id), false)] };
 
         // Act
-        var firstRequestResponse = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), firstRequest);
-        var secondRequestResponse = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), secondRequest);
+        var firstRequestResponse = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), firstRequest,
+                                                                       cancellationToken: TestContext.Current.CancellationToken);
+        var secondRequestResponse = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), secondRequest,
+                                                                        cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(firstRequestResponse.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, firstRequestResponse.StatusCode);
-        var firstResponseModel = await firstRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>();
+        var firstResponseModel = await firstRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(firstResponseModel);
         Assert.Equal(3, firstResponseModel.Count());
 
         Assert.True(secondRequestResponse.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, secondRequestResponse.StatusCode);
-        var secondResponseModel = await secondRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>();
+        var secondResponseModel = await secondRequestResponse.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(secondResponseModel);
         Assert.Single(secondResponseModel);
 
@@ -633,11 +662,12 @@ public class Get(TestServerFixture fixture)
         GetTodoTitlesRequest request = new() { PageNumber = 1, PageSize = 3, SortProperties = [new KeyValuePair<string, bool>(nameof(TodoEntity.Id), false)] };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);
-        var responseModel = await response.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>();
+        var responseModel = await response.Content.ReadFromJsonAsync<IEnumerable<TodoTitleResponse>>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(responseModel);
         Assert.Empty(responseModel);
     }
@@ -654,7 +684,8 @@ public class Get(TestServerFixture fixture)
         };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -669,7 +700,8 @@ public class Get(TestServerFixture fixture)
         GetTodoTitlesRequest request = new() { PageNumber = 0 };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -684,7 +716,8 @@ public class Get(TestServerFixture fixture)
         GetTodoTitlesRequest request = new() { PageSize = 0 };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -699,7 +732,8 @@ public class Get(TestServerFixture fixture)
         GetTodoTitlesRequest request = new() { PageSize = 1 };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -714,7 +748,8 @@ public class Get(TestServerFixture fixture)
         GetTodoTitlesRequest request = new() { PageNumber = 1 };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -730,7 +765,8 @@ public class Get(TestServerFixture fixture)
         GetTodoTitlesRequest request = new() { PageNumber = 1, PageSize = 1 };
 
         // Act
-        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request);
+        var response = await Fixture.HttpClient.PostAsync(ApiRoutes.Todo.GetTitles(), request,
+                                                           cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);

@@ -28,12 +28,12 @@ public class Put(TestServerFixture fixture)
         UpdateTodoRequest request = new() { Title = "updatedTitle", Description = "updatedDescription", Status = (int)ETodoStatus.InProgress };
 
         // Act
-        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request);
+        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var responseModel = await response.Content.ReadFromJsonAsync<TodoResponse>();
+        var responseModel = await response.Content.ReadFromJsonAsync<TodoResponse>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(responseModel);
         Assert.Equal(request.Title, responseModel.Title);
         Assert.Equal(request.Description, responseModel.Description);
@@ -56,7 +56,7 @@ public class Put(TestServerFixture fixture)
         UpdateTodoRequest request = new() { Title = "updatedTitle", Description = "updatedDescription", Status = (int)ETodoStatus.InProgress };
 
         // Act
-        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(string.Empty), request);
+        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(string.Empty), request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -73,7 +73,7 @@ public class Put(TestServerFixture fixture)
         UpdateTodoRequest request = new() { Title = "updatedTitle", Description = "updatedDescription", Status = (int)ETodoStatus.InProgress };
 
         // Act
-        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(wrongId), request);
+        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(wrongId), request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -92,12 +92,12 @@ public class Put(TestServerFixture fixture)
         UpdateTodoRequest request = new() { Title = defaultTodo.Title, Description = "updatedDescription", Status = (int)ETodoStatus.InProgress };
 
         // Act
-        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request);
+        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var responseModel = await response.Content.ReadFromJsonAsync<TodoResponse>();
+        var responseModel = await response.Content.ReadFromJsonAsync<TodoResponse>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(responseModel);
         Assert.Equal(request.Title, responseModel.Title);
         Assert.Equal(request.Description, responseModel.Description);
@@ -123,7 +123,7 @@ public class Put(TestServerFixture fixture)
         await Fixture.AddDefaultTodo(title: request.Title);
 
         // Act
-        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request);
+        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -139,7 +139,7 @@ public class Put(TestServerFixture fixture)
         UpdateTodoRequest request = new() { Title = TestServerFixtureExtension.GenerateRandomString(TodoTable.TitleMaxLength + 1), Description = "updatedDescription", Status = (int)ETodoStatus.InProgress };
 
         // Act
-        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request);
+        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -155,7 +155,7 @@ public class Put(TestServerFixture fixture)
         UpdateTodoRequest request = new() { Title = "updatedTitle", Description = TestServerFixtureExtension.GenerateRandomString(TodoTable.DescriptionMaxLength + 1), Status = (int)ETodoStatus.InProgress };
 
         // Act
-        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request);
+        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -172,7 +172,7 @@ public class Put(TestServerFixture fixture)
         UpdateTodoRequest request = new() { Title = "updatedTitle", Status = (int)ETodoStatus.InProgress };
 
         // Act
-        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request);
+        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -188,7 +188,7 @@ public class Put(TestServerFixture fixture)
         UpdateTodoRequest request = new() { Title = "updatedTitle", Description = TestServerFixtureExtension.GenerateRandomString(TodoTable.DescriptionMaxLength + 1), Status = Enum.GetValues<ETodoStatus>().Length + 1 };
 
         // Act
-        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request);
+        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -205,7 +205,7 @@ public class Put(TestServerFixture fixture)
         UpdateTodoRequest request = new() { Title = "updatedTitle", Description = "updatedDescription", Status = (int)ETodoStatus.InProgress };
 
         // Act
-        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(Ulid.NewUlid().ToString()), request);
+        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(Ulid.NewUlid().ToString()), request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -223,12 +223,12 @@ public class Put(TestServerFixture fixture)
         UpdateTodoRequest request = new() { Title = defaultTodo.Title, Description = defaultTodo.Description, Status = defaultTodo.Status };
 
         // Act
-        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request);
+        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var responseModel = await response.Content.ReadFromJsonAsync<TodoResponse>();
+        var responseModel = await response.Content.ReadFromJsonAsync<TodoResponse>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(responseModel);
         Assert.Equal(request.Title, responseModel.Title);
         Assert.Equal(request.Description, responseModel.Description);
@@ -253,7 +253,7 @@ public class Put(TestServerFixture fixture)
         var request = new UpdateTodoRequest { Title = "testTitle", Description = "testDescription" };
 
         // Act
-        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request);
+        var response = await Fixture.HttpClient.PutAsync(ApiRoutes.Todo.Update(defaultTodo.Id.ToString()), request, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
