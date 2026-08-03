@@ -15,7 +15,7 @@ This template adheres to the principles of Clean Architecture, ensuring separati
 - **Clean Architecture**: Organized into clear layers, the project structure promotes clean separation of concerns.
 - **JWT Auth**: Authentication and authorization already configured for the project, just need to set up environment vars on your machine.
 - **Functional, Integration & Unitary Testing**: Robust testing setup to ensure code reliability and ease of maintenance.
-- **Migrations**: Code first implementation in the SQLite variant of this template, used Migrations also in functional testing.
+- **Schema bootstrap**: Idempotent DDL-based schema creation in the SQLite variant of this template, also used in functional testing.
 - **ULID Sql**: ULID Id to provide faster, non sequential and fragmentation preventive implementation.
 
 ### Libraries and Frameworks
@@ -23,7 +23,7 @@ This template adheres to the principles of Clean Architecture, ensuring separati
 The project leverages several high-quality libraries and frameworks, including:
 - **Custom CQRS**: MediatR-free CQRS implementation with explicit, reflection-free DI registration and decorator-based validation (Native AOT friendly).
 - **FluentValidation**: For building strongly-typed validation rules.
-- **EntityFramework**: For ORM capabilities, implemented for SQLite.
+- **Microsoft.Data.Sqlite (ADO.NET)**: Pure ADO.NET data access with a repository pattern, parameterized queries and explicit manual mapping (Native AOT friendly).
 - **XUnit**: For comprehensive testing frameworks.
 - **SQLite**: Serverless, file-based database engine.
 - **Swashbuckle Swagger**: For Web API documentation.

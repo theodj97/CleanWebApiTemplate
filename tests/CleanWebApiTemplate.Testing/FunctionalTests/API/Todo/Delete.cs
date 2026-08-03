@@ -22,12 +22,13 @@ public class Delete(TestServerFixture fixture)
         var defaultTodo = await Fixture.AddDefaultTodo(title: "defaultTitle", description: "defaultDescription", status: (int)ETodoStatus.Pending);
 
         // Act
-        var response = await Fixture.HttpClient.DeleteAsync(ApiRoutes.Todo.Delete(defaultTodo.Id.ToString()));
+        var response = await Fixture.HttpClient.DeleteAsync(ApiRoutes.Todo.Delete(defaultTodo.Id.ToString()),
+                                                            TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var responseModel = await response.Content.ReadFromJsonAsync<bool>();
+        var responseModel = await response.Content.ReadFromJsonAsync<bool>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.True(responseModel);
         var todoDb = await Fixture.GetTodo(defaultTodo.Id);
         Assert.Null(todoDb);
@@ -42,12 +43,12 @@ public class Delete(TestServerFixture fixture)
         // Arrange
 
         // Act
-        var response = await Fixture.HttpClient.DeleteAsync(ApiRoutes.Todo.Delete(Ulid.NewUlid().ToString()));
+        var response = await Fixture.HttpClient.DeleteAsync(ApiRoutes.Todo.Delete(Ulid.NewUlid().ToString()), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var responseModel = await response.Content.ReadFromJsonAsync<bool>();
+        var responseModel = await response.Content.ReadFromJsonAsync<bool>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.False(responseModel);
     }
 
@@ -58,7 +59,7 @@ public class Delete(TestServerFixture fixture)
         // Arrange
 
         // Act
-        var response = await Fixture.HttpClient.DeleteAsync(ApiRoutes.Todo.Delete(string.Empty));
+        var response = await Fixture.HttpClient.DeleteAsync(ApiRoutes.Todo.Delete(string.Empty), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -74,7 +75,7 @@ public class Delete(TestServerFixture fixture)
         string wrongId = "wrong-id";
 
         // Act
-        var response = await Fixture.HttpClient.DeleteAsync(ApiRoutes.Todo.Delete(wrongId));
+        var response = await Fixture.HttpClient.DeleteAsync(ApiRoutes.Todo.Delete(wrongId), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);
@@ -89,7 +90,7 @@ public class Delete(TestServerFixture fixture)
         // Arrange
 
         // Act
-        var response = await Fixture.HttpClient.DeleteAsync(ApiRoutes.Todo.Delete(Ulid.NewUlid().ToString()));
+        var response = await Fixture.HttpClient.DeleteAsync(ApiRoutes.Todo.Delete(Ulid.NewUlid().ToString()), TestContext.Current.CancellationToken);
 
         // Assert
         Assert.False(response.IsSuccessStatusCode);

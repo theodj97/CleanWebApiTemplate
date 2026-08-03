@@ -1,4 +1,4 @@
-namespace CleanWebApiTemplate.Application.Abstractions.Messages;
+namespace CleanWebApiTemplate.Application.CQRS.Messages;
 
 /// <summary>
 /// Marker interface for every CQRS message (commands and queries).

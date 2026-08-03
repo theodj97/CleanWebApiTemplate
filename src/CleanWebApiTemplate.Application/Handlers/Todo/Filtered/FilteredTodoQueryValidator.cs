@@ -1,21 +1,22 @@
-﻿using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
-using CleanWebApiTemplate.Infrastructure.Context;
-using CleanWebApiTemplate.Infrastructure.EntityConfiguration;
+﻿using CleanWebApiTemplate.Application.Abstractions;
+using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
+using CleanWebApiTemplate.Infrastructure.Constants;
+using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
 
 public class FilteredTodoQueryValidator : TodoValidator<FilteredTodoQuery>
 {
-    public FilteredTodoQueryValidator(SqlDbContext dbContext) : base(dbContext)
+    public FilteredTodoQueryValidator(ITodoRepository todoRepository) : base(todoRepository)
     {
         RuleForEach(x => x.Ids)
             .Custom(ValidateUlid)
             .When(x => x.Ids is not null && x.Ids.Any());
 
         RuleForEach(x => x.Title)
-            .Must(title => title.Length < TodoEntityConfiguration.TitleLenght)
-            .WithMessage($"Title must be less than {TodoEntityConfiguration.TitleLenght} characters")
+            .Must(title => title.Length < TodoTable.TitleMaxLength)
+            .WithMessage($"Title must be less than {TodoTable.TitleMaxLength} characters")
             .When(x => x.Title is not null && x.Title.Any());
 
         RuleForEach(x => x.Status)
@@ -34,7 +35,7 @@ public class FilteredTodoQueryValidator : TodoValidator<FilteredTodoQuery>
             .Custom(ValidateDateTime!)
             .When(x => x.EndDate is not null);
 
-        RuleFor(x => new { x.StartDate, x.EndDate })
+        RuleFor(x => new DateRange(x.StartDate, x.EndDate))
             .Custom(ValidateStartDateAndEndDate);
 
         RuleFor(x => x.PageNumber).Must(value => value is not null && value > 0)
@@ -46,7 +47,17 @@ public class FilteredTodoQueryValidator : TodoValidator<FilteredTodoQuery>
             .WithMessage($"Property {nameof(FilteredTodoQuery.PageSize)} must be greater than 0 if property {nameof(FilteredTodoQuery.PageNumber)} is not null.");
 
         RuleFor(x => x.SortProperties).Custom((sortProperties, context) => ValidateSortBy(sortProperties,
-                                                                                          typeof(TodoDto),
-                                                                                          context)).When(x => x.SortProperties is not null);
+                                                                                           new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                                                                                           {
+                                                                                               nameof(TodoDto.Id),
+                                                                                               nameof(TodoDto.Title),
+                                                                                               nameof(TodoDto.Description),
+                                                                                               nameof(TodoDto.CreatedAt),
+                                                                                               nameof(TodoDto.UpdatedAt),
+                                                                                               nameof(TodoDto.Status),
+                                                                                               nameof(TodoDto.CreatedBy),
+                                                                                               nameof(TodoDto.UpdatedBy),
+                                                                                           },
+                                                                                           context)).When(x => x.SortProperties is not null);
     }
 }

@@ -6,6 +6,10 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>a4490548-cd9d-4321-82ca-b9353e1834c4</UserSecretsId>
+    <PublishAot>true</PublishAot>
+    <IsAotCompatible>true</IsAotCompatible>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
   </PropertyGroup>
 
   <ItemGroup>

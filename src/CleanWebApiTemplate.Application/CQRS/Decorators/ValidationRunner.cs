@@ -1,7 +1,7 @@
 using CleanWebApiTemplate.Domain.ResultModel;
 using FluentValidation;
 
-namespace CleanWebApiTemplate.Application.Decorators;
+namespace CleanWebApiTemplate.Application.CQRS.Decorators;
 
 /// <summary>
 /// Shared validation logic used by the command and query validation decorators.

@@ -1,4 +1,4 @@
-namespace CleanWebApiTemplate.Application.Abstractions.Messages;
+namespace CleanWebApiTemplate.Application.CQRS.Messages;
 
 /// <summary>
 /// A command: an intention to mutate state, producing a <typeparamref name="TResult"/>.

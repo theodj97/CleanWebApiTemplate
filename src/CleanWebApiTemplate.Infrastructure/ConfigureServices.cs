@@ -1,6 +1,7 @@
 ﻿using CleanWebApiTemplate.Domain.Configuration;
-using CleanWebApiTemplate.Infrastructure.Context;
-using Microsoft.EntityFrameworkCore;
+using CleanWebApiTemplate.Infrastructure.Data;
+using CleanWebApiTemplate.Infrastructure.Repositories;
+using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CleanWebApiTemplate.Infrastructure;
@@ -9,12 +10,8 @@ public static class ConfigureServices
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, ConnectionStringsSection connectionStrings)
     {
-        var assembly = typeof(ConfigureServices).Assembly;
-
-        services.AddDbContextPool<SqlDbContext>(options =>
-            options.UseSqlite(connectionStrings.Sqlite,
-                b => b.MigrationsAssembly(assembly)
-            ));
+        services.AddSingleton<ISqliteConnectionFactory>(new SqliteConnectionFactory(connectionStrings.Sqlite));
+        services.AddScoped<ITodoRepository, TodoRepository>();
 
         return services;
     }

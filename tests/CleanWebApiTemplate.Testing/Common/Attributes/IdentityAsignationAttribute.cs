@@ -1,6 +1,6 @@
 using System.Reflection;
 using CleanWebApiTemplate.Testing.Configuration;
-using Xunit.Sdk;
+using Xunit.v3;
 
 namespace CleanWebApiTemplate.Testing.Common.Attributes;
 
@@ -12,7 +12,7 @@ public class IdentityAsignationAttribute(string? userName = null,
     private readonly string? UserEmail = userEmail;
     private readonly string? Role = role;
 
-    public override void Before(MethodInfo methodUnderTest)
+    public override void Before(MethodInfo methodUnderTest, IXunitTest test)
     {
         if (string.IsNullOrEmpty(Role) is false)
             TestAuthHandler.SetRole(Role);
@@ -22,6 +22,6 @@ public class IdentityAsignationAttribute(string? userName = null,
             TestAuthHandler.SetUserEmail(UserEmail);
     }
 
-    public override void After(MethodInfo methodUnderTest) => TestAuthHandler.ResetDefault();
+    public override void After(MethodInfo methodUnderTest, IXunitTest test) => TestAuthHandler.ResetDefault();
 
 }

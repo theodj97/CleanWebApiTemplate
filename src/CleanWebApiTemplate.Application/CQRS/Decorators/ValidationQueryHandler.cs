@@ -1,8 +1,8 @@
-using CleanWebApiTemplate.Application.Abstractions.Messages;
+using CleanWebApiTemplate.Application.CQRS.Messages;
 using CleanWebApiTemplate.Domain.ResultModel;
 using FluentValidation;
 
-namespace CleanWebApiTemplate.Application.Decorators;
+namespace CleanWebApiTemplate.Application.CQRS.Decorators;
 
 /// <summary>
 /// Decorator over an <see cref="IQueryHandler{TQuery, TResult}"/> that runs all

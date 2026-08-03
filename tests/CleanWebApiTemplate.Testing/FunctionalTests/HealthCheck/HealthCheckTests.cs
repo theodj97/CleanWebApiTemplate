@@ -13,7 +13,8 @@ public class HealthCheckTests(TestServerFixture fixture)
     public async Task CheckApiHealth_Should_Return_Ok()
     {
         // Act
-        var response = await Fixture.HttpClient.GetAsync(API_HEALTH_URL);
+        var response = await Fixture.HttpClient.GetAsync(API_HEALTH_URL,
+                                                         TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);
@@ -24,7 +25,8 @@ public class HealthCheckTests(TestServerFixture fixture)
     public async Task CheckSqliteDbHealth_Should_Return_Ok()
     {
         // Act
-        var response = await Fixture.HttpClient.GetAsync(SQLITE_DB_HEALTH_URL);
+        var response = await Fixture.HttpClient.GetAsync(SQLITE_DB_HEALTH_URL,
+                                                         TestContext.Current.CancellationToken);
 
         // Assert
         Assert.True(response.IsSuccessStatusCode);

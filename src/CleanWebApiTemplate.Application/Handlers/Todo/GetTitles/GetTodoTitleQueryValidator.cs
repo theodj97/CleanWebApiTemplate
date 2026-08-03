@@ -1,12 +1,12 @@
 using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
-using CleanWebApiTemplate.Infrastructure.Context;
+using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.GetTitles;
 
 public class GetTodoTitleQueryValidator : TodoValidator<GetTodoTitleQuery>
 {
-    public GetTodoTitleQueryValidator(SqlDbContext dbContext) : base(dbContext)
+    public GetTodoTitleQueryValidator(ITodoRepository todoRepository) : base(todoRepository)
     {
         RuleFor(x => x.PageNumber).Must(value => value is not null && value > 0)
             .When(x => x.PageSize is not null || x.PageNumber is not null)
@@ -17,7 +17,17 @@ public class GetTodoTitleQueryValidator : TodoValidator<GetTodoTitleQuery>
             .WithMessage($"Property {nameof(GetTodoTitleQuery.PageSize)} must be greater than 0 if property {nameof(GetTodoTitleQuery.PageNumber)} is not null.");
 
         RuleFor(x => x.SortProperties).Custom((sortProperties, context) => ValidateSortBy(sortProperties,
-                                                                                          typeof(TodoDto),
-                                                                                          context)).When(x => x.SortProperties is not null);
+                                                                                           new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                                                                                           {
+                                                                                               nameof(TodoDto.Id),
+                                                                                               nameof(TodoDto.Title),
+                                                                                               nameof(TodoDto.Description),
+                                                                                               nameof(TodoDto.CreatedAt),
+                                                                                               nameof(TodoDto.UpdatedAt),
+                                                                                               nameof(TodoDto.Status),
+                                                                                               nameof(TodoDto.CreatedBy),
+                                                                                               nameof(TodoDto.UpdatedBy),
+                                                                                           },
+                                                                                           context)).When(x => x.SortProperties is not null);
     }
 }

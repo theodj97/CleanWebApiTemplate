@@ -1,4 +1,4 @@
-namespace CleanWebApiTemplate.Application.Abstractions.Messages;
+namespace CleanWebApiTemplate.Application.CQRS.Messages;
 
 /// <summary>
 /// A query: a read-only request that produces a <typeparamref name="TResult"/>.

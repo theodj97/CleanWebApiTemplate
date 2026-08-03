@@ -1,17 +1,17 @@
-﻿using CleanWebApiTemplate.Infrastructure.Context;
+﻿using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Update;
 
 public class UpdateTodoCommandValidator : TodoValidator<UpdateTodoCommand>
 {
-    public UpdateTodoCommandValidator(SqlDbContext dbContext) : base(dbContext)
+    public UpdateTodoCommandValidator(ITodoRepository todoRepository) : base(todoRepository)
     {
         RuleFor(x => x.Id)
             .Custom(ValidateUlid);
 
-        RuleFor(x => new { x.Id, x.Title })
-            .CustomAsync(ValidateTitle!)
+        RuleFor(x => new IdAndTitle(x.Id, x.Title))
+            .CustomAsync(ValidateTitle)
             .When(x => string.IsNullOrEmpty(x.Title) is false && Ulid.TryParse(x.Id, out _) is true);
 
         RuleFor(x => x.UpdatedBy)

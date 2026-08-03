@@ -4,14 +4,13 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
-using CleanWebApiTemplate.Infrastructure.Context;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
+using CleanWebApiTemplate.Infrastructure.Data;
 using CleanWebApiTemplate.Testing.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using CleanWebApiTemplate.Domain.Configuration;
 using Microsoft.Extensions.Hosting;
 using System.Text.Json;
+using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 
 namespace CleanWebApiTemplate.Testing;
 
@@ -47,16 +46,18 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
         });
     }
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         await InitDatabase(SqliteCnnString);
 
         HttpClient = Server.CreateClient();
     }
 
-    Task IAsyncLifetime.DisposeAsync()
+    public override async ValueTask DisposeAsync()
     {
-        if (string.IsNullOrEmpty(PathToTestAppSettings) is false && !string.IsNullOrEmpty(PathToTestAppSettings) && File.Exists(PathToTestAppSettings))
+        if (string.IsNullOrEmpty(PathToTestAppSettings) is false &&
+            !string.IsNullOrEmpty(PathToTestAppSettings) &&
+            File.Exists(PathToTestAppSettings))
         {
             try
             {
@@ -78,7 +79,8 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
             Console.WriteLine($"Error deleting {DbFilePath}", ex);
         }
 
-        return Task.CompletedTask;
+        GC.SuppressFinalize(this);
+        await base.DisposeAsync();
     }
 
     private void CreateJsonTestFile()
@@ -98,16 +100,8 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
         File.WriteAllText(PathToTestAppSettings, appSettingsJson);
     }
 
-    private static async Task InitDatabase(string sqliteConnectionStr)
-    {
-        var optionsBuilder = new DbContextOptionsBuilder<SqlDbContext>();
-        optionsBuilder.UseSqlite(sqliteConnectionStr);
-        optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-
-        using var context = new SqlDbContext(optionsBuilder.Options);
-        await context.Database.EnsureCreatedAsync();
-        await context.Database.MigrateAsync();
-    }
+    private static async Task InitDatabase(string sqliteConnectionStr) =>
+        await SqliteDatabaseInitializer.InitializeAsync(sqliteConnectionStr);
 
     internal static async Task ResetDatabaseAsync()
     {
@@ -141,8 +135,8 @@ public class TestServerFixture : WebApplicationFactory<Program>, IAsyncLifetime
         await enableFkCommand.ExecuteNonQueryAsync();
     }
 
-    public async Task ExecuteDbContextAsync(Func<SqlDbContext, Task> function) =>
-        await ExecuteScopeAsync(sp => function(sp.GetService<SqlDbContext>() ?? throw new InvalidOperationException("No DbContext was provided")));
+    public async Task ExecuteRepositoryAsync(Func<ITodoRepository, Task> function) =>
+        await ExecuteScopeAsync(sp => function(sp.GetService<ITodoRepository>() ?? throw new InvalidOperationException("No ITodoRepository was provided")));
 
 
     private async Task ExecuteScopeAsync(Func<IServiceProvider, Task> function)

@@ -1,5 +1,4 @@
-﻿using CleanWebApiTemplate.Domain.Configuration;
-using CleanWebApiTemplate.Host.Models.Interfaces;
+﻿using CleanWebApiTemplate.Host.Models.Interfaces;
 using Microsoft.OpenApi;
 using System.Net;
 using System.Security.Claims;

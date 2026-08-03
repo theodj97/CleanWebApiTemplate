@@ -1,9 +1,8 @@
-﻿using CleanWebApiTemplate.Application.Abstractions.Messages;
+﻿using CleanWebApiTemplate.Application.CQRS.Messages;
 using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.ResultModel;
-using CleanWebApiTemplate.Infrastructure.Context;
-using Microsoft.EntityFrameworkCore;
+using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Update;
 
@@ -43,13 +42,13 @@ public sealed class UpdateTodoCommand : ICommand<Result<TodoDto?>>
 
 }
 
-internal sealed class UpdateTodoCommandHandler(SqlDbContext dbContext) : ICommandHandler<UpdateTodoCommand, Result<TodoDto?>>
+internal sealed class UpdateTodoCommandHandler(ITodoRepository todoRepository) : ICommandHandler<UpdateTodoCommand, Result<TodoDto?>>
 {
-    private readonly SqlDbContext dbContext = dbContext;
+    private readonly ITodoRepository todoRepository = todoRepository;
 
     public async Task<Result<TodoDto?>> Handle(UpdateTodoCommand request, CancellationToken cancellationToken)
     {
-        var todoDb = await dbContext.TodoDb.FirstOrDefaultAsync(x => x.Id == Ulid.Parse(request.Id), cancellationToken);
+        var todoDb = await todoRepository.GetByIdAsync(Ulid.Parse(request.Id), cancellationToken);
         if (todoDb is null)
             return Result<TodoDto?>.Failure(new NotFoundError("ID was not found."));
 
@@ -58,8 +57,7 @@ internal sealed class UpdateTodoCommandHandler(SqlDbContext dbContext) : IComman
         if (isUpdated is false)
             return Result<TodoDto?>.Success(todoDb.ToDto());
 
-        var updatedTodo = dbContext.TodoDb.Update(todoDb);
-        await dbContext.SaveChangesAsync(cancellationToken);
-        return Result<TodoDto?>.Success(updatedTodo.Entity!.ToDto());
+        await todoRepository.UpdateAsync(todoDb, cancellationToken);
+        return Result<TodoDto?>.Success(todoDb.ToDto());
     }
 }

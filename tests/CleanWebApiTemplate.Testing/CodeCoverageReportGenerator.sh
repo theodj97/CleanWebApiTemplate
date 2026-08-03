@@ -11,8 +11,8 @@ mkdir -p $REPORT_DIR
 rm -rf $RESULTS_DIR
 mkdir -p $RESULTS_DIR
 
-echo "Executing tests..."
-dotnet test --collect:"XPlat Code Coverage"
+echo "Executing tests with code coverage (Microsoft.Testing.Platform)..."
+dotnet test --results-directory "$RESULTS_DIR" --coverage --coverage-output-format cobertura --coverage-output "$RESULT_FILE"
 
 if ! find "$RESULTS_DIR" -type f -name "$RESULT_FILE" | grep -q .; then
   echo "No coverage report found."
@@ -20,7 +20,9 @@ if ! find "$RESULTS_DIR" -type f -name "$RESULT_FILE" | grep -q .; then
 fi
 
 echo "Generating HTML report..."
-reportgenerator -reports:**/coverage.cobertura.xml -targetdir:"$REPORT_DIR" -reporttypes:Html
+# -filefilters excludes source-generated files (obj/**/*.g.cs) so the report
+# only reflects hand-written code under src/
+reportgenerator -reports:"$RESULTS_DIR/$RESULT_FILE" -targetdir:"$REPORT_DIR" -reporttypes:Html -filefilters:"-*.g.cs;-*.generated.cs"
 
 
 if [ ! -f "$REPORT_DIR/$REPORT_FILE" ]; then
