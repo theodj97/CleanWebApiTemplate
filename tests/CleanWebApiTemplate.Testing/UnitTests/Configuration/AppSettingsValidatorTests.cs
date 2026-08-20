@@ -13,7 +13,12 @@ public class AppSettingsValidatorTests
         // Arrange
         var settings = new AppSettings
         {
-            ConnectionStrings = new ConnectionStringsSection { Sqlite = "Data Source=test.db" },
+            ConnectionStrings = new ConnectionStringsSection
+            {
+#if (IsSQLite)
+                Sqlite = "Data Source=test.db"
+#endif
+            },
             CorsAllow = ["*"],
             ValidIssuers = ["localhost"]
         };
@@ -44,6 +49,7 @@ public class AppSettingsValidatorTests
         Assert.Contains("ConnectionStrings section is required.", result.Failures!);
     }
 
+#if (IsSQLite)
     [Fact]
     public void Validate_WithEmptySqliteConnection_Should_Fail()
     {
@@ -81,6 +87,7 @@ public class AppSettingsValidatorTests
         Assert.True(result.Failed);
         Assert.Contains("ConnectionStrings.Sqlite is required.", result.Failures!);
     }
+#endif
 
     [Fact]
     public void Validate_WithNullCorsAllow_Should_Fail()
@@ -88,7 +95,12 @@ public class AppSettingsValidatorTests
         // Arrange
         var settings = new AppSettings
         {
-            ConnectionStrings = new ConnectionStringsSection { Sqlite = "Data Source=test.db" },
+            ConnectionStrings = new ConnectionStringsSection
+            {
+#if (IsSQLite)
+                Sqlite = "Data Source=test.db"
+#endif
+            },
             CorsAllow = null!,
             ValidIssuers = ["localhost"]
         };
@@ -107,7 +119,12 @@ public class AppSettingsValidatorTests
         // Arrange
         var settings = new AppSettings
         {
-            ConnectionStrings = new ConnectionStringsSection { Sqlite = "Data Source=test.db" },
+            ConnectionStrings = new ConnectionStringsSection
+            {
+#if (IsSQLite)
+                Sqlite = "Data Source=test.db"
+#endif
+            },
             CorsAllow = [],
             ValidIssuers = ["localhost"]
         };
@@ -126,7 +143,12 @@ public class AppSettingsValidatorTests
         // Arrange
         var settings = new AppSettings
         {
-            ConnectionStrings = new ConnectionStringsSection { Sqlite = "Data Source=test.db" },
+            ConnectionStrings = new ConnectionStringsSection
+            {
+#if (IsSQLite)
+                Sqlite = "Data Source=test.db"
+#endif
+            },
             CorsAllow = ["*"],
             ValidIssuers = null!
         };
@@ -145,7 +167,12 @@ public class AppSettingsValidatorTests
         // Arrange
         var settings = new AppSettings
         {
-            ConnectionStrings = new ConnectionStringsSection { Sqlite = "Data Source=test.db" },
+            ConnectionStrings = new ConnectionStringsSection
+            {
+#if (IsSQLite)
+                Sqlite = "Data Source=test.db"
+#endif
+            },
             CorsAllow = ["*"],
             ValidIssuers = []
         };

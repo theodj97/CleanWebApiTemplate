@@ -6,6 +6,9 @@
 		<Nullable>enable</Nullable>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<IsAotCompatible>true</IsAotCompatible>
+		<!--#if (IsSQLite) -->
+		<DefineConstants>$(DefineConstants);IsSQLite</DefineConstants>
+		<!--#endif -->
 	</PropertyGroup>
 
 	<ItemGroup>

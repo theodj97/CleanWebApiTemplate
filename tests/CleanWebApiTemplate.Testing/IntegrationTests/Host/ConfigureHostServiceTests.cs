@@ -10,7 +10,9 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+#if (ApiHealthCheck)
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+#endif
 using Microsoft.Extensions.Options;
 using System.IO.Compression;
 
@@ -27,7 +29,12 @@ public class ConfigureHostServiceTests
         var config = new ConfigurationBuilder().Build();
         string[]? corsAllow = ["test.com"];
         string[]? validIssuers = ["localhost"];
-        ConnectionStringsSection sqliteConnectionString = new() { Sqlite = "Data Source=TestDb.db" };
+        ConnectionStringsSection sqliteConnectionString = new()
+        {
+#if (IsSQLite)
+            Sqlite = "Data Source=TestDb.db"
+#endif
+        };
 
         // Act
         services = ConfigureServices.AddHostServices(services,
@@ -38,10 +45,12 @@ public class ConfigureHostServiceTests
                                                      sqliteConnectionString);
 
         // Assert
+#if (ApiHealthCheck)
         var healthCheckService = services.FirstOrDefault(sd =>
             sd.ServiceType == typeof(HealthCheckService));
         Assert.NotNull(healthCheckService);
         Assert.Equal(ServiceLifetime.Singleton, healthCheckService.Lifetime);
+#endif
 
         var corsService = services.FirstOrDefault(sd =>
             sd.ServiceType == typeof(ICorsService));
@@ -101,7 +110,12 @@ public class ConfigureHostServiceTests
         var config = new ConfigurationBuilder().Build();
         string[]? corsAllow = ["test.com"];
         string[]? validIssuers = ["localhost"];
-        ConnectionStringsSection sqliteConnectionString = new() { Sqlite = "Data Source=TestDb.db" };
+        ConnectionStringsSection sqliteConnectionString = new()
+        {
+#if (IsSQLite)
+            Sqlite = "Data Source=TestDb.db"
+#endif
+        };
 
         // Act
         services = ConfigureServices.AddHostServices(services,
@@ -112,10 +126,12 @@ public class ConfigureHostServiceTests
                                                      sqliteConnectionString);
 
         // Assert
+#if (ApiHealthCheck)
         var healthCheckService = services.FirstOrDefault(sd =>
             sd.ServiceType == typeof(HealthCheckService));
         Assert.NotNull(healthCheckService);
         Assert.Equal(ServiceLifetime.Singleton, healthCheckService.Lifetime);
+#endif
 
         var corsService = services.FirstOrDefault(sd =>
             sd.ServiceType == typeof(ICorsService));
