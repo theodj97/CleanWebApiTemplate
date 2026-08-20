@@ -1,8 +1,8 @@
-# Clean Architecture WebAPI Template for .NET Core 9 - README
+# Clean Architecture WebAPI Template for .NET Core 10 - README
 
 ## Introduction
 
-Welcome to the Clean Architecture WebAPI Template for .NET Core 9! This template is designed to provide a solid starting point for building scalable and maintainable web applications using the .NET Core framework and ASP NET Core. Tailored for .NET Core 9, it incorporates best practices and design patterns to kickstart your project.
+Welcome to the Clean Architecture WebAPI Template for .NET Core 10! This template is designed to provide a solid starting point for building scalable and maintainable web applications using the .NET Core framework and ASP NET Core. Tailored for .NET Core 10, it incorporates best practices and design patterns to kickstart your project.
 
 This project serves as a template for creating a Web API focused on microservices architecture. It provides flexibility for use with different databases, including SQLite, with fully implemented configurations.
 
