@@ -1,4 +1,4 @@
-﻿using CleanWebApiTemplate.Domain.Configuration;
+using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Infrastructure.Data;
 using CleanWebApiTemplate.Infrastructure.Repositories;
 using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;

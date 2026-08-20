@@ -1,4 +1,4 @@
-﻿namespace CleanWebApiTemplate.Domain.ResultModel;
+namespace CleanWebApiTemplate.Domain.ResultModel;
 
 public class Result<T> : IResultFactory<Result<T>>
 {

@@ -1,4 +1,4 @@
-﻿using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
+using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo.Delete;

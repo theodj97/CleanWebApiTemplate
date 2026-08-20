@@ -1,16 +1,16 @@
-using CleanWebApiTemplate.Testing.Common;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using CleanWebApiTemplate.Host.Configuration;
-using CleanWebApiTemplate.Host;
 using CleanWebApiTemplate.Domain.Configuration;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using CleanWebApiTemplate.Host;
+using CleanWebApiTemplate.Host.Configuration;
+using CleanWebApiTemplate.Testing.Common;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using System.IO.Compression;
 

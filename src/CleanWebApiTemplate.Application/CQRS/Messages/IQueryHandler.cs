@@ -8,5 +8,5 @@ namespace CleanWebApiTemplate.Application.CQRS.Messages;
 public interface IQueryHandler<in TQuery, TResult>
     where TQuery : IQuery<TResult>
 {
-    Task<TResult> Handle(TQuery query, CancellationToken cancellationToken);
+    public Task<TResult> Handle(TQuery query, CancellationToken cancellationToken);
 }

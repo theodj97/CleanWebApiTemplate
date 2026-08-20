@@ -1,10 +1,10 @@
-using System.Security.Claims;
-using System.Text.Encodings.Web;
 using CleanWebApiTemplate.Host.Helpers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
 
 namespace CleanWebApiTemplate.Testing.UnitTests.Helpers;
 

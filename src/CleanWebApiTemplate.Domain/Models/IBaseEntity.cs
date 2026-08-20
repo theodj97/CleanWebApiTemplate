@@ -2,5 +2,5 @@ namespace CleanWebApiTemplate.Domain.Models;
 
 public interface IBaseEntity<TKey>
 {
-    TKey Id { get; set; }
+    public TKey Id { get; set; }
 }

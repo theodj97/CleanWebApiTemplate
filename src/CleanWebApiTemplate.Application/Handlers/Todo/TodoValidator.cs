@@ -1,9 +1,9 @@
-﻿using CleanWebApiTemplate.Domain.Models.Enums.Todo;
-using CleanWebApiTemplate.Infrastructure.Constants;
-using FluentValidation;
 using CleanWebApiTemplate.Application.Abstractions;
-using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using CleanWebApiTemplate.Application.CQRS.Messages;
+using CleanWebApiTemplate.Domain.Models.Enums.Todo;
+using CleanWebApiTemplate.Infrastructure.Constants;
+using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
+using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Handlers.Todo;
 

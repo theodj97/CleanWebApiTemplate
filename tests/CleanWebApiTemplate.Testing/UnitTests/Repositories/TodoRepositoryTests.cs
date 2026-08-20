@@ -1,6 +1,5 @@
 using CleanWebApiTemplate.Infrastructure.Data;
 using CleanWebApiTemplate.Infrastructure.Repositories;
-using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using Microsoft.Data.Sqlite;
 
 namespace CleanWebApiTemplate.Testing.UnitTests.Repositories;

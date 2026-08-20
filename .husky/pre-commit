@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+
+echo "Running code formatting..."
+
+dotnet format whitespace --verify-no-changes
+
+if [ $? -ne 0 ]; then
+  echo "Whitespace formatting issues detected. Please run 'npm run format' to fix them."
+  exit 1
+fi
+
+echo "Whitespace formatting check passed."

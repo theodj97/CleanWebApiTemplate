@@ -1,0 +1,297 @@
+# EditorConfig — CleanWebApiTemplate
+# https://editorconfig.org
+
+root = true
+
+# ──────────────────────────────────────────────────────────────────────────────
+# All files
+# ──────────────────────────────────────────────────────────────────────────────
+[*]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# ──────────────────────────────────────────────────────────────────────────────
+# C# files
+# ──────────────────────────────────────────────────────────────────────────────
+[*.cs]
+
+# ── 1. Usings ──
+dotnet_diagnostic.IDE0005.severity = error
+dotnet_sort_system_directives_first = false
+dotnet_diagnostic.IDE0065.severity = error
+csharp_using_directive_placement = outside_namespace:error
+
+# ── 2. Namespaces & accessibility ──
+csharp_style_namespace_declarations = file_scoped:error
+dotnet_style_require_accessibility_modifiers = always:error
+
+# ── 3. Naming ──
+
+# Tipos: PascalCase
+dotnet_naming_rule.types_pascal.severity = error
+dotnet_naming_rule.types_pascal.symbols = type_symbols
+dotnet_naming_rule.types_pascal.style = pascal_style
+
+dotnet_naming_symbols.type_symbols.applicable_kinds = Class, Struct, Interface, Enum, TypeParameter, Delegate, Event
+dotnet_naming_symbols.type_symbols.applicable_accessibilities = *
+
+dotnet_naming_style.pascal_style.capitalization = pascal_case
+
+# Interfaces: IPascalCase
+dotnet_naming_rule.interfaces_pascal_i_prefix.severity = error
+dotnet_naming_rule.interfaces_pascal_i_prefix.symbols = interface_symbols
+dotnet_naming_rule.interfaces_pascal_i_prefix.style = i_prefix_pascal_style
+
+dotnet_naming_symbols.interface_symbols.applicable_kinds = Interface
+dotnet_naming_symbols.interface_symbols.applicable_accessibilities = *
+
+dotnet_naming_style.i_prefix_pascal_style.required_prefix = I
+dotnet_naming_style.i_prefix_pascal_style.capitalization = pascal_case
+
+# Parámetros y variables locales: camelCase
+dotnet_naming_rule.locals_params_camel.severity = error
+dotnet_naming_rule.locals_params_camel.symbols = local_param_symbols
+dotnet_naming_rule.locals_params_camel.style = camel_style
+
+dotnet_naming_symbols.local_param_symbols.applicable_kinds = Parameter, Local
+dotnet_naming_symbols.local_param_symbols.applicable_accessibilities = *
+
+dotnet_naming_style.camel_style.capitalization = camel_case
+
+# Campos privados: camelCase SIN guion bajo
+dotnet_naming_rule.private_fields_camel_no_prefix.severity = error
+dotnet_naming_rule.private_fields_camel_no_prefix.symbols = private_field_symbols
+dotnet_naming_rule.private_fields_camel_no_prefix.style = camel_no_prefix_style
+
+dotnet_naming_symbols.private_field_symbols.applicable_kinds = Field
+dotnet_naming_symbols.private_field_symbols.applicable_accessibilities = Private
+
+dotnet_naming_style.camel_no_prefix_style.capitalization = camel_case
+
+# Métodos async: sufijo Async
+dotnet_naming_rule.async_methods_async_suffix.severity = error
+dotnet_naming_rule.async_methods_async_suffix.symbols = async_method_symbols
+dotnet_naming_rule.async_methods_async_suffix.style = async_suffix_style
+
+dotnet_naming_symbols.async_method_symbols.applicable_kinds = Method
+dotnet_naming_symbols.async_method_symbols.required_modifiers = async
+
+dotnet_naming_style.async_suffix_style.required_suffix = Async
+dotnet_naming_style.async_suffix_style.capitalization = pascal_case
+
+# Constantes: PascalCase (el código usa DEV_ENVIRONMNET, ADMIN_POLICY, etc. en PascalCase/UPPER_SNAKE mixto)
+dotnet_naming_rule.constants_pascal.severity = error
+dotnet_naming_rule.constants_pascal.symbols = const_symbols
+dotnet_naming_rule.constants_pascal.style = const_pascal_style
+
+dotnet_naming_symbols.const_symbols.applicable_kinds = Field
+dotnet_naming_symbols.const_symbols.required_modifiers = const
+
+dotnet_naming_style.const_pascal_style.capitalization = pascal_case
+
+# Campos públicos/protected/internal: PascalCase
+dotnet_naming_rule.non_private_fields_pascal.severity = error
+dotnet_naming_rule.non_private_fields_pascal.symbols = non_private_field_symbols
+dotnet_naming_rule.non_private_fields_pascal.style = pascal_style
+
+dotnet_naming_symbols.non_private_field_symbols.applicable_kinds = Field
+dotnet_naming_symbols.non_private_field_symbols.applicable_accessibilities = Public, Protected, Internal, ProtectedInternal, ProtectedOrInternal
+
+# Métodos, propiedades, eventos: PascalCase
+dotnet_naming_rule.members_pascal.severity = error
+dotnet_naming_rule.members_pascal.symbols = member_symbols
+dotnet_naming_rule.members_pascal.style = pascal_style
+
+dotnet_naming_symbols.member_symbols.applicable_kinds = Method, Property, Event
+dotnet_naming_symbols.member_symbols.applicable_accessibilities = *
+
+# ── 4. Preferencias de lenguaje (C# moderno) ──
+csharp_style_prefer_primary_constructors = true:error
+csharp_style_pattern_matching_over_is_with_cast_check = true:error
+csharp_style_pattern_matching_over_as_with_null_check = true:error
+dotnet_style_coalesce_expression = true:error
+dotnet_style_prefer_conditional_expression_over_assignment = true:error
+dotnet_style_prefer_is_null_check_over_reference_equality_check = true:error
+csharp_style_is_not_expr = true:error
+csharp_style_inlined_variable_declaration = true:error
+csharp_style_prefer_simplified_interpolation = true:error
+csharp_style_prefer_simplified_boolean_expressions = true:error
+
+# var usage — codebase mezcla var y tipos explícitos, no forzar
+csharp_style_var_for_built_in_types = false:none
+csharp_style_var_when_type_is_apparent = false:none
+csharp_style_var_elsewhere = false:none
+
+# Qualification — codebase usa this. a veces, no forzar
+dotnet_style_qualification_for_fields = false:none
+dotnet_style_qualification_for_properties = false:none
+dotnet_style_qualification_for_methods = false:none
+dotnet_style_qualification_for_events = false:none
+
+# BCL types
+dotnet_style_predefined_type_for_locals_parameters_members = true:error
+dotnet_style_predefined_type_for_member_access = true:error
+
+# Readonly fields
+dotnet_style_readonly_field = true:error
+
+# Parentheses
+dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:suggestion
+dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:suggestion
+dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:suggestion
+
+# ── 5. Formato / braces ──
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_before_members_in_anonymous_types = true
+csharp_new_line_between_query_expression_clauses = true
+
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+csharp_indent_block_contents = true
+csharp_indent_braces = false
+csharp_indent_case_contents_when_block = true
+
+# Braces — NO forzar llaves en if de una línea (el código usa if sin llaves)
+csharp_prefer_braces = false:error
+
+# Spacing
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_after_cast = false
+csharp_space_after_comma = true
+csharp_space_before_comma = false
+csharp_space_after_dot = false
+csharp_space_before_dot = false
+csharp_space_after_semicolon_in_for_statement = true
+csharp_space_before_semicolon_in_for_statement = false
+csharp_space_inside_parentheses = false
+csharp_space_between_empty_square_brackets = false
+csharp_space_between_square_brackets = false
+csharp_space_around_binary_operators = before_and_after
+csharp_space_between_method_declaration_empty_parameter_list_parentheses = false
+csharp_space_between_method_call_empty_parameter_list_parentheses = false
+csharp_space_between_method_declaration_parameter_list_parentheses = false
+csharp_space_between_method_call_parameter_list_parentheses = false
+csharp_space_between_parentheses = false
+
+# Wrapping — preservar single-line
+csharp_preserve_single_line_statements = true
+csharp_preserve_single_line_blocks = true
+
+# Expression-bodied members
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_constructors = false:none
+csharp_style_expression_bodied_operators = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+csharp_style_expression_bodied_indexers = true:suggestion
+csharp_style_expression_bodied_accessors = true:suggestion
+csharp_style_expression_bodied_lambdas = true:suggestion
+csharp_style_expression_bodied_local_functions = when_on_single_line:suggestion
+
+# Simplifications
+csharp_style_prefer_simple_using_statement = true:error
+csharp_style_prefer_switch_expression = true:error
+csharp_style_prefer_compound_assignment = true:error
+csharp_style_prefer_index_operator = true:error
+csharp_style_prefer_range_operator = true:error
+csharp_style_prefer_utf8_string_literals = true:suggestion
+csharp_style_prefer_simple_interpolation = true:error
+csharp_prefer_static_local_function = true:error
+csharp_style_prefer_not_pattern = true:error
+csharp_style_prefer_extended_property_pattern = true:error
+csharp_style_prefer_collection_expression = true:error
+csharp_style_prefer_object_initializer = true:error
+
+# ── 6. Nulabilidad y código muerto ──
+dotnet_diagnostic.CS8600.severity = error
+dotnet_diagnostic.CS8602.severity = error
+dotnet_diagnostic.CS8618.severity = error
+dotnet_diagnostic.CS0168.severity = error
+dotnet_diagnostic.CS0162.severity = error
+dotnet_diagnostic.IDE0051.severity = error
+dotnet_diagnostic.IDE0060.severity = error
+
+# ── 7. Otros ──
+dotnet_diagnostic.CA1822.severity = error
+dotnet_diagnostic.IDE0090.severity = error
+dotnet_diagnostic.IDE0044.severity = error
+
+# ── Supresiones para reglas que requieren cambios de código no deseados ──
+dotnet_diagnostic.CA1031.severity = none
+dotnet_diagnostic.CA1303.severity = none
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA1711.severity = none
+dotnet_diagnostic.CA1716.severity = none
+dotnet_diagnostic.CA1852.severity = none
+dotnet_diagnostic.CA1305.severity = none
+dotnet_diagnostic.CA1000.severity = none
+dotnet_diagnostic.CA1310.severity = none
+dotnet_diagnostic.CA1715.severity = none
+dotnet_diagnostic.CA2201.severity = none
+dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1816.severity = none
+dotnet_diagnostic.IL3051.severity = none
+dotnet_diagnostic.IL2046.severity = none
+
+# ──────────────────────────────────────────────────────────────────────────────
+# XML project files
+# ──────────────────────────────────────────────────────────────────────────────
+[*.{csproj,props,targets}]
+indent_style = space
+indent_size = 2
+
+# ──────────────────────────────────────────────────────────────────────────────
+# XML solution files
+# ──────────────────────────────────────────────────────────────────────────────
+[*.{sln,slnx}]
+indent_style = space
+indent_size = 2
+
+# ──────────────────────────────────────────────────────────────────────────────
+# JSON files
+# ──────────────────────────────────────────────────────────────────────────────
+[*.json]
+indent_size = 2
+
+# ──────────────────────────────────────────────────────────────────────────────
+# YAML files
+# ──────────────────────────────────────────────────────────────────────────────
+[*.{yml,yaml}]
+indent_size = 2
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Markdown files
+# ──────────────────────────────────────────────────────────────────────────────
+[*.md]
+trim_trailing_whitespace = false
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Web files
+# ──────────────────────────────────────────────────────────────────────────────
+[*.{js,ts,tsx,jsx,html,css,scss}]
+indent_size = 2
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Batch scripts
+# ──────────────────────────────────────────────────────────────────────────────
+[*.{cmd,bat}]
+end_of_line = crlf
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Shell scripts
+# ──────────────────────────────────────────────────────────────────────────────
+[*.{sh,bash}]
+end_of_line = lf
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Makefiles
+# ──────────────────────────────────────────────────────────────────────────────
+[Makefile]
+indent_style = tab

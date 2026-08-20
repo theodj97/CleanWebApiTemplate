@@ -1,9 +1,9 @@
-using System.Net;
 using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Host.Extensions;
 using CleanWebApiTemplate.Host.Models.Responses.Todo;
 using Microsoft.AspNetCore.Http;
+using System.Net;
 
 namespace CleanWebApiTemplate.Testing.UnitTests.Extensions;
 

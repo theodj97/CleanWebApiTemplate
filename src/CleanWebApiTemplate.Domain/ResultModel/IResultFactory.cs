@@ -7,5 +7,5 @@ namespace CleanWebApiTemplate.Domain.ResultModel;
 /// <typeparam name="TResult">The concrete result type to create.</typeparam>
 public interface IResultFactory<TResult>
 {
-    static abstract TResult Failure(Error error);
+    public abstract static TResult Failure(Error error);
 }

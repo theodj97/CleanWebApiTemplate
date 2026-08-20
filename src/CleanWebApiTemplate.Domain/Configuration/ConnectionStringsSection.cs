@@ -1,4 +1,4 @@
-﻿
+
 namespace CleanWebApiTemplate.Domain.Configuration;
 
 public sealed class ConnectionStringsSection : SectionBase
