@@ -1,4 +1,4 @@
-﻿namespace CleanWebApiTemplate.Domain.Models;
+namespace CleanWebApiTemplate.Domain.Models;
 
 public abstract class BaseEntity<TKey> : IBaseEntity<TKey>
 {

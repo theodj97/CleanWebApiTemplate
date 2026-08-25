@@ -9,5 +9,5 @@ namespace CleanWebApiTemplate.Infrastructure.Data;
 /// </summary>
 public interface ISqliteConnectionFactory
 {
-    SqliteConnection CreateConnection();
+    public SqliteConnection CreateConnection();
 }

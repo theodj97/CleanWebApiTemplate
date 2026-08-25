@@ -1,4 +1,4 @@
-﻿using CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
+using CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
 
 namespace CleanWebApiTemplate.Host.Routes.Todo.Filter;
 

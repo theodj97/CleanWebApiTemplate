@@ -1,4 +1,4 @@
-﻿using CleanWebApiTemplate.Host.Models.Interfaces;
+using CleanWebApiTemplate.Host.Models.Interfaces;
 using CleanWebApiTemplate.Host.Routes.Todo;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 

@@ -1,4 +1,4 @@
-﻿using CleanWebApiTemplate.Application.CQRS.Messages;
+using CleanWebApiTemplate.Application.CQRS.Messages;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 

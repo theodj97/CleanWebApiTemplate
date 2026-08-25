@@ -1,4 +1,4 @@
-﻿using CleanWebApiTemplate.Application.Handlers.Todo.Create;
+using CleanWebApiTemplate.Application.Handlers.Todo.Create;
 
 namespace CleanWebApiTemplate.Host.Routes.Todo.Create;
 

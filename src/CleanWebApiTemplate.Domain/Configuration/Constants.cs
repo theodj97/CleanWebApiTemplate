@@ -1,4 +1,4 @@
-﻿namespace CleanWebApiTemplate.Domain.Configuration;
+namespace CleanWebApiTemplate.Domain.Configuration;
 
 public static class Constants
 {
@@ -9,7 +9,7 @@ public static class Constants
     public const string PRODUCTION_ENVIRONMENT = "Production";
     public const string TEST_ENVIRONMENT = "Test";
     // Envs variables
-    public const string API_KEY = "ApiKey";
+    public const string API_KEY = null;
     public const string DEFAULT_CORS_POLICY_NAME = "DefaultCorsPolicy";
 
     // User authorization policies.

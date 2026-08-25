@@ -1,4 +1,4 @@
-﻿using CleanWebApiTemplate.Application.CQRS.Messages;
+using CleanWebApiTemplate.Application.CQRS.Messages;
 using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.ResultModel;

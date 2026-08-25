@@ -1,4 +1,4 @@
-﻿using CleanWebApiTemplate.Host.Models.Interfaces;
+using CleanWebApiTemplate.Host.Models.Interfaces;
 using Microsoft.OpenApi;
 using System.Net;
 using System.Security.Claims;
@@ -55,7 +55,6 @@ public abstract class BaseApiRouter : IGroupMap
     /// <summary>
     /// Create a group of api routes with fluentValidationFilter.
     /// </summary>
-    /// <param name="authPolicy"></param>
     /// <param name="addOpenApiMetadata"></param>
     /// <param name="openApiParameters"></param>
     /// <returns></returns>

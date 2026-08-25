@@ -1,4 +1,4 @@
-﻿using CleanWebApiTemplate.Application.Abstractions;
+using CleanWebApiTemplate.Application.Abstractions;
 using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Infrastructure.Constants;
 using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;

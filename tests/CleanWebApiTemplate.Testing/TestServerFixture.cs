@@ -1,16 +1,16 @@
+using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Host;
+using CleanWebApiTemplate.Infrastructure.Data;
+using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
+using CleanWebApiTemplate.Testing.Configuration;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
-using CleanWebApiTemplate.Infrastructure.Data;
-using CleanWebApiTemplate.Testing.Configuration;
-using Microsoft.AspNetCore.Authentication;
-using CleanWebApiTemplate.Domain.Configuration;
 using Microsoft.Extensions.Hosting;
 using System.Text.Json;
-using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 
 namespace CleanWebApiTemplate.Testing;
 

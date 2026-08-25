@@ -17,8 +17,10 @@ public static class AppConfigurationHelper
         {
             ConnectionStrings = new ConnectionStringsSection
             {
+#if (IsSQLite)
                 Sqlite = builder.Configuration.GetSection(nameof(AppSettings.ConnectionStrings))
                                               [nameof(ConnectionStringsSection.Sqlite)] ?? string.Empty
+#endif
             },
             CorsAllow = GetStringArray(builder.Configuration, nameof(AppSettings.CorsAllow)),
             ValidIssuers = GetStringArray(builder.Configuration, nameof(AppSettings.ValidIssuers))

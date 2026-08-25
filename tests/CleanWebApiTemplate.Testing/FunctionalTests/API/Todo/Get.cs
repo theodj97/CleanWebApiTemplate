@@ -1,5 +1,3 @@
-using System.Net;
-using System.Net.Http.Json;
 using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
@@ -10,6 +8,8 @@ using CleanWebApiTemplate.Infrastructure.Constants;
 using CleanWebApiTemplate.Testing.Common;
 using CleanWebApiTemplate.Testing.Common.Attributes;
 using CleanWebApiTemplate.Testing.Extension;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace CleanWebApiTemplate.Testing.FunctionalTests.API.Todo;
 

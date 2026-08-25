@@ -1,5 +1,5 @@
-using System.Reflection;
 using CleanWebApiTemplate.Testing.Configuration;
+using System.Reflection;
 using Xunit.v3;
 
 namespace CleanWebApiTemplate.Testing.Common.Attributes;

@@ -1,7 +1,7 @@
-﻿namespace CleanWebApiTemplate.Host.Models.Interfaces;
+namespace CleanWebApiTemplate.Host.Models.Interfaces;
 
 public interface IGroupMap
 {
-    void MapGroup(IEndpointRouteBuilder app);
+    public void MapGroup(IEndpointRouteBuilder app);
 }
 

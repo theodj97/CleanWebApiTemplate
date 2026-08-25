@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using System.Net.Mail;
 using System.Text;
 
@@ -15,7 +15,6 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     /// Validate if the property is not null or empty.
     /// </summary>
     /// <param name="property"></param>
-    /// <param name="propertyName"></param>
     /// <param name="context"></param>
     protected void NotNullNotEmpty(string property, ValidationContext<TCommand> context)
     {
@@ -117,7 +116,6 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     /// <typeparam name="T"></typeparam>
     /// <param name="context"></param>
     /// <param name="errorMessage"></param>
-    /// <param name="args"></param>
     protected void AddFailure<T>(ValidationContext<T> context,
                                  string errorMessage,
                                  string? propertyName = null)

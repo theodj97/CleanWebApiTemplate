@@ -1,4 +1,4 @@
-﻿namespace CleanWebApiTemplate.Domain.Models.Enums.Todo;
+namespace CleanWebApiTemplate.Domain.Models.Enums.Todo;
 
 public enum ETodoStatus : int
 {

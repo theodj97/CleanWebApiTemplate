@@ -10,10 +10,18 @@
     <IsAotCompatible>true</IsAotCompatible>
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
     <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
+    <!--#if (ApiHealthCheck) -->
+    <DefineConstants>$(DefineConstants);ApiHealthCheck</DefineConstants>
+    <!--#endif -->
+    <!--#if (IsSQLite) -->
+    <DefineConstants>$(DefineConstants);IsSQLite</DefineConstants>
+    <!--#endif -->
   </PropertyGroup>
 
   <ItemGroup>
+    <!--#if (ApiHealthCheck && IsSQLite) -->
     <PackageReference Include="AspNetCore.HealthChecks.Sqlite" />
+    <!--#endif -->
     <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />

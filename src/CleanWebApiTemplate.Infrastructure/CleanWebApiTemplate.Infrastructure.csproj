@@ -6,11 +6,16 @@
 		<Nullable>enable</Nullable>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<IsAotCompatible>true</IsAotCompatible>
+		<!--#if (IsSQLite) -->
+		<DefineConstants>$(DefineConstants);IsSQLite</DefineConstants>
+		<!--#endif -->
 	</PropertyGroup>
 
 	<ItemGroup>
+		<!--#if (IsSQLite) -->
 		<PackageReference Include="Microsoft.Data.Sqlite" />
 		<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" />
+		<!--#endif -->
 	</ItemGroup>
 
 	<ItemGroup>

@@ -11,6 +11,12 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!--#if (ApiHealthCheck) -->
+    <DefineConstants>$(DefineConstants);ApiHealthCheck</DefineConstants>
+    <!--#endif -->
+    <!--#if (IsSQLite) -->
+    <DefineConstants>$(DefineConstants);IsSQLite</DefineConstants>
+    <!--#endif -->
   </PropertyGroup>
 
   <ItemGroup>

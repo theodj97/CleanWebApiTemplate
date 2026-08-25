@@ -343,6 +343,86 @@ Install the REST Client extension in VS Code or use Postman to test endpoints.
 
 ## Code Style
 
+### EditorConfig
+
+This project uses an `.editorconfig` file to maintain consistent coding styles across different editors and IDEs. Key rules (all enforced as `error`):
+
+| Category | Rule |
+|----------|------|
+| **Usings** | `IDE0005` (unused), `IDE0065` (outside namespace), `dotnet_sort_system_directives_first = false` |
+| **Namespaces** | `file_scoped:error`, `dotnet_style_require_accessibility_modifiers = always:error` |
+| **Naming — Types** | PascalCase, interfaces `I`-prefix PascalCase |
+| **Naming — Private fields** | camelCase, **sin** guion bajo (`todoRepository`, no `_todoRepository`) |
+| **Naming — Params/locals** | camelCase |
+| **Naming — Constants** | PascalCase |
+| **Braces** | Allman style (`csharp_new_line_before_open_brace = all`) |
+| **If sin llaves** | `csharp_prefer_braces = false:error` — if de una línea sin `{}` |
+| **Primary constructors** | `csharp_style_prefer_primary_constructors = true:error` |
+| **Pattern matching** | `is not null`, `is null`, cast-check pattern |
+| **Nulabilidad** | `CS8600`, `CS8602`, `CS8618` como error |
+| **Código muerto** | `CS0168` (var no usada), `CS0162` (inalcanzable), `IDE0051`, `IDE0060` como error |
+| **Otros** | `CA1822` (métodos → static), `IDE0090` (target-typed `new`), `IDE0044` (readonly) |
+
+El EditorConfig es aplicado automáticamente por IDEs modernos (Visual Studio, Rider, VS Code con extensión C#).
+
+### Code Formatting with Husky
+
+This project uses [Husky](https://typicode.github.io/husky/) to automatically run whitespace formatting checks before each commit. This ensures all committed code follows the established formatting rules.
+
+#### Setup
+
+Husky is automatically configured when you install npm dependencies:
+
+```bash
+npm install
+```
+
+This runs the `prepare` script which sets up the git hooks.
+
+#### Pre-commit Hook
+
+The pre-commit hook runs `dotnet format whitespace --verify-no-changes` to check if the code whitespace is properly formatted. If formatting issues are detected, the commit will be rejected.
+
+#### Manual Formatting
+
+To manually format the code whitespace:
+
+```bash
+# Format whitespace only
+dotnet format whitespace
+
+# Or using npm script
+npm run format
+```
+
+To check formatting without applying changes:
+
+```bash
+# Verify whitespace formatting
+dotnet format whitespace --verify-no-changes
+
+# Or using npm script
+npm run format:check
+```
+
+For full formatting (including style and analyzer fixes):
+
+```bash
+# Full format (whitespace + style + analyzers)
+dotnet format
+
+# Or using npm script
+npm run format:full
+```
+
+#### Skipping the Hook
+
+If you need to bypass the formatting check (not recommended), use:
+
+```bash
+git commit --no-verify -m "your commit message"
+```
+
 ### Naming Conventions
 
 | Type | Convention |
