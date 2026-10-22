@@ -24,43 +24,6 @@
     "type": "project"
   },
   "preferNameDirectory": true,
-  "symbols": {
-    "ApiHealthCheck": {
-      "type": "parameter",
-      "description": "Add Api HealthCheck endpoint",
-      "datatype": "bool",
-      "defaultValue": "true"
-    },
-    "DataBase": {
-      "type": "parameter",
-      "description": "Select the DB to consume in your project",
-      "datatype": "choice",
-      "choices": [
-        {
-          "choice": "SQLite"
-        }
-      ],
-      "defaultValue": "SQLite"
-    },
-    "IsSQLite": {
-      "type": "computed",
-      "value": "DataBase == \"SQLite\""
-    },
-    "ApplicationHttpsUrl": {
-      "type": "parameter",
-      "datatype": "text",
-      "description": "Specify the app SSL URL, by default https://localhost:5001",
-      "replaces": "https://localhost:5001",
-      "defaultValue": "https://localhost:5001"
-    },
-    "ApplicationHttpUrl": {
-      "type": "parameter",
-      "datatype": "text",
-      "description": "Specify the app URL, by default http://localhost:5000",
-      "replaces": "http://localhost:5000",
-      "defaultValue": "http://localhost:5000"
-    }
-  },
   "sources": [
     {
       "modifiers": [
@@ -73,24 +36,6 @@
             "node_modules/**",
             "**/[Bb]in/**",
             "**/[Oo]bj/**"
-          ]
-        },
-        {
-          "condition": "!ApiHealthCheck",
-          "exclude": [
-            "tests/CleanWebApiTemplate.Testing/FunctionalTests/HealthCheck/**"
-          ]
-        },
-        {
-          "condition": "!IsSQLite",
-          "exclude": [
-            "src/CleanWebApiTemplate.Infrastructure/Data/SqliteConnectionFactory.cs",
-            "src/CleanWebApiTemplate.Infrastructure/Data/ISqliteConnectionFactory.cs",
-            "src/CleanWebApiTemplate.Infrastructure/Data/SqliteDatabaseInitializer.cs",
-            "src/CleanWebApiTemplate.Infrastructure/Repositories/TodoRepository.cs",
-            "src/CleanWebApiTemplate.Infrastructure/Constants/TodoTable.cs",
-            "tests/CleanWebApiTemplate.Testing/UnitTests/Repositories/TodoRepositoryTests.cs",
-            "tests/CleanWebApiTemplate.Testing/UnitTests/Infrastructure/TodoTableTests.cs"
           ]
         }
       ]

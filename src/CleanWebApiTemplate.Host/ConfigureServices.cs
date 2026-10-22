@@ -5,9 +5,7 @@ using CleanWebApiTemplate.Host.Helpers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;
-#if (ApiHealthCheck)
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-#endif
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -22,17 +20,13 @@ public static class ConfigureServices
                                                      string[] validIssuers,
                                                      ConnectionStringsSection connectionStrings)
     {
-#if (ApiHealthCheck)
         var healthChecksBuilder = services.AddHealthChecks()
                 .AddCheck("api-health-check", () => HealthCheckResult.Healthy("API is up and running"), tags: ["api"]);
-#if (IsSQLite)
         healthChecksBuilder.AddSqlite(
             connectionStrings.Sqlite,
             name: "sqlite-check",
             failureStatus: HealthStatus.Unhealthy,
             tags: ["sqliteDb", "sql"]);
-#endif
-#endif
 
         services.ConfigureCors(environment, corsAllow);
 

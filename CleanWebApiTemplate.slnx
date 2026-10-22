@@ -10,7 +10,5 @@
     <Project Path="src/CleanWebApiTemplate.Host/CleanWebApiTemplate.Host.csproj" />
     <Project Path="src/CleanWebApiTemplate.Infrastructure/CleanWebApiTemplate.Infrastructure.csproj" />
   </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/CleanWebApiTemplate.Testing/CleanWebApiTemplate.Testing.csproj" />
-  </Folder>
+  <Folder Name="/tests/" />
 </Solution>
