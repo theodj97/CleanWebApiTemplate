@@ -1,6 +1,6 @@
-using FluentValidation;
 using System.Net.Mail;
 using System.Text;
+using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Abstractions;
 

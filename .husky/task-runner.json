@@ -1,0 +1,31 @@
+{
+  "$schema": "https://alirezanet.github.io/Husky.Net/schema.json",
+  "tasks": [
+    {
+      "name": "dotnet-format-whitespace-verify",
+      "group": "pre-commit",
+      "command": "dotnet",
+      "args": [
+        "format",
+        "whitespace",
+        "CleanWebApiTemplate.slnx",
+        "--verify-no-changes",
+        "--verbosity",
+        "minimal"
+      ]
+    },
+    {
+      "name": "dotnet-format-style-verify",
+      "group": "pre-commit",
+      "command": "dotnet",
+      "args": [
+        "format",
+        "style",
+        "CleanWebApiTemplate.slnx",
+        "--verify-no-changes",
+        "--verbosity",
+        "minimal"
+      ]
+    }
+  ]
+}

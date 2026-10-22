@@ -1,9 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using CleanWebApiTemplate.Application.CQRS.Decorators;
 using CleanWebApiTemplate.Application.CQRS.Messages;
 using CleanWebApiTemplate.Domain.ResultModel;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using System.Diagnostics.CodeAnalysis;
 
 namespace CleanWebApiTemplate.Application.CQRS.Extensions;
 

@@ -1,10 +1,10 @@
+using System.Text;
 using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Infrastructure.Constants;
 using CleanWebApiTemplate.Infrastructure.Data;
 using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using Microsoft.Data.Sqlite;
-using System.Text;
 
 namespace CleanWebApiTemplate.Infrastructure.Repositories;
 

@@ -7,15 +7,9 @@
     "doc": "docs",
     "test": "tests"
   },
-  "devDependencies": {
-    "husky": "^9.1.7"
-  },
   "scripts": {
-    "prepare": "husky",
-    "format": "dotnet format whitespace",
-    "format:check": "dotnet format whitespace --verify-no-changes",
-    "format:full": "dotnet format",
-    "format:full:check": "dotnet format --verify-no-changes"
+    "format": "dotnet format whitespace CleanWebApiTemplate.slnx && dotnet format style CleanWebApiTemplate.slnx",
+    "format:check": "dotnet format whitespace CleanWebApiTemplate.slnx --verify-no-changes && dotnet format style CleanWebApiTemplate.slnx --verify-no-changes"
   },
   "repository": {
     "type": "git",

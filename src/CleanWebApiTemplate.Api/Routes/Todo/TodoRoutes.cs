@@ -1,3 +1,11 @@
+using System.Net;
+using CleanWebApiTemplate.Api.Common;
+using CleanWebApiTemplate.Api.Extensions;
+using CleanWebApiTemplate.Api.Models.Responses.Todo;
+using CleanWebApiTemplate.Api.Routes.Todo.Create;
+using CleanWebApiTemplate.Api.Routes.Todo.Filter;
+using CleanWebApiTemplate.Api.Routes.Todo.Get;
+using CleanWebApiTemplate.Api.Routes.Todo.Update;
 using CleanWebApiTemplate.Application.CQRS.Messages;
 using CleanWebApiTemplate.Application.Handlers.Todo.Create;
 using CleanWebApiTemplate.Application.Handlers.Todo.Delete;
@@ -8,14 +16,6 @@ using CleanWebApiTemplate.Application.Handlers.Todo.Update;
 using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.ResultModel;
-using CleanWebApiTemplate.Api.Common;
-using CleanWebApiTemplate.Api.Extensions;
-using CleanWebApiTemplate.Api.Models.Responses.Todo;
-using CleanWebApiTemplate.Api.Routes.Todo.Create;
-using CleanWebApiTemplate.Api.Routes.Todo.Filter;
-using CleanWebApiTemplate.Api.Routes.Todo.Get;
-using CleanWebApiTemplate.Api.Routes.Todo.Update;
-using System.Net;
 
 namespace CleanWebApiTemplate.Api.Routes.Todo;
 

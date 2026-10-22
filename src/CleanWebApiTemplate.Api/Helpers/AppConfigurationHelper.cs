@@ -1,5 +1,5 @@
-using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Api.Configuration;
+using CleanWebApiTemplate.Domain.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace CleanWebApiTemplate.Api.Helpers;

@@ -24,6 +24,8 @@
         {
           "exclude": [
             ".git/**",
+            ".gitignore",
+            ".husky/_/**",
             "README.md",
             "node_modules/**",
             "**/[Bb]in/**",

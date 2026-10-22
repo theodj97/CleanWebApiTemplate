@@ -1,5 +1,5 @@
-using CleanWebApiTemplate.Application;
 using CleanWebApiTemplate.Api.Helpers;
+using CleanWebApiTemplate.Application;
 using CleanWebApiTemplate.Infrastructure;
 
 namespace CleanWebApiTemplate.Api;

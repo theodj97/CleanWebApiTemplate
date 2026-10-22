@@ -1,11 +1,11 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using CleanWebApiTemplate.Api.Models.Responses.Todo;
 using CleanWebApiTemplate.Api.Routes.Todo.Create;
 using CleanWebApiTemplate.Api.Routes.Todo.Filter;
 using CleanWebApiTemplate.Api.Routes.Todo.Get;
 using CleanWebApiTemplate.Api.Routes.Todo.Update;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace CleanWebApiTemplate.Api.Configuration;
 

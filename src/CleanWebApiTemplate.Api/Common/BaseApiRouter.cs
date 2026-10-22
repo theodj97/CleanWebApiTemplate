@@ -1,7 +1,7 @@
-using CleanWebApiTemplate.Api.Models.Interfaces;
-using Microsoft.OpenApi;
 using System.Net;
 using System.Security.Claims;
+using CleanWebApiTemplate.Api.Models.Interfaces;
+using Microsoft.OpenApi;
 
 namespace CleanWebApiTemplate.Api.Common;
 

@@ -1,0 +1,11 @@
+###############################################################################
+# Comportamiento por defecto: normalizar finales de línea automáticamente.
+###############################################################################
+* text=auto
+
+###############################################################################
+# C# siempre con LF en el árbol de trabajo (ver .editorconfig).
+# Así `dotnet format --verify-no-changes` da el mismo resultado en Windows, WSL
+# y Linux, independientemente de core.autocrlf.
+###############################################################################
+*.cs text eol=lf

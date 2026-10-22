@@ -1,5 +1,5 @@
-using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Api.Models.Responses;
+using CleanWebApiTemplate.Domain.ResultModel;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace CleanWebApiTemplate.Api.Extensions;

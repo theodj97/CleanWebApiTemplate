@@ -1,13 +1,13 @@
-using CleanWebApiTemplate.Domain.Configuration;
+using System.Text;
 using CleanWebApiTemplate.Api.Configuration;
 using CleanWebApiTemplate.Api.Extensions;
 using CleanWebApiTemplate.Api.Helpers;
+using CleanWebApiTemplate.Domain.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 namespace CleanWebApiTemplate.Api;
 

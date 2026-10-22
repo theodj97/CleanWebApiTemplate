@@ -1,0 +1,8 @@
+#!/bin/sh
+# Comprueba el formato antes de cada commit. Solo verifica: no formatea,
+# no modifica ficheros y no hace `git add` de nada.
+# Aplicar el formato: npm run format
+# Saltar el hook: HUSKY=0 git commit ... (o git commit --no-verify).
+. "$(dirname "$0")/_/husky.sh"
+
+dotnet husky run --group pre-commit
