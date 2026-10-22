@@ -6,17 +6,11 @@
     "type": "GitHub"
   },
   "classifications": [
-    "WebApi",
-    "ASP.NET Core",
-    "CleanArchitecture",
-    "Result Pattern",
-    "REPR Pattern",
-    "Minimal API",
-    "Testing"
+
   ],
   "identity": "CleanWebApiTemplate",
-  "name": "Minimal WebApi Template CA",
-  "description": "Dotnet10 minimal WebApi Template with clean architecture focused based on microservices implementations",
+  "name": "",
+  "description": "",
   "shortName": "CleanWebApiTemplate",
   "sourceName": "CleanWebApiTemplate",
   "tags": {
@@ -30,8 +24,6 @@
         {
           "exclude": [
             ".git/**",
-            ".gitignore",
-            ".vs/**",
             "README.md",
             "node_modules/**",
             "**/[Bb]in/**",
