@@ -1,4 +1,4 @@
-using CleanWebApiTemplate.Application.Handlers.Todo.Update;
+using CleanWebApiTemplate.Application.Todo.Update;
 
 namespace CleanWebApiTemplate.Api.Routes.Todo.Update;
 
@@ -8,9 +8,8 @@ public sealed class UpdateTodoRequest
     public string? Description { get; set; }
     public int? Status { get; set; }
 
-    public UpdateTodoCommand ToCommand(string id, string userEmail) => new()
+    public UpdateTodoInput ToInput(string id, string userEmail) => new()
     {
-
         Id = id,
         Title = Title,
         Description = Description,

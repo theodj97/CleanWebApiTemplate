@@ -7,13 +7,12 @@ using CleanWebApiTemplate.Api.Routes.Todo.Create;
 using CleanWebApiTemplate.Api.Routes.Todo.Filter;
 using CleanWebApiTemplate.Api.Routes.Todo.Get;
 using CleanWebApiTemplate.Api.Routes.Todo.Update;
-using CleanWebApiTemplate.Application.CQRS.Messages;
-using CleanWebApiTemplate.Application.Handlers.Todo.Create;
-using CleanWebApiTemplate.Application.Handlers.Todo.Delete;
-using CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
-using CleanWebApiTemplate.Application.Handlers.Todo.GetById;
-using CleanWebApiTemplate.Application.Handlers.Todo.GetTitles;
-using CleanWebApiTemplate.Application.Handlers.Todo.Update;
+using CleanWebApiTemplate.Application.Todo.Create;
+using CleanWebApiTemplate.Application.Todo.Delete;
+using CleanWebApiTemplate.Application.Todo.Filtered;
+using CleanWebApiTemplate.Application.Todo.GetById;
+using CleanWebApiTemplate.Application.Todo.GetTitles;
+using CleanWebApiTemplate.Application.Todo.Update;
 using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.ResultModel;
@@ -28,58 +27,58 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
         var operatorGroup = app.CreateAuthorizedRouteGroupBuilder(RouteName, [Constants.OPERATOR_POLICY]);
 
         userGroup.MapGet("/{id}", async (string id,
-                                         IQueryHandler<GetTodoByIdQuery, Result<TodoDto?>> handler,
+                                         IGetTodoByIdService service,
                                          CancellationToken cancellationToken) =>
         {
-            GetTodoByIdQuery query = new() { Id = id };
-            Result<TodoDto?> result = await handler.Handle(query, cancellationToken);
+            GetTodoByIdInput input = new() { Id = id };
+            Result<TodoDto?> result = await service.GetAsync(input, cancellationToken);
             return result.ToResponse<TodoDto?, TodoResponse>();
         }).Produces<TodoResponse>((int)HttpStatusCode.OK);
 
         userGroup.MapPost("/filter", async (FilteredTodoRequest request,
-                                            IQueryHandler<FilteredTodoQuery, Result<IEnumerable<TodoDto?>>> handler,
+                                            IFilteredTodoService service,
                                             CancellationToken cancellationToken) =>
         {
-            var query = request.ToQuery();
-            var result = await handler.Handle(query, cancellationToken);
+            var input = request.ToInput();
+            var result = await service.FilterAsync(input, cancellationToken);
             return result.ToResponse<TodoDto?, TodoResponse>();
         }).Produces<IEnumerable<TodoResponse>>((int)HttpStatusCode.OK);
 
         userGroup.MapPost("/titles", async (GetTodoTitlesRequest request,
-                                            IQueryHandler<GetTodoTitleQuery, Result<IEnumerable<TodoDto?>>> handler,
+                                            IGetTodoTitlesService service,
                                             CancellationToken cancellationToken) =>
         {
-            var query = request.ToQuery();
-            var result = await handler.Handle(query, cancellationToken);
+            var input = request.ToInput();
+            var result = await service.GetAsync(input, cancellationToken);
             return result.ToResponse<TodoDto?, TodoTitleResponse>();
         }).Produces<IEnumerable<TodoTitleResponse>>((int)HttpStatusCode.OK);
 
         userGroup.MapPost("/", async (CreateTodoRequest request,
-                                      ICommandHandler<CreateTodoCommand, Result<TodoDto?>> handler,
+                                      ICreateTodoService service,
                                       CancellationToken cancellationToken) =>
         {
-            var command = request.ToCommand(UserEmail);
-            var result = await handler.Handle(command, cancellationToken);
+            var input = request.ToInput(UserEmail);
+            var result = await service.CreateAsync(input, cancellationToken);
             return result.ToResponse<TodoDto?, TodoResponse>();
         }).Produces<TodoResponse>((int)HttpStatusCode.Created)
         .Produces<TodoResponse>((int)HttpStatusCode.Conflict);
 
         userGroup.MapPut("/{id}", async (string id,
                                          UpdateTodoRequest request,
-                                         ICommandHandler<UpdateTodoCommand, Result<TodoDto?>> handler,
+                                         IUpdateTodoService service,
                                          CancellationToken cancellationToken) =>
         {
-            var command = request.ToCommand(id, UserEmail);
-            var result = await handler.Handle(command, cancellationToken);
+            var input = request.ToInput(id, UserEmail);
+            var result = await service.UpdateAsync(input, cancellationToken);
             return result.ToResponse<TodoDto?, TodoResponse>();
         }).Produces<TodoResponse>((int)HttpStatusCode.OK);
 
         operatorGroup.MapDelete("/{id}", async (string id,
-                                                ICommandHandler<DeleteTodoCommand, Result<bool>> handler,
+                                                IDeleteTodoService service,
                                                 CancellationToken cancellationToken) =>
         {
-            var command = new DeleteTodoCommand() { Id = id };
-            var result = await handler.Handle(command, cancellationToken);
+            var input = new DeleteTodoInput() { Id = id };
+            var result = await service.DeleteAsync(input, cancellationToken);
             return result.ToResponse();
         }).Produces<bool>((int)HttpStatusCode.OK);
     }

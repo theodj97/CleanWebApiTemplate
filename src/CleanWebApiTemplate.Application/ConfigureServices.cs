@@ -1,12 +1,9 @@
-using CleanWebApiTemplate.Application.CQRS.Extensions;
-using CleanWebApiTemplate.Application.Handlers.Todo.Create;
-using CleanWebApiTemplate.Application.Handlers.Todo.Delete;
-using CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
-using CleanWebApiTemplate.Application.Handlers.Todo.GetById;
-using CleanWebApiTemplate.Application.Handlers.Todo.GetTitles;
-using CleanWebApiTemplate.Application.Handlers.Todo.Update;
-using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
-using CleanWebApiTemplate.Domain.ResultModel;
+using CleanWebApiTemplate.Application.Todo.Create;
+using CleanWebApiTemplate.Application.Todo.Delete;
+using CleanWebApiTemplate.Application.Todo.Filtered;
+using CleanWebApiTemplate.Application.Todo.GetById;
+using CleanWebApiTemplate.Application.Todo.GetTitles;
+using CleanWebApiTemplate.Application.Todo.Update;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,22 +14,20 @@ public static class ConfigureServices
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         // Validators
-        services.AddTransient<IValidator<CreateTodoCommand>, CreateTodoCommandValidator>();
-        services.AddTransient<IValidator<UpdateTodoCommand>, UpdateTodoCommandValidator>();
-        services.AddTransient<IValidator<DeleteTodoCommand>, DeleteTodoCommandValidator>();
-        services.AddTransient<IValidator<GetTodoByIdQuery>, GetTodoByIdQueryValidator>();
-        services.AddTransient<IValidator<GetTodoTitleQuery>, GetTodoTitleQueryValidator>();
-        services.AddTransient<IValidator<FilteredTodoQuery>, FilteredTodoQueryValidator>();
+        services.AddTransient<IValidator<CreateTodoInput>, CreateTodoInputValidator>();
+        services.AddTransient<IValidator<UpdateTodoInput>, UpdateTodoInputValidator>();
+        services.AddTransient<IValidator<DeleteTodoInput>, DeleteTodoInputValidator>();
+        services.AddTransient<IValidator<GetTodoByIdInput>, GetTodoByIdInputValidator>();
+        services.AddTransient<IValidator<GetTodoTitlesInput>, GetTodoTitlesInputValidator>();
+        services.AddTransient<IValidator<FilteredTodoInput>, FilteredTodoInputValidator>();
 
-        // Commands
-        services.AddCommandHandler<CreateTodoCommand, Result<TodoDto?>, CreateTodoCommandHandler>();
-        services.AddCommandHandler<UpdateTodoCommand, Result<TodoDto?>, UpdateTodoCommandHandler>();
-        services.AddCommandHandler<DeleteTodoCommand, Result<bool>, DeleteTodoCommandHandler>();
-
-        // Queries
-        services.AddQueryHandler<GetTodoByIdQuery, Result<TodoDto?>, GetTodoByIdQueryHandler>();
-        services.AddQueryHandler<GetTodoTitleQuery, Result<IEnumerable<TodoDto?>>, GetTodoTitleQueryHandler>();
-        services.AddQueryHandler<FilteredTodoQuery, Result<IEnumerable<TodoDto?>>, FilteredTodoQueryHandler>();
+        // Services
+        services.AddTransient<ICreateTodoService, CreateTodoService>();
+        services.AddTransient<IUpdateTodoService, UpdateTodoService>();
+        services.AddTransient<IDeleteTodoService, DeleteTodoService>();
+        services.AddTransient<IGetTodoByIdService, GetTodoByIdService>();
+        services.AddTransient<IGetTodoTitlesService, GetTodoTitlesService>();
+        services.AddTransient<IFilteredTodoService, FilteredTodoService>();
 
         return services;
     }

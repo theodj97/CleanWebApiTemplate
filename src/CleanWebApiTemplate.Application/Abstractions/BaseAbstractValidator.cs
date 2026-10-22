@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Abstractions;
 
-public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where TCommand : class
+public class BaseAbstractValidator<TRequest> : AbstractValidator<TRequest> where TRequest : class
 {
     public BaseAbstractValidator()
     {
@@ -16,7 +16,7 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     /// </summary>
     /// <param name="property"></param>
     /// <param name="context"></param>
-    protected void NotNullNotEmpty(string property, ValidationContext<TCommand> context)
+    protected void NotNullNotEmpty(string property, ValidationContext<TRequest> context)
     {
         if (string.IsNullOrEmpty(property))
             AddFailure(context, $"Property '{context.DisplayName}' can't be null or empty!");
@@ -27,7 +27,7 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     /// </summary>
     /// <param name="id">The ID value to validate</param>
     /// <param name="context">Validation context</param>
-    protected void ValidateUlid(string id, ValidationContext<TCommand> context)
+    protected void ValidateUlid(string id, ValidationContext<TRequest> context)
     {
         if (Ulid.TryParse(id, out _) is false)
             AddFailure(context, $"Property '{context.DisplayName}' must be a valid ULID");
@@ -41,7 +41,7 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     /// </summary>
     /// <param name="dateTime"></param>
     /// <param name="context"></param>
-    protected void ValidateDateTime(string dateTime, ValidationContext<TCommand> context)
+    protected void ValidateDateTime(string dateTime, ValidationContext<TRequest> context)
     {
         if (DateTime.TryParse(dateTime, out _) is false)
             AddFailure(context, $"Property '{context.DisplayName}' must be a valid date time");
@@ -52,7 +52,7 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     /// </summary>
     /// <param name="dateRange"></param>
     /// <param name="context"></param>
-    protected void ValidateStartDateAndEndDate(DateRange dateRange, ValidationContext<TCommand> context)
+    protected void ValidateStartDateAndEndDate(DateRange dateRange, ValidationContext<TRequest> context)
     {
         if (string.IsNullOrEmpty(dateRange.StartDate)
             && string.IsNullOrEmpty(dateRange.EndDate) is false)
@@ -80,7 +80,7 @@ public class BaseAbstractValidator<TCommand> : AbstractValidator<TCommand> where
     /// <param name="context"></param>
     protected void ValidateSortBy(IEnumerable<KeyValuePair<string, bool>>? sortProperty,
                                   HashSet<string> validProperties,
-                                  ValidationContext<TCommand> context)
+                                  ValidationContext<TRequest> context)
     {
         if (sortProperty is null || sortProperty.Any() is false) return;
 

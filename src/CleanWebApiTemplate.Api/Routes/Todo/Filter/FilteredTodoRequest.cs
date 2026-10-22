@@ -1,4 +1,4 @@
-using CleanWebApiTemplate.Application.Handlers.Todo.Filtered;
+using CleanWebApiTemplate.Application.Todo.Filtered;
 
 namespace CleanWebApiTemplate.Api.Routes.Todo.Filter;
 
@@ -14,7 +14,7 @@ public sealed class FilteredTodoRequest
     public byte? PageSize { get; set; }
     public IEnumerable<KeyValuePair<string, bool>>? SortProperties { get; set; }
 
-    public FilteredTodoQuery ToQuery() => new()
+    public FilteredTodoInput ToInput() => new()
     {
         Status = Status,
         Title = Title,
