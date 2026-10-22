@@ -1,7 +1,8 @@
 #!/bin/sh
-# Comprueba el formato antes de cada commit. Solo verifica: no formatea,
-# no modifica ficheros y no hace `git add` de nada.
-# Aplicar el formato: npm run format
+# Formatea los .cs en staging (whitespace + style) antes de cada commit.
+# Si `dotnet format` ha tenido que tocar algo, el hook falla para que revises
+# el diff y vuelvas a commitear. No hace `git add` de nada.
+# Formatear toda la solucion a mano: npm run format
 # Saltar el hook: HUSKY=0 git commit ... (o git commit --no-verify).
 . "$(dirname "$0")/_/husky.sh"
 

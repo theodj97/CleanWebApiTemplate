@@ -1,9 +1,7 @@
 using System.Text;
 using CleanWebApiTemplate.Api.Configuration;
 using CleanWebApiTemplate.Api.Extensions;
-using CleanWebApiTemplate.Api.Helpers;
 using CleanWebApiTemplate.Domain.Configuration;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -103,14 +101,6 @@ public static class ConfigureServices
             .AddPolicy(Constants.EXTERNAL_POLICY, policy => policy.RequireRole(Constants.EXTERNAL_POLICY,
                                                                                Constants.ADMIN_POLICY,
                                                                                Constants.OPERATOR_POLICY));
-
-        if (environment is Constants.DEV_ENVIRONMNET)
-        {
-            services.AddAuthentication(DevAuthHandler.SCHEME_NAME)
-                .AddScheme<AuthenticationSchemeOptions, DevAuthHandler>(DevAuthHandler.SCHEME_NAME, null);
-
-            return services;
-        }
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>

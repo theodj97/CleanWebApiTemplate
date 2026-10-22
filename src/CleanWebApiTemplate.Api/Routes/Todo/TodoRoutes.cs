@@ -1,5 +1,6 @@
 using System.Net;
 using CleanWebApiTemplate.Api.Common;
+using CleanWebApiTemplate.Api.Common.Abstractions;
 using CleanWebApiTemplate.Api.Extensions;
 using CleanWebApiTemplate.Api.Models.Responses.Todo;
 using CleanWebApiTemplate.Api.Routes.Todo.Create;
@@ -23,8 +24,8 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
 {
     public override void MapGroup(IEndpointRouteBuilder app)
     {
-        var userGroup = CreateAuthorizedRouteGroupBuilder(app, [Constants.USER_POLICY]);
-        var operatorGroup = CreateAuthorizedRouteGroupBuilder(app, [Constants.OPERATOR_POLICY]);
+        var userGroup = app.CreateAuthorizedRouteGroupBuilder(RouteName, [Constants.USER_POLICY]);
+        var operatorGroup = app.CreateAuthorizedRouteGroupBuilder(RouteName, [Constants.OPERATOR_POLICY]);
 
         userGroup.MapGet("/{id}", async (string id,
                                          IQueryHandler<GetTodoByIdQuery, Result<TodoDto?>> handler,
