@@ -1,7 +1,17 @@
 using System.Text;
 using CleanWebApiTemplate.Api.Configuration;
 using CleanWebApiTemplate.Api.Extensions;
+using CleanWebApiTemplate.Application.Todo.Create;
+using CleanWebApiTemplate.Application.Todo.Delete;
+using CleanWebApiTemplate.Application.Todo.Filtered;
+using CleanWebApiTemplate.Application.Todo.GetById;
+using CleanWebApiTemplate.Application.Todo.GetTitles;
+using CleanWebApiTemplate.Application.Todo.Update;
 using CleanWebApiTemplate.Domain.Configuration;
+using CleanWebApiTemplate.Infrastructure.Data;
+using CleanWebApiTemplate.Infrastructure.Repositories;
+using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -9,31 +19,37 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace CleanWebApiTemplate.Api;
 
+/// <summary>
+/// Composition root for this executable: every service the API needs is registered here, including
+/// the Application and Infrastructure implementations. Layer libraries do not self-register, so each
+/// host takes only the pieces it actually uses.
+/// </summary>
 public static class ConfigureServices
 {
     public static IServiceCollection AddApiServices(this IServiceCollection services,
-                                                     IConfiguration configuration,
-                                                     string environment,
-                                                     string[] corsAllow,
-                                                     string[] validIssuers,
-                                                     ConnectionStringsSection connectionStrings)
+                                                   IConfiguration configuration,
+                                                   AppSettings appSettings,
+                                                   string environment)
     {
+        services.AddPersistence(appSettings.ConnectionStrings);
+        services.AddApplication();
+
         var healthChecksBuilder = services.AddHealthChecks()
                 .AddCheck("api-health-check", () => HealthCheckResult.Healthy("API is up and running"), tags: ["api"]);
         healthChecksBuilder.AddNpgSql(
-            connectionStrings.Postgres,
+            appSettings.ConnectionStrings.Postgres,
             name: "postgres-check",
             failureStatus: HealthStatus.Unhealthy,
             tags: ["postgresDb", "sql"]);
 
-        services.ConfigureCors(environment, corsAllow);
+        services.ConfigureCors(environment, appSettings.CorsAllow);
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
 
         services.ConfigureResponseCompression();
 
-        services.ConfigureAuth(environment, validIssuers, configuration);
+        services.ConfigureAuth(environment, appSettings.ValidIssuers, configuration);
 
         if (environment is not Constants.PRODUCTION_ENVIRONMENT)
         {
@@ -47,6 +63,40 @@ public static class ConfigureServices
             options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default));
 
         services.RegisterMinimalEndpoints();
+
+        return services;
+    }
+
+    private static IServiceCollection AddPersistence(this IServiceCollection services,
+                                                     ConnectionStringsSection connectionStrings)
+    {
+        services.AddSingleton<INpgsqlConnectionFactory>(new NpgsqlConnectionFactory(connectionStrings.Postgres));
+        services.AddScoped<ITodoRepository, TodoRepository>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Validators and application services. Registered one by one on purpose: no assembly scanning,
+    /// so every type stays statically visible to the Native AOT analyzer.
+    /// </summary>
+    private static IServiceCollection AddApplication(this IServiceCollection services)
+    {
+        // Validators
+        services.AddTransient<IValidator<CreateTodoInput>, CreateTodoInputValidator>();
+        services.AddTransient<IValidator<UpdateTodoInput>, UpdateTodoInputValidator>();
+        services.AddTransient<IValidator<DeleteTodoInput>, DeleteTodoInputValidator>();
+        services.AddTransient<IValidator<GetTodoByIdInput>, GetTodoByIdInputValidator>();
+        services.AddTransient<IValidator<GetTodoTitlesInput>, GetTodoTitlesInputValidator>();
+        services.AddTransient<IValidator<FilteredTodoInput>, FilteredTodoInputValidator>();
+
+        // Services
+        services.AddTransient<ICreateTodoService, CreateTodoService>();
+        services.AddTransient<IUpdateTodoService, UpdateTodoService>();
+        services.AddTransient<IDeleteTodoService, DeleteTodoService>();
+        services.AddTransient<IGetTodoByIdService, GetTodoByIdService>();
+        services.AddTransient<IGetTodoTitlesService, GetTodoTitlesService>();
+        services.AddTransient<IFilteredTodoService, FilteredTodoService>();
 
         return services;
     }
@@ -99,8 +149,8 @@ public static class ConfigureServices
                                                                            Constants.ADMIN_POLICY,
                                                                            Constants.OPERATOR_POLICY))
             .AddPolicy(Constants.EXTERNAL_POLICY, policy => policy.RequireRole(Constants.EXTERNAL_POLICY,
-                                                                               Constants.ADMIN_POLICY,
-                                                                               Constants.OPERATOR_POLICY));
+                                                                                Constants.ADMIN_POLICY,
+                                                                                Constants.OPERATOR_POLICY));
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>

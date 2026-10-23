@@ -1,6 +1,4 @@
 using CleanWebApiTemplate.Api.Helpers;
-using CleanWebApiTemplate.Application;
-using CleanWebApiTemplate.Infrastructure;
 using CleanWebApiTemplate.ServiceDefaults;
 
 namespace CleanWebApiTemplate.Api;
@@ -15,13 +13,7 @@ public class Program
 
         var (appSettings, environment) = builder.LoadAppSettings();
 
-        builder.Services.AddApiServices(builder.Configuration,
-                                         environment,
-                                         appSettings.CorsAllow,
-                                         appSettings.ValidIssuers,
-                                         appSettings.ConnectionStrings);
-        builder.Services.AddInfrastructureServices(appSettings.ConnectionStrings);
-        builder.Services.AddApplicationServices();
+        builder.Services.AddApiServices(builder.Configuration, appSettings, environment);
 
         var app = builder.Build();
         app.ConfigureApiApplication(environment);
