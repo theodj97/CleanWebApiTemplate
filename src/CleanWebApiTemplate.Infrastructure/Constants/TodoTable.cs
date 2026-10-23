@@ -23,22 +23,5 @@ public static class TodoTable
     public static byte CreatedByMaxLength => 255;
     public static byte UpdatedByMaxLength => 255;
 
-    /// <summary>
-    /// DDL for the Todo table. Idempotent, so it can run at every startup/test setup.
-    /// DateTime values are stored as TEXT in the "yyyy-MM-dd HH:mm:ss.fffffff" format
-    /// (the default Microsoft.Data.Sqlite DateTime binding format).
-    /// </summary>
-    public const string CreateTableSql = """
-        CREATE TABLE IF NOT EXISTS "Todo" (
-            "Id"          BLOB    NOT NULL,
-            "Title"       TEXT    NOT NULL,
-            "Description" TEXT    NULL,
-            "CreatedAt"   TEXT    NOT NULL,
-            "UpdatedAt"   TEXT    NOT NULL,
-            "Status"      INTEGER NOT NULL,
-            "CreatedBy"   TEXT    NOT NULL,
-            "UpdatedBy"   TEXT    NOT NULL,
-            CONSTRAINT "PK_Todo" PRIMARY KEY ("Id")
-        );
-        """;
+    // The table DDL lives in local/database/*.sql so there is a single schema source.
 }

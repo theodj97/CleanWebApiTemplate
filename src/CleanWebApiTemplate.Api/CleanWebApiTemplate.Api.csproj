@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AspNetCore.HealthChecks.Sqlite" />
+    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
     <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
@@ -22,6 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference
+      Include="..\CleanWebApiTemplate.ServiceDefaults\CleanWebApiTemplate.ServiceDefaults.csproj" />
     <ProjectReference
       Include="..\CleanWebApiTemplate.Application\CleanWebApiTemplate.Application.csproj" />
     <ProjectReference

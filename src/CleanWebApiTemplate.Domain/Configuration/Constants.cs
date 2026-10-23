@@ -8,8 +8,9 @@ public static class Constants
     public const string STAGING_ENVIRONMENT = "Staging";
     public const string PRODUCTION_ENVIRONMENT = "Production";
     public const string TEST_ENVIRONMENT = "Test";
-    // Envs variables
-    public const string API_KEY = null;
+    // Configuration keys
+    public const string API_KEY = "API_KEY";
+    public const string AUTHORITY = "Authentication:Authority";
     public const string DEFAULT_CORS_POLICY_NAME = "DefaultCorsPolicy";
 
     // User authorization policies.

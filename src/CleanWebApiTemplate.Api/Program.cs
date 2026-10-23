@@ -1,6 +1,7 @@
 using CleanWebApiTemplate.Api.Helpers;
 using CleanWebApiTemplate.Application;
 using CleanWebApiTemplate.Infrastructure;
+using CleanWebApiTemplate.ServiceDefaults;
 
 namespace CleanWebApiTemplate.Api;
 
@@ -9,6 +10,8 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateSlimBuilder(args);
+
+        builder.AddServiceDefaults();
 
         var (appSettings, environment) = builder.LoadAppSettings();
 
@@ -22,6 +25,7 @@ public class Program
 
         var app = builder.Build();
         app.ConfigureApiApplication(environment);
+        app.MapDefaultEndpoints();
         app.Run();
     }
 }

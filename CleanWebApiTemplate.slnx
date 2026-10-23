@@ -4,11 +4,16 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Folder Name="/local/">
+    <Project Path="local/aspire/CleanWebApiTemplate.AppHost/CleanWebApiTemplate.AppHost.csproj" />
+    <Project Path="local/aspire/CleanWebApiTemplate.DbInitializer/CleanWebApiTemplate.DbInitializer.csproj" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/CleanWebApiTemplate.Application/CleanWebApiTemplate.Application.csproj" />
     <Project Path="src/CleanWebApiTemplate.Domain/CleanWebApiTemplate.Domain.csproj" />
     <Project Path="src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj" />
     <Project Path="src/CleanWebApiTemplate.Infrastructure/CleanWebApiTemplate.Infrastructure.csproj" />
+    <Project Path="src/CleanWebApiTemplate.ServiceDefaults/CleanWebApiTemplate.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/tests/" />
 </Solution>

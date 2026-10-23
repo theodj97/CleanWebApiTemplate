@@ -1,0 +1,50 @@
+{
+  "LocalAuth": {
+    "AppHostProject": "../aspire/CleanWebApiTemplate.AppHost/CleanWebApiTemplate.AppHost.csproj",
+    "Algorithm": "HS256",
+    "Issuer": "http://localhost",
+    "DefaultLifetimeMinutes": 60,
+    "Apis": {
+      "api": {
+        "Audience": "http://localhost:7210",
+        "RoleClaim": "role"
+      }
+    },
+    "Profiles": {
+      "user": {
+        "Api": "api",
+        "Subject": "0b7c2f4e-0000-4000-8000-000000000001",
+        "Name": "local.user",
+        "Roles": [ "User" ],
+        "Claims": { "email": "local.user@example.com" }
+      },
+      "operator": {
+        "Api": "api",
+        "Subject": "0b7c2f4e-0000-4000-8000-000000000002",
+        "Name": "local.operator",
+        "Roles": [ "Operator" ],
+        "Claims": { "email": "local.operator@example.com" }
+      },
+      "admin": {
+        "Api": "api",
+        "Subject": "0b7c2f4e-0000-4000-8000-000000000003",
+        "Name": "local.admin",
+        "Roles": [ "Admin" ],
+        "Claims": { "email": "local.admin@example.com" }
+      },
+      "external": {
+        "Api": "api",
+        "Subject": "0b7c2f4e-0000-4000-8000-000000000004",
+        "Name": "local.external",
+        "Roles": [ "External" ],
+        "Claims": { "email": "local.external@example.com" }
+      },
+      "no-role": {
+        "Api": "api",
+        "Subject": "0b7c2f4e-0000-4000-8000-000000000005",
+        "Name": "local.norole",
+        "Claims": { "email": "local.norole@example.com" }
+      }
+    }
+  }
+}

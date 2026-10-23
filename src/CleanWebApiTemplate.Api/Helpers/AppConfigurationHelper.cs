@@ -17,8 +17,8 @@ public static class AppConfigurationHelper
         {
             ConnectionStrings = new ConnectionStringsSection
             {
-                Sqlite = builder.Configuration.GetSection(nameof(AppSettings.ConnectionStrings))
-                                              [nameof(ConnectionStringsSection.Sqlite)] ?? string.Empty
+                Postgres = builder.Configuration.GetSection(nameof(AppSettings.ConnectionStrings))
+                                              [nameof(ConnectionStringsSection.Postgres)] ?? string.Empty
             },
             CorsAllow = GetStringArray(builder.Configuration, nameof(AppSettings.CorsAllow)),
             ValidIssuers = GetStringArray(builder.Configuration, nameof(AppSettings.ValidIssuers))
@@ -42,7 +42,14 @@ public static class AppConfigurationHelper
             throw new Exception($"Warning: appsettings.{environment}.json not found.");
 
         if (environment is Constants.DEV_ENVIRONMNET)
+        {
             builder.Configuration.AddUserSecrets<Program>();
+
+            // Added last on purpose: when an orchestrator (Aspire, containers, CI) injects
+            // configuration as environment variables, those values must win over the
+            // developer's local user secrets instead of being silently overridden by them.
+            builder.Configuration.AddEnvironmentVariables();
+        }
         else
             builder.Configuration.AddJsonFile($"appsettings.{environment}.json", optional: false, reloadOnChange: false);
     }

@@ -41,9 +41,9 @@ public static class ConfigureApplication
         {
             Predicate = check => check.Tags.Contains("api")
         });
-        app.MapHealthChecks("/health/sqliteDb", new HealthCheckOptions
+        app.MapHealthChecks("/health/postgresDb", new HealthCheckOptions
         {
-            Predicate = check => check.Tags.Contains("sqliteDb")
+            Predicate = check => check.Tags.Contains("postgresDb")
         });
     }
 }

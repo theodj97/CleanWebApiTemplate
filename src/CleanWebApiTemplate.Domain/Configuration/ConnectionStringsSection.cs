@@ -3,5 +3,5 @@ namespace CleanWebApiTemplate.Domain.Configuration;
 
 public sealed class ConnectionStringsSection : SectionBase
 {
-    public required string Sqlite { get; init; }
+    public required string Postgres { get; init; }
 }

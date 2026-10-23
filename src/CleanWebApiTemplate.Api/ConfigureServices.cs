@@ -20,11 +20,11 @@ public static class ConfigureServices
     {
         var healthChecksBuilder = services.AddHealthChecks()
                 .AddCheck("api-health-check", () => HealthCheckResult.Healthy("API is up and running"), tags: ["api"]);
-        healthChecksBuilder.AddSqlite(
-            connectionStrings.Sqlite,
-            name: "sqlite-check",
+        healthChecksBuilder.AddNpgSql(
+            connectionStrings.Postgres,
+            name: "postgres-check",
             failureStatus: HealthStatus.Unhealthy,
-            tags: ["sqliteDb", "sql"]);
+            tags: ["postgresDb", "sql"]);
 
         services.ConfigureCors(environment, corsAllow);
 
@@ -105,7 +105,17 @@ public static class ConfigureServices
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                options.Authority = "http://localhost:7210";
+                var authority = configuration[Constants.AUTHORITY] ?? "http://localhost:7210";
+                if (authority.Length > 0)
+                {
+                    var authorityUri = new Uri(authority, UriKind.Absolute);
+
+                    options.Authority = authority;
+                    // HTTPS stays mandatory for real authorities; the local development
+                    // setup clears it and validates with the locally signed key only.
+                    options.RequireHttpsMetadata = authorityUri.Scheme == Uri.UriSchemeHttps;
+                }
+
                 options.Audience = "http://localhost:7210";
 
                 options.TokenValidationParameters = new TokenValidationParameters

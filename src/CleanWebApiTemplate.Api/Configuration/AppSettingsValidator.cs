@@ -11,8 +11,8 @@ public class AppSettingsValidator : IValidateOptions<AppSettings>
 
         if (options.ConnectionStrings is null)
             failures.Add("ConnectionStrings section is required.");
-        else if (string.IsNullOrWhiteSpace(options.ConnectionStrings.Sqlite))
-            failures.Add("ConnectionStrings.Sqlite is required.");
+        else if (string.IsNullOrWhiteSpace(options.ConnectionStrings.Postgres))
+            failures.Add("ConnectionStrings.Postgres is required.");
 
         if (options.CorsAllow is null || options.CorsAllow.Length == 0)
             failures.Add("CorsAllow must contain at least one entry.");

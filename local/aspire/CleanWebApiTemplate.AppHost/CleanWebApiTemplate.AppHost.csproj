@@ -1,0 +1,22 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.6.3">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AspireUseCliBundle>true</AspireUseCliBundle>
+    <UserSecretsId>6f4b1d0e-2c3a-4e5f-9a7b-1c2d3e4f5a6b</UserSecretsId>
+    <DefineConstants>$(DefineConstants);APPHOST</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj" />
+    <ProjectReference Include="../CleanWebApiTemplate.DbInitializer/CleanWebApiTemplate.DbInitializer.csproj" />
+  </ItemGroup>
+
+</Project>

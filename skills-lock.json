@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "dotnet-aspire": {
+      "source": "theodj97/aspire-skills",
+      "sourceType": "github",
+      "skillPath": "dotnet-aspire/SKILL.md",
+      "computedHash": "6700068b53e023b2f7659db1687d973042b5e900eadf78c4c34260bb1fcbdd6d"
+    },
     "dotnet-aspire-local-environment": {
       "source": "theodj97/dotnet-aspire-local-dev-skill",
       "sourceType": "github",

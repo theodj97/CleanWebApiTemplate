@@ -10,7 +10,7 @@ public static class ConfigureServices
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, ConnectionStringsSection connectionStrings)
     {
-        services.AddSingleton<ISqliteConnectionFactory>(new SqliteConnectionFactory(connectionStrings.Sqlite));
+        services.AddSingleton<INpgsqlConnectionFactory>(new NpgsqlConnectionFactory(connectionStrings.Postgres));
         services.AddScoped<ITodoRepository, TodoRepository>();
 
         return services;

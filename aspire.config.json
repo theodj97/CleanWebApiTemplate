@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "local/aspire/CleanWebApiTemplate.AppHost/CleanWebApiTemplate.AppHost.csproj"
+  }
+}

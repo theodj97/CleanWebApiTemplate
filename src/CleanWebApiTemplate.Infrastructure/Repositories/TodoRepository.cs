@@ -4,18 +4,19 @@ using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Infrastructure.Constants;
 using CleanWebApiTemplate.Infrastructure.Data;
 using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
-using Microsoft.Data.Sqlite;
+using Npgsql;
+using NpgsqlTypes;
 
 namespace CleanWebApiTemplate.Infrastructure.Repositories;
 
 /// <summary>
-/// Pure ADO.NET (Microsoft.Data.Sqlite) repository. Native AOT safe by construction:
+/// Pure ADO.NET (Npgsql) repository. Native AOT safe by construction:
 /// no reflection, no expression trees, no dynamic mapping — every row is mapped
 /// explicitly and every input value is sent as a bound parameter.
 /// </summary>
-public sealed class TodoRepository(ISqliteConnectionFactory connectionFactory) : ITodoRepository
+public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) : ITodoRepository
 {
-    private readonly ISqliteConnectionFactory connectionFactory = connectionFactory;
+    private readonly INpgsqlConnectionFactory connectionFactory = connectionFactory;
 
     // Fixed column list/order shared by every full-row SELECT. The manual mapping in
     // MapTodo relies on this exact order. Built only from compile-time constants.
@@ -50,7 +51,7 @@ public sealed class TodoRepository(ISqliteConnectionFactory connectionFactory) :
         using var connection = connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken);
 
-        using var command = new SqliteCommand(SelectByIdSql, connection);
+        using var command = new NpgsqlCommand(SelectByIdSql, connection);
         AddIdParameter(command, id);
 
         using var reader = await command.ExecuteReaderAsync(cancellationToken);
@@ -65,7 +66,7 @@ public sealed class TodoRepository(ISqliteConnectionFactory connectionFactory) :
         using var connection = connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken);
 
-        using var command = new SqliteCommand();
+        using var command = new NpgsqlCommand();
         command.Connection = connection;
 
         var sql = new StringBuilder(
@@ -96,20 +97,20 @@ public sealed class TodoRepository(ISqliteConnectionFactory connectionFactory) :
         using var connection = connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken);
 
-        using var command = new SqliteCommand();
+        using var command = new NpgsqlCommand();
         command.Connection = connection;
 
         var sql = new StringBuilder($"SELECT {TodoColumns} FROM \"{TodoTable.Name}\"");
         var where = new StringBuilder();
         int parameterIndex = 0;
 
-        AppendInCondition(where, command, TodoTable.IdColumn, SqliteType.Blob,
+        AppendInCondition(where, command, TodoTable.IdColumn, NpgsqlDbType.Bytea,
                           filter.Ids, static id => id.ToByteArray(), ref parameterIndex);
-        AppendInCondition(where, command, TodoTable.TitleColumn, SqliteType.Text,
+        AppendInCondition(where, command, TodoTable.TitleColumn, NpgsqlDbType.Text,
                           filter.Titles, static title => title, ref parameterIndex);
-        AppendInCondition(where, command, TodoTable.StatusColumn, SqliteType.Integer,
+        AppendInCondition(where, command, TodoTable.StatusColumn, NpgsqlDbType.Integer,
                           filter.Statuses, static status => status, ref parameterIndex);
-        AppendInCondition(where, command, TodoTable.CreatedByColumn, SqliteType.Text,
+        AppendInCondition(where, command, TodoTable.CreatedByColumn, NpgsqlDbType.Text,
                           filter.CreatedBys, static createdBy => createdBy, ref parameterIndex);
 
         // The date range applies only when both bounds are provided (previous EF Core behavior).
@@ -119,10 +120,9 @@ public sealed class TodoRepository(ISqliteConnectionFactory connectionFactory) :
             string startParameter = NextParameterName(ref parameterIndex);
             string endParameter = NextParameterName(ref parameterIndex);
             where.Append($"\"{TodoTable.CreatedAtColumn}\" >= {startParameter} AND \"{TodoTable.CreatedAtColumn}\" <= {endParameter}");
-            // Bound as DateTime: stored as TEXT "yyyy-MM-dd HH:mm:ss.fffffff" (fixed-width,
-            // so lexicographic comparison is chronological), same format EF Core used.
-            command.Parameters.AddWithValue(startParameter, filter.StartDate.Value);
-            command.Parameters.AddWithValue(endParameter, filter.EndDate.Value);
+            // Stored as timestamptz; Npgsql requires an explicit UTC kind.
+            command.Parameters.Add(startParameter, NpgsqlDbType.TimestampTz).Value = ToUtc(filter.StartDate.Value);
+            command.Parameters.Add(endParameter, NpgsqlDbType.TimestampTz).Value = ToUtc(filter.EndDate.Value);
         }
 
         if (where.Length > 0)
@@ -148,7 +148,7 @@ public sealed class TodoRepository(ISqliteConnectionFactory connectionFactory) :
         using var connection = connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken);
 
-        using var command = new SqliteCommand(InsertSql, connection);
+        using var command = new NpgsqlCommand(InsertSql, connection);
         AddEntityParameters(command, entity);
 
         await command.ExecuteNonQueryAsync(cancellationToken);
@@ -162,7 +162,7 @@ public sealed class TodoRepository(ISqliteConnectionFactory connectionFactory) :
         using var connection = connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken);
 
-        using var command = new SqliteCommand(UpdateSql, connection);
+        using var command = new NpgsqlCommand(UpdateSql, connection);
         AddEntityParameters(command, entity);
 
         return await command.ExecuteNonQueryAsync(cancellationToken) > 0;
@@ -173,7 +173,7 @@ public sealed class TodoRepository(ISqliteConnectionFactory connectionFactory) :
         using var connection = connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken);
 
-        using var command = new SqliteCommand(DeleteSql, connection);
+        using var command = new NpgsqlCommand(DeleteSql, connection);
         AddIdParameter(command, id);
 
         return await command.ExecuteNonQueryAsync(cancellationToken) > 0;
@@ -188,10 +188,10 @@ public sealed class TodoRepository(ISqliteConnectionFactory connectionFactory) :
         using var connection = connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken);
 
-        using var command = new SqliteCommand(sql, connection);
-        command.Parameters.Add("@title", SqliteType.Text).Value = title;
+        using var command = new NpgsqlCommand(sql, connection);
+        command.Parameters.Add("@title", NpgsqlDbType.Text).Value = title;
         if (excludeId is not null)
-            command.Parameters.Add("@excludeId", SqliteType.Blob).Value = excludeId.Value.ToByteArray();
+            command.Parameters.Add("@excludeId", NpgsqlDbType.Bytea).Value = excludeId.Value.ToByteArray();
 
         var count = (long)(await command.ExecuteScalarAsync(cancellationToken))!;
         return count > 0;
@@ -201,13 +201,13 @@ public sealed class TodoRepository(ISqliteConnectionFactory connectionFactory) :
     /// Explicit manual mapping. The reader must provide the columns in <see cref="TodoColumns"/> order.
     /// Every column is checked with IsDBNull before extraction.
     /// </summary>
-    private static TodoEntity MapTodo(SqliteDataReader reader) => new()
+    private static TodoEntity MapTodo(NpgsqlDataReader reader) => new()
     {
-        // BLOB (16 bytes) <-> Ulid.
+        // BYTEA (16 bytes) <-> Ulid.
         Id = reader.IsDBNull(0) ? Ulid.Empty : new Ulid(reader.GetFieldValue<byte[]>(0)),
         Title = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
         Description = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-        // TEXT "yyyy-MM-dd HH:mm:ss.fffffff" <-> DateTime.
+        // TIMESTAMPTZ <-> DateTime (Npgsql returns Kind=Utc).
         CreatedAt = reader.IsDBNull(3) ? default : reader.GetDateTime(3),
         UpdatedAt = reader.IsDBNull(4) ? default : reader.GetDateTime(4),
         Status = reader.IsDBNull(5) ? default : reader.GetInt32(5),
@@ -215,19 +215,19 @@ public sealed class TodoRepository(ISqliteConnectionFactory connectionFactory) :
         UpdatedBy = reader.IsDBNull(7) ? string.Empty : reader.GetString(7)
     };
 
-    private static void AddIdParameter(SqliteCommand command, Ulid id) =>
-        command.Parameters.Add("@id", SqliteType.Blob).Value = id.ToByteArray();
+    private static void AddIdParameter(NpgsqlCommand command, Ulid id) =>
+        command.Parameters.Add("@id", NpgsqlDbType.Bytea).Value = id.ToByteArray();
 
-    private static void AddEntityParameters(SqliteCommand command, TodoEntity entity)
+    private static void AddEntityParameters(NpgsqlCommand command, TodoEntity entity)
     {
         AddIdParameter(command, entity.Id);
-        command.Parameters.Add("@title", SqliteType.Text).Value = entity.Title;
-        command.Parameters.Add("@description", SqliteType.Text).Value = entity.Description;
-        command.Parameters.Add("@createdAt", SqliteType.Text).Value = entity.CreatedAt;
-        command.Parameters.Add("@updatedAt", SqliteType.Text).Value = entity.UpdatedAt;
-        command.Parameters.Add("@status", SqliteType.Integer).Value = entity.Status;
-        command.Parameters.Add("@createdBy", SqliteType.Text).Value = entity.CreatedBy;
-        command.Parameters.Add("@updatedBy", SqliteType.Text).Value = entity.UpdatedBy;
+        command.Parameters.Add("@title", NpgsqlDbType.Text).Value = entity.Title;
+        command.Parameters.Add("@description", NpgsqlDbType.Text).Value = entity.Description;
+        command.Parameters.Add("@createdAt", NpgsqlDbType.TimestampTz).Value = ToUtc(entity.CreatedAt);
+        command.Parameters.Add("@updatedAt", NpgsqlDbType.TimestampTz).Value = ToUtc(entity.UpdatedAt);
+        command.Parameters.Add("@status", NpgsqlDbType.Integer).Value = entity.Status;
+        command.Parameters.Add("@createdBy", NpgsqlDbType.Text).Value = entity.CreatedBy;
+        command.Parameters.Add("@updatedBy", NpgsqlDbType.Text).Value = entity.UpdatedBy;
     }
 
     /// <summary>
@@ -235,9 +235,9 @@ public sealed class TodoRepository(ISqliteConnectionFactory connectionFactory) :
     /// parameter; only the fixed internal column name is embedded in the SQL text.
     /// </summary>
     private static void AppendInCondition<T>(StringBuilder where,
-                                             SqliteCommand command,
+                                             NpgsqlCommand command,
                                              string columnName,
-                                             SqliteType columnType,
+                                             NpgsqlDbType columnType,
                                              IReadOnlyList<T>? values,
                                              Func<T, object> toDbValue,
                                              ref int parameterIndex)
@@ -284,7 +284,7 @@ public sealed class TodoRepository(ISqliteConnectionFactory connectionFactory) :
         }
     }
 
-    private static void AppendPagination(SqliteCommand command, StringBuilder sql, int? pageNumber, int? pageSize)
+    private static void AppendPagination(NpgsqlCommand command, StringBuilder sql, int? pageNumber, int? pageSize)
     {
         if (pageNumber is null || pageSize is null)
             return;
@@ -296,8 +296,8 @@ public sealed class TodoRepository(ISqliteConnectionFactory connectionFactory) :
             throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be greater than or equal to 1.");
 
         sql.Append(" LIMIT @pageSize OFFSET @offset");
-        command.Parameters.Add("@pageSize", SqliteType.Integer).Value = pageSize.Value;
-        command.Parameters.Add("@offset", SqliteType.Integer).Value = (pageNumber.Value - 1) * pageSize.Value;
+        command.Parameters.Add("@pageSize", NpgsqlDbType.Integer).Value = pageSize.Value;
+        command.Parameters.Add("@offset", NpgsqlDbType.Integer).Value = (pageNumber.Value - 1) * pageSize.Value;
     }
 
     private static void AppendAnd(StringBuilder where)
@@ -307,4 +307,15 @@ public sealed class TodoRepository(ISqliteConnectionFactory connectionFactory) :
     }
 
     private static string NextParameterName(ref int parameterIndex) => $"@p{parameterIndex++}";
+
+    /// <summary>
+    /// PostgreSQL timestamptz values must be UTC. API input deserialized without an
+    /// offset arrives as <see cref="DateTimeKind.Unspecified"/>; treat it as UTC.
+    /// </summary>
+    private static DateTime ToUtc(DateTime value) => value.Kind switch
+    {
+        DateTimeKind.Utc => value,
+        DateTimeKind.Local => value.ToUniversalTime(),
+        _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
+    };
 }
