@@ -14,6 +14,7 @@ Nothing here is required by deployed environments: `src/` never references anyth
 | `local/aspire/` | Local orchestration only: `CleanWebApiTemplate.AppHost` and `CleanWebApiTemplate.DbInitializer`. |
 | `local/database/` | PostgreSQL schema scripts and `seed/` synthetic data. |
 | `local/tools/` | `devtoken.cs` / `devtoken.json`: locally signed JWTs, no identity provider. |
+| `tools/bruno/` | brunoGen layer (`custom/`) for the `aspire-local` Bruno collection. |
 
 `src/CleanWebApiTemplate.ServiceDefaults` is shared runtime code: services call `AddServiceDefaults()` in every
 environment for OpenTelemetry, health checks, service discovery and HTTP resilience. That is why it lives in `src/`.
@@ -86,6 +87,7 @@ provider is contacted** in local development. Tokens are signed locally by `loca
 ```bash
 dotnet local/tools/devtoken.cs list                          # profiles and roles
 dotnet local/tools/devtoken.cs get --profile user            # token on stdout
+dotnet local/tools/devtoken.cs dotenv tools/bruno/custom/.env # one DEVTOKEN_<PROFILE> per profile (Bruno)
 TOKEN=$(dotnet local/tools/devtoken.cs get --profile operator)
 
 curl -X POST http://localhost:5000/api/Todo/ \
@@ -106,6 +108,38 @@ The issuer (`http://localhost`) and audience (`http://localhost:7210`) are the v
 `devtoken init` stores it in the AppHost user secrets, outside the repository. Run `devtoken init --rotate` to replace
 it.
 
+## Bruno collection (`tools/bruno/`)
+
+`tools/bruno/` is a brunoGen layer: `bruno.config.json` plus a versioned `custom/` folder. `brunoGen import` downloads
+the running API's OpenAPI and writes the generated collection to `CleanWebApiTemplateCollection/` (git-ignored).
+**Edit only `custom/`**: `manifest.json`, `environments/`, `opencollection.yml`, `overrides/`, `scripts/` and
+`.env.sample`. The next `import` overwrites the generated collection.
+
+Prerequisites: `brunoGen` installed per user (`brunoGen --version`) and Node.js for the CLI (`npx -y @usebruno/cli`).
+
+```bash
+aspire start
+dotnet local/tools/devtoken.cs dotenv tools/bruno/custom/.env   # tokens for the 5 profiles (60 min by default)
+brunoGen import && brunoGen check
+cd CleanWebApiTemplateCollection && npx -y @usebruno/cli run --env aspire-local
+```
+
+- **Environment `aspire-local`:** `baseUrl = http://localhost:5000` (the `Development` launch profile). The seed ids
+  live here as `seed…` variables (`seedUserTodoId`, `seedOperatorTodoId`, `seedAdminTodoId`,
+  `seedDeletableTodoId`).
+- **Authentication:** collection auth is `bearer {{token}}`; the collection `before-request` script reads
+  `DEVTOKEN_<PROFILE>` from `.env` and assigns it to `{{token}}`. Each request chooses its identity with the request
+  variable `devtokenProfile` (`user`, `operator`, `admin`, `external`, `no-role`). No login endpoint is called.
+- **`.env`:** git-ignored. `dotenv` upserts the five `DEVTOKEN_*` lines, keeps other lines and writes the file with
+  mode `600`. When tokens expire, run `dotenv` again and then `brunoGen check`/`import` (import copies `.env` into the
+  generated collection).
+- **Seed alignment:** every request uses seeded ids and bodies that pass the validators; assertions check status,
+  owner and seed values. `DELETE /api/Todo/{}` removes TODO 4, so it only passes once per AppHost start: run
+  `aspire stop && aspire start` to restore the seed.
+- **Opening in the Bruno app:** import the generated `CleanWebApiTemplateCollection/` folder and select the
+  `aspire-local` environment. The same `custom/` layer is the source of truth; use `brunoGen export` to bring back
+  changes made in the UI.
+
 ## Database
 
 - **Engine:** PostgreSQL, provisioned by Aspire in an ephemeral container (no volume, session lifetime).
@@ -121,15 +155,17 @@ it.
 Every seeded row uses a `CreatedBy` value that matches the `email` claim of a `devtoken` profile. Right after
 `aspire start` each profile can exercise the endpoints and get meaningful results:
 
-| devtoken profile | Rol | Endpoint de ejemplo | Dato de la semilla |
-|---|---|---|---|
-| `user` | `User` | `GET /api/Todo/01HWXHRB80000G000000000001` | TODO 1, `CreatedBy = local.user@example.com` |
-| `user` | `User` | `POST /api/Todo/filter { "createdBy": ["local.user@example.com"] }` | TODO 1 |
-| `operator` | `Operator` | `DELETE /api/Todo/01HWXHRB80000G000000000004` | TODO 4, `CreatedBy = local.operator@example.com` |
-| `operator` | `Operator` | `POST /api/Todo/filter { "status": [2, 4] }` | TODOs 2 y 4 |
-| `admin` | `Admin` | `PUT /api/Todo/01HWXHRB80000G000000000003` | TODO 3, `CreatedBy = local.admin@example.com` |
-| `external` | `External` | — | Ningún endpoint expuesto usa la política `External` |
-| `no-role` | — | `POST /api/Todo/` | Devuelve `403` (caso negativo esperado) |
+| devtoken profile | Rol | Endpoint de ejemplo | Dato de la semilla | Bruno request |
+|---|---|---|---|---|
+| `user` | `User` | `GET /api/Todo/01HWXHRB80000G000000000001` | TODO 1, `CreatedBy = local.user@example.com` | `GET /api/Todo/{}` |
+| `user` | `User` | `POST /api/Todo/filter { "createdBy": ["local.user@example.com"] }` | TODO 1 | `POST /api/Todo/filter` |
+| `user` | `User` | `POST /api/Todo/` | Nueva fila, título generado por el script | `POST /api/Todo/` |
+| `operator` | `Operator` | `DELETE /api/Todo/01HWXHRB80000G000000000004` | TODO 4, `CreatedBy = local.operator@example.com` | `DELETE /api/Todo/{}` |
+| `operator` | `Operator` | `POST /api/Todo/filter { "status": [2, 4] }` | TODOs 2 y 4 | `POST /api/Todo/filter` cambiando cuerpo y `devtokenProfile` |
+| `admin` | `Admin` | `PUT /api/Todo/01HWXHRB80000G000000000003` | TODO 3, `CreatedBy = local.admin@example.com` | `PUT /api/Todo/{}` |
+| `user` | `User` | `POST /api/Todo/titles` | Títulos paginados | `POST /api/Todo/titles` |
+| `external` | `External` | — | Ningún endpoint expuesto usa la política `External` | — (403 en Todo) |
+| `no-role` | — | `POST /api/Todo/` | Devuelve `403` (caso negativo esperado) | `POST /api/Todo/` con `devtokenProfile: no-role` |
 
 ### Adding a schema or seed change
 
@@ -202,6 +238,7 @@ aspire resource api restart
 | API `Unhealthy` | `curl http://localhost:5000/health`; the health check reports the failing dependency. |
 | Port 5000 already in use | Another API is running; stop it or change the launch profile. |
 | 401 from the API | The token expired or was signed with a different key; run `devtoken init --rotate` and restart the AppHost. |
+| 401 in Bruno | Tokens in `tools/bruno/custom/.env` expired (or the key was rotated): run `devtoken dotenv …` and `brunoGen import`; restart Aspire if you rotated the key. |
 | 403 from the API | The profile lacks the policy's role; try `operator`, `admin` or `external`. |
 | HTTPS dev cert not trusted on Linux | `dotnet dev-certs https --trust` created `$HOME/.aspnet/dev-certs/trust`; add it to `SSL_CERT_DIR`, e.g. `export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs"`. |
 | No database spans in traces | Npgsql is not instrumented in this project, so only HTTP spans appear. |

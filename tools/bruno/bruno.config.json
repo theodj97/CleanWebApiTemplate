@@ -1,0 +1,17 @@
+{
+  "specSource": "auto",
+  "allowInsecureLocalhost": false,
+  "baseUrlVariable": "baseUrl",
+  "pathPrefixToStrip": null,
+  "exclude": [],
+  "folderMap": {},
+  "ignoredHeaders": [],
+  "untaggedFolder": "_SinTag",
+  "paths": {
+    "manifest": "custom/manifest.json",
+    "scripts": "custom/scripts",
+    "environments": "custom/environments",
+    "collection": "custom/opencollection.yml",
+    "env": "custom/.env"
+  }
+}
