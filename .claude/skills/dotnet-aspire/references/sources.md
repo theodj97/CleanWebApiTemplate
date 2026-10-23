@@ -95,3 +95,17 @@ CPM, `TreatWarningsAsErrors`). Re-verify on other versions.
 stored in the API project's user secrets and only reaches applications whose JwtBearer options are bound from
 `Authentication:Schemes:{Scheme}`, while the inspected applications set `TokenValidationParameters` in code. It has no
 profiles and couples keys to each API project instead of one local issuer.
+
+## Bruno collection verified on 2026-10-23
+
+brunoGen 3.0.0 (user-installed) and the Bruno CLI 4.3.0 (`npx -y @usebruno/cli`, no global install), against a sample
+API with PostgreSQL, a login endpoint, roles and `MapOpenApi` in Development, running in the AppHost's Local mode.
+
+| Finding | Where it matters |
+|---|---|
+| `brunoGen init` detected the OpenAPI of the API run by Aspire (launch profile URL) and `import` generated 6 requests with `METHOD /route` identities and `{}` path parameters | bruno-collection.md |
+| A collection `before-request` script using `bru.getEnvVar`, `bru.getRequestVar` (manifest `vars.pre-request`), `bru.getProcessEnv` and `bru.setVar` selected a devtoken token per request; `bru run` passed 6/6 requests and 8/8 assertions with seeded ids in params and bodies | bruno-collection.md |
+| `devtoken dotenv` upserted `DEVTOKEN_<PROFILE>` keys into `custom/.env`; `brunoGen import` copied it into the collection | bruno-collection.md, local-jwt-authentication.md |
+| `brunoGen check` flagged an environment variable named `tokenSource` as a written secret; renaming it to `authMode` passed | bruno-collection.md |
+| A second run in the same AppHost session failed only the state-changing requests (DELETE 404, ship 409); after `aspire stop`/`aspire start` all passed again | bruno-collection.md, database.md |
+

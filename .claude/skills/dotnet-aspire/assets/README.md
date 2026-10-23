@@ -39,7 +39,8 @@ Generated `Projects.*` types replace dots and dashes in the project name with un
 |---|---|---|
 | `local/apphost/AppHost.cs` | `local/aspire/{App}.AppHost/AppHost.cs` | *validated*; modes, resources, `WithLocalJwtTrust` |
 | `local/apphost/AppHostContract.cs` | `local/aspire/{App}.AppHost/`, linked into Shared | *validated*; mode key, resource names, keys, JWT trust mapping |
-| `local/tools/devtoken.cs` | `local/tools/devtoken.cs` | *validated*; unchanged |
+| `local/tools/devtoken.cs` | `local/tools/devtoken.cs` | *validated* (including `dotenv`, used by Bruno); unchanged |
+| `bruno/find-empty-values.py` | not copied: the agent runs it from the skill folder | finds request params and body fields left empty in a generated Bruno collection (*validated*) |
 | `local/tools/devtoken.json` | `local/tools/devtoken.json` | *validated*; issuer, algorithm, audiences, claim names, profiles from discovery |
 | `local/local-development.md` | `local/local-development.md` | fill and trim |
 | DbInitializer | `local/aspire/{App}.DbInitializer/` | code in `references/database.md` (*validated*) |

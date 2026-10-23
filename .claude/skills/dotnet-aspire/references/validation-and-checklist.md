@@ -13,6 +13,7 @@ passed unless you ran it and saw it pass.
 - [5. Smoke requests, tokens and telemetry](#5-smoke-requests-tokens-and-telemetry)
 - [6. Authentication and production isolation](#6-authentication-and-production-isolation)
 - [7. Agent integration](#7-agent-integration)
+- [7b. Bruno collection](#7b-bruno-collection)
 - [8. Clean-up](#8-clean-up)
 - [Acceptance checklist](#acceptance-checklist)
 - [Report table](#report-table)
@@ -60,6 +61,7 @@ dotnet local/tools/devtoken.cs init                                 # once per m
 aspire start --apphost <AppHost.csproj> --format Json               # redact the dashboardUrl token
 aspire wait <each key resource> --apphost <AppHost.csproj> --timeout 300
 aspire describe --apphost <AppHost.csproj> --format Json            # summarize name/state/health/exitCode only
+dotnet dev-certs https --check --trust                              # exit 0: the HTTPS development certificate is trusted
 ```
 
 Expected: infrastructure `Running` and `Healthy`; the initializer `Finished` with exit code 0; applications `Running`,
@@ -71,7 +73,9 @@ and `Healthy` when they have health checks. Explain any other state with logs.
   (`aspire logs <initializer>`).
 - No data resource declares a volume, bind mount or persistent lifetime (check `AppHost.cs`; `aspire describe` shows no
   volumes).
-- A smoke request reads the seed data and writes a new record.
+- **Seed coverage check**: every row of the seed coverage table in `local/local-development.md` was requested with a
+  token of its devtoken profile and returned the expected status and content (non-empty lists, seeded ids, expected
+  403s); mutations against seeded ids succeeded. Endpoints without a row are a gap to fix in the seed.
 - **Two-run check**: write a record in run 1; `aspire stop --apphost <csproj>`; `aspire start` + `aspire wait`; the
   record is gone and the seed data is back.
 - After the final stop and a few seconds of asynchronous clean-up, `docker volume ls` / `docker ps -a` show nothing left
@@ -98,7 +102,7 @@ and `Healthy` when they have health checks. Explain any other state with logs.
 | The guards work | remove one `TrustValue.Empty` mapping on purpose: the component fixture must fail naming the metadata address and the functional recorder must list the `CONNECT`; then revert and rerun |
 | Validation is real | the authentication matrix passes (`local-jwt-authentication.md` § Authentication and authorization tests): invalid, expired, wrong issuer/audience, unknown key and unsigned tokens get 401, insufficient permissions 403 |
 | Every protected service treated the same | each one has a trust mapping, devtoken profiles and the matrix, whether or not it has login endpoints |
-| No local/test values in production configuration | `grep -rn -E '<local issuer>|<test issuer>|local-dev|:tests' src` prints nothing; no keys in committed `*.json` under `src/` or `local/` |
+| No local/test values in production configuration | searching `src/` for the local and test issuers and audiences (e.g. `local-dev`, `:tests`) finds nothing; no keys in committed `*.json` under `src/` or `local/` |
 | Nothing local deployable | `src/` references neither `local/` nor `tests/`; devtoken, AppHost and DbInitializer are not in publish/deploy pipelines |
 | No bypass | no `AllowAnonymous`/test scheme/`ValidateX = false` introduced; policies unchanged (`git diff` of authorization code is empty unless the user approved a change) |
 | Secrets | `git status`/`git diff` contain no token, key, password, connection string with credentials or dashboard token; local keys are only in the AppHost user secrets |
@@ -108,14 +112,20 @@ and `Healthy` when they have health checks. Explain any other state with logs.
 - `aspire agent init --help` supports the options used; installed `SKILL.md` files are at the repository-root
   location(s); no unintended `.mcp.json`; no nested duplicates; custom skills unchanged.
 
+## 7b. Bruno collection
+
+Only with a brunoGen layer (`bruno-collection.md` § Verification): `devtoken dotenv`, `brunoGen import`,
+`brunoGen check` exit 0, no empty param or body field (`assets/bruno/find-empty-values.py` exit 0), and `npx -y @usebruno/cli run --env <local environment>` from the collection folder on a fresh
+AppHost start, with every request and assertion passing; no request takes its token from a login endpoint.
+
 ## 8. Clean-up
 
 - Stop only the AppHost you started (`aspire stop --apphost <csproj>`); its session containers are removed with it.
   Never remove pre-existing volumes or containers; report orphaned ones by name.
 - Remove temporary edits used for verification (sabotaged expectations, removed mappings), rebuild and rerun what they
   touched.
-- Undo machine-level side effects you caused without consent (global npm packages, template installs, certificates),
-  or report them. A local JWT key created by `devtoken init` is intended and stays.
+- Undo machine-level side effects you caused without consent (global npm packages, template installs), or report
+  them. A local JWT key created by `devtoken init` and the trusted HTTPS development certificate are intended and stay.
 
 ## Acceptance checklist
 
@@ -140,12 +150,18 @@ The work is complete only when each item is satisfied or explicitly reported as 
       in every mode.
 - [ ] No data volume, bind mount or persistent lifetime anywhere; the two-run check passed; seed data lives in
       `local/database/seed/*.sql` and runs only in Local mode; pre-existing volumes and containers were not deleted.
+- [ ] The seed was designed from the endpoint inventory; the seed coverage table lists every endpoint that touches a
+      database with its profile and data, and the seed coverage check passed for every row.
 
 **Local development**
+- [ ] The HTTPS development certificate is trusted (`dotnet dev-certs https --check --trust` exit 0), or the
+      platform step that needs the developer is reported.
 - [ ] The AppHost started, resources reached the expected state, a smoke request succeeded and its trace/logs were
       found with `aspire otel`/`aspire logs`.
 - [ ] `aspire agent init` ran with verified options (MCP only with consent), or the blocker is reported.
 - [ ] `local/local-development.md` describes the real implementation, including tokens and tests.
+- [ ] With a brunoGen layer: every request uses seeded data and devtoken tokens in the local environment, asserts its
+      expected result, and the whole collection passed with `bru run`; `brunoGen check` exit 0.
 
 **Authentication**
 - [ ] Every protected service runs and is tested with locally signed JWTs through its trust mapping, independently of
@@ -176,10 +192,13 @@ The work is complete only when each item is satisfied or explicitly reported as 
 | Start | aspire start --apphost … | 0 | started |
 | Wait | aspire wait orders-api … | 0 | healthy |
 | DB init | aspire logs db-init | 0 | 1 migration + 2 seed scripts applied |
+| Dev cert | dotnet dev-certs https --check --trust | 0 | trusted |
+| Seed coverage | curl per coverage-table row with devtoken profiles | — | 9/9 rows as expected |
 | Two-run | stop/start + GET /orders | 200 | run-1 changes gone, seed rows present |
 | Auth smoke | curl with devtoken profiles | — | 200 / 401 / 403 as expected per profile |
 | No IdP | aspire otel traces catalog-api | 0 | server spans only |
 | Smoke + trace | curl GET /orders | 200 | trace with server + PostgreSQL client spans |
+| Bruno | npx @usebruno/cli run --env aspire-local | 0 | 6 requests passed, 8/8 assertions |
 | Agent init | aspire agent init … | 0 | 4 skills in .claude/skills |
 ```
 

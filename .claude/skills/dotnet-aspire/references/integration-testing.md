@@ -60,7 +60,8 @@ handlers directly. Functional tests are the ones that use real sockets and Aspir
   infrastructure dependency (a container the AppHost lacks) is a small, announced change to the AppHost and fixtures.
 - **Existing tests with other conventions** (another framework, Testcontainers, different naming): in Incremental mode
   follow what exists, even where it differs from this skill. In Setup mode propose how the new structure fits next to
-  it and ask before restructuring. Never migrate xUnit or other packages unless asked.
+  it and ask before restructuring. Never migrate xUnit or other packages unless asked. Bringing existing tests to these
+  standards is the explicit mode `conform-tests` (`test-conformance.md`).
 
 ## Writing tests
 

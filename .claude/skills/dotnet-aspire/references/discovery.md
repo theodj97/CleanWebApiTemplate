@@ -33,6 +33,7 @@ aspire --version
 docker info --format '{{.ServerVersion}}'    # or: podman info
 aspire ps --format Json                      # AppHosts already running: never stop or duplicate them
 dotnet new list aspire-apphost               # Aspire templates installed? (decides how the AppHost is created)
+dotnet dev-certs https --check --trust       # HTTPS development certificate trusted? (trusted by default in setup/repair)
 ```
 
 - Read `CLAUDE.md`, `AGENTS.md` and equivalent instruction files, and honor them. Note uncommitted user changes and do
@@ -190,6 +191,10 @@ migrations, `.sql` scripts, DbUp/FluentMigrator/Evolve/Flyway/Liquibase, `.sqlpr
 and how a fresh database is initialized today, and any persistence in the current setup (volumes or persistent
 lifetimes are a gap). Use `database.md` to select the strategy.
 
+For the seed, inventory every endpoint that reads or writes each database (route, method, policy, entities, filters,
+ownership, state preconditions, foreign keys, reference data): it is the input of `database.md` § Designing the seed
+from the endpoints. Recording it is read-only; designing and writing the scripts happens after the plan.
+
 ```bash
 git ls-files | grep -i -E 'Migrations/|\.sql$|dbup|fluentmigrator|evolve|flyway|liquibase|\.sqlproj$|\.dacpac$|seed'
 git grep -n -E ': DbContext|IDesignTimeDbContextFactory|Database\.Migrate|MigrateAsync|EnsureCreated|HasData\(|UseSeeding|UseAsyncSeeding' -- 'src/*.cs'
@@ -263,6 +268,11 @@ resilience handler).
 
 ## 8. Existing tests and docs
 
+**API clients.** A brunoGen layer (`git ls-files '*bruno.config.json' '*/custom/manifest.json'`) means the Bruno
+collection must be aligned with the local seed (`bruno-collection.md`): record its environments, the collection auth
+script (an auto-login against a login endpoint is a rule-9 finding for the local environment), the manifest entries
+with literal ids and which environment they belong to, and whether `brunoGen` is installed (`brunoGen --version`).
+
 Test projects and framework (xUnit v2/v3 and exact package flavour, NUnit, MSTest), runner mode (VSTest/MTP), mocking
 (Moq, NSubstitute, FakeItEasy), assertions (xUnit Assert, FluentAssertions, Shouldly, AwesomeAssertions), data (Bogus,
 AutoFixture), infrastructure (Testcontainers, `WebApplicationFactory` subclasses, fixtures, base classes,
@@ -288,12 +298,12 @@ removing a test AppHost, or external credentials are needed.
 
 ```text
 Repository: <name>   App ({App}): <value> (from <prefix|solution name>)   Solution: <path> (<sln|slnx>)
-Tooling:     SDK <version> (global.json: <…>, test runner <VSTest|MTP>)   Aspire CLI <version>   Container runtime <…>   Aspire templates <yes|no>
+Tooling:     SDK <version> (global.json: <…>, test runner <VSTest|MTP>)   Aspire CLI <version>   Container runtime <…>   Aspire templates <yes|no>   Dev certificate <trusted|untrusted|missing>
 Aspire:      <missing|partial|incorrect|compliant>   AppHosts: <paths, incl. test AppHosts>   Running: <aspire ps result>
 Build:       TFMs <…>   CPM <on|off>   Directory.Build.props <relevant settings|none>   Solution folders <…>
 Executables: <project> (<kind>, launch profile, environment, entry point) …
 Dependencies: <name> | <kind> | <classification> | <evidence> | <config key> | <local substitute> | <test substitute>
-Databases:   <name> | <engine/provider/version> | <consumers> | <data access> | <schema source> | <init today> | <seed today> | <persistence today → ephemeral> | <strategy A–E + why>
+Databases:   <name> | <engine/provider/version> | <consumers> | <data access> | <schema source> | <init today> | <seed today> | <persistence today → ephemeral> | <strategy A–E + why> | <seed plan: endpoints covered, profiles, data per endpoint>
 Auth:        <service> | <scheme(s)> | <key source + format> | <config-bound?> | <Authority source> | <issuer/audience configurable?> | <roles/scopes/policies> | <role/scope claim types> | <users in DB?> | <login endpoints> | <trust strategy A–D + algorithm>
 Config keys: <key the app reads> → <resource or substitute> (for the AppHost, the component fixture and AppHostContract)
 Test reset:  tables kept on reset <…>; MongoDB collections / Redis key prefixes reset <…>; data that must survive <…>

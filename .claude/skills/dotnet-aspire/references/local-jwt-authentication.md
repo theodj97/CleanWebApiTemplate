@@ -171,6 +171,7 @@ adapt only `devtoken.json`.
 dotnet local/tools/devtoken.cs init                 # once per machine: creates the local key (idempotent; --rotate replaces it)
 dotnet local/tools/devtoken.cs list                 # profiles, their API, roles and scopes
 dotnet local/tools/devtoken.cs get --profile <name> [--lifetime <minutes>]
+dotnet local/tools/devtoken.cs dotenv <file> [--lifetime <minutes>]   # DEVTOKEN_<PROFILE> for every profile, into a git-ignored .env
 ```
 
 - The token is the only output on stdout; diagnostics go to stderr and never contain a token or key; exit code 1 on

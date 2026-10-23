@@ -4,6 +4,8 @@
 //   dotnet local/tools/devtoken.cs init [--rotate]                 create the local signing key (once per machine)
 //   dotnet local/tools/devtoken.cs list                            list the profiles defined in devtoken.json
 //   dotnet local/tools/devtoken.cs get --profile <name> [--lifetime <minutes>]
+//   dotnet local/tools/devtoken.cs dotenv <file> [--lifetime <minutes>]   upsert DEVTOKEN_<PROFILE> for every profile
+//                                                                          into a git-ignored .env (e.g. Bruno's)
 //
 // Settings (issuer, audiences, claim names, profiles) come from devtoken.json next to this file. Keys live in the
 // AppHost user secrets, outside the repository; the AppHost passes the validation material to the applications.
@@ -25,6 +27,7 @@ try
         ["init", .. var rest] => Init(rest.Contains("--rotate")),
         ["list"] => List(),
         ["get", .. var rest] => Get(Option(rest, "--profile") ?? throw new DevTokenException("Missing --profile <name>."), Option(rest, "--lifetime")),
+        ["dotenv", var file, .. var rest] when !file.StartsWith("--") => DotEnv(file, Option(rest, "--lifetime")),
         _ => Usage(),
     };
 }
@@ -36,7 +39,7 @@ catch (DevTokenException ex)
 
 static int Usage()
 {
-    Console.Error.WriteLine("Usage: dotnet local/tools/devtoken.cs init [--rotate] | list | get --profile <name> [--lifetime <minutes>]");
+    Console.Error.WriteLine("Usage: dotnet local/tools/devtoken.cs init [--rotate] | list | get --profile <name> [--lifetime <minutes>] | dotenv <file> [--lifetime <minutes>]");
     return 2;
 }
 
@@ -86,6 +89,54 @@ static int List()
 static int Get(string profileName, string? lifetimeOption)
 {
     var settings = Settings.Load();
+    var lifetime = Lifetime(settings, lifetimeOption);
+    Console.WriteLine(CreateToken(settings, profileName, lifetime));
+    Console.Error.WriteLine($"devtoken: '{profileName}' for {settings.Profiles[profileName].Api} (aud {settings.Apis[settings.Profiles[profileName].Api].Audience}), expires {DateTimeOffset.UtcNow.AddMinutes(lifetime):u}.");
+    return 0;
+}
+
+static int DotEnv(string file, string? lifetimeOption)
+{
+    // Upserts one DEVTOKEN_<PROFILE> line per profile and keeps every other line (other secrets, comments) as it is.
+    var settings = Settings.Load();
+    var lifetime = Lifetime(settings, lifetimeOption);
+    var tokens = settings.Profiles.Keys.Order(StringComparer.Ordinal)
+        .ToDictionary(name => DotEnvKey(name), name => CreateToken(settings, name, lifetime));
+    var lines = File.Exists(file) ? File.ReadAllLines(file).ToList() : [];
+    foreach (var (key, token) in tokens)
+    {
+        var index = lines.FindIndex(line => line.StartsWith(key + "=", StringComparison.Ordinal));
+        if (index >= 0)
+        {
+            lines[index] = $"{key}={token}";
+        }
+        else
+        {
+            lines.Add($"{key}={token}");
+        }
+    }
+
+    Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(file))!);
+    File.WriteAllLines(file, lines);
+    if (!OperatingSystem.IsWindows())
+    {
+        File.SetUnixFileMode(file, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+    }
+
+    Console.Error.WriteLine($"devtoken: {tokens.Count} tokens ({string.Join(", ", tokens.Keys)}) written to {file}, expire {DateTimeOffset.UtcNow.AddMinutes(lifetime):u}. Keep that file git-ignored.");
+    return 0;
+}
+
+static string DotEnvKey(string profileName) =>
+    "DEVTOKEN_" + new string([.. profileName.ToUpperInvariant().Select(c => char.IsAsciiLetterOrDigit(c) ? c : '_')]);
+
+static int Lifetime(Settings settings, string? lifetimeOption) =>
+    lifetimeOption is null ? settings.DefaultLifetimeMinutes
+        : int.TryParse(lifetimeOption, out var minutes) && minutes is > 0 and <= 1440 ? minutes
+        : throw new DevTokenException("--lifetime must be between 1 and 1440 minutes.");
+
+static string CreateToken(Settings settings, string profileName, int lifetime)
+{
     if (!settings.Profiles.TryGetValue(profileName, out var profile))
     {
         throw new DevTokenException($"Unknown profile '{profileName}'. Available: {string.Join(", ", settings.Profiles.Keys.Order())}.");
@@ -95,10 +146,6 @@ static int Get(string profileName, string? lifetimeOption)
     {
         throw new DevTokenException($"Profile '{profileName}' targets unknown api '{profile.Api}'.");
     }
-
-    var lifetime = lifetimeOption is null ? settings.DefaultLifetimeMinutes
-        : int.TryParse(lifetimeOption, out var minutes) && minutes is > 0 and <= 1440 ? minutes
-        : throw new DevTokenException("--lifetime must be between 1 and 1440 minutes.");
 
     var now = DateTimeOffset.UtcNow;
     var payload = new JsonObject
@@ -140,9 +187,7 @@ static int Get(string profileName, string? lifetimeOption)
         ? HMACSHA256.HashData(Encoding.UTF8.GetBytes(RequiredSecret(secrets, SigningKeyParameter)), Encoding.UTF8.GetBytes(signingInput))
         : SignRsa(RequiredSecret(secrets, PrivateKeySecret), signingInput);
 
-    Console.WriteLine($"{signingInput}.{Base64Url(signature)}");
-    Console.Error.WriteLine($"devtoken: '{profileName}' for {profile.Api} (aud {api.Audience}), expires {now.AddMinutes(lifetime):u}.");
-    return 0;
+    return $"{signingInput}.{Base64Url(signature)}";
 }
 
 static byte[] SignRsa(string privateKeyPem, string signingInput)

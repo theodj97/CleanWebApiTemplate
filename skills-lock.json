@@ -5,19 +5,7 @@
       "source": "theodj97/aspire-skills",
       "sourceType": "github",
       "skillPath": "dotnet-aspire/SKILL.md",
-      "computedHash": "6700068b53e023b2f7659db1687d973042b5e900eadf78c4c34260bb1fcbdd6d"
-    },
-    "dotnet-aspire-local-environment": {
-      "source": "theodj97/dotnet-aspire-local-dev-skill",
-      "sourceType": "github",
-      "skillPath": "dotnet-aspire-local-environment/SKILL.md",
-      "computedHash": "1465014cc8fcb5aec7527f85c9499d662366a6bd85915f0b0749106d496b1b5a"
-    },
-    "dotnet-structured-testing": {
-      "source": "theodj97/dotnet-testing-skills",
-      "sourceType": "github",
-      "skillPath": "dotnet-structured-testing/SKILL.md",
-      "computedHash": "4297e4d2938ccbb4a8454dc887d4bd6631a5382319e0d91b0c179c0c1f19d476"
+      "computedHash": "bbabcef18130b878cfe130abced6092658ce78d4e8b1ea38d754f0e7dae99ed1"
     }
   }
 }

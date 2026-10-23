@@ -6,6 +6,7 @@ in `local-jwt-authentication.md`, telemetry in `observability.md`.
 
 ## Contents
 - [Starting, stopping, inspecting](#starting-stopping-inspecting)
+- [HTTPS development certificate](#https-development-certificate)
 - [Configuration and external services](#configuration-and-external-services)
 - [Getting tokens](#getting-tokens)
 - [The operational document](#the-operational-document)
@@ -31,9 +32,31 @@ aspire wait <resource> --status healthy|up --apphost <csproj> --timeout 300
 - First start without the local JWT key fails fast with the command to run (`dotnet local/tools/devtoken.cs init`).
 - The dashboard login link comes from `aspire run`/`aspire start` or `aspire ps --format Json` (`dashboardUrl`). It
   contains a personal login token: never commit, log or paste it.
-- On Podman, Aspire needs `ASPIRE_CONTAINER_RUNTIME=podman`. The HTTPS development certificate may be untrusted
-  (`dotnet dev-certs https --check --trust`); trusting it is a machine-wide change that needs consent
-  (`aspire certs trust` or `dotnet dev-certs https --trust`). The applications' HTTP endpoints keep working without it.
+- On Podman, Aspire needs `ASPIRE_CONTAINER_RUNTIME=podman`.
+
+## HTTPS development certificate
+
+*Changed (user decision):* the HTTPS development certificate is trusted **by default**: the dashboard and the
+applications' `https` launch profiles must work in the browser and in HTTP clients without warnings. It is a
+machine-level change, so it is done openly and reported, never silently.
+
+1. Check: `dotnet dev-certs https --check --trust` (exit code 0 = a trusted certificate exists).
+2. If it is not trusted, during `setup`/`repair` (or on the first local start), run `aspire certs trust`; without the
+   Aspire CLI, `dotnet dev-certs https --trust`. Both create the certificate when it does not exist.
+3. Check again and record the result in the report. Never clean (`aspire certs clean`, `dotnet dev-certs https
+   --clean`) or regenerate an existing certificate without explicit consent: other projects on the machine use it.
+
+Platform notes (the command may need the developer, which is a blocker to report, not to work around):
+
+- **Windows**: a confirmation dialog appears; the user must accept it.
+- **macOS**: the keychain asks for the user's password; a non-interactive agent cannot answer it.
+- **Linux**: trust is per user and per toolkit; follow what the command prints (it can ask to export `SSL_CERT_DIR`),
+  and note that browsers may keep their own store.
+- **WSL**: trusting inside WSL does not make Windows browsers trust it; run `dotnet dev-certs https --trust` on the
+  Windows side too when the dashboard is opened from Windows.
+
+Test modes keep using HTTP endpoints (`apphost.md` § Modes), so tests never depend on the certificate. Document the
+step in `local/local-development.md` § Prerequisites so every developer runs it once per machine.
 
 ## Configuration and external services
 
@@ -59,8 +82,8 @@ Any HTTP client (Swagger/Scalar, Bruno, `.http` files, `curl`, PowerShell) gets 
 ## The operational document
 
 Create or update `local/local-development.md` from `assets/local/local-development.md`, filling every placeholder with
-verified values: commands, resource names and topology, database strategy, schema + seed process and how to add seed
-scripts, token profiles and how to use them, external services and parameters, how to run the tests, agent workflow,
+verified values: commands, resource names and topology, certificate trust, database strategy, schema + seed process,
+the seed coverage table and how to add seed scripts, token profiles and how to use them, external services and parameters, how to run the tests, agent workflow,
 troubleshooting. Do not write dashboard URLs with tokens, guessed ports or results you did not observe. Respect an
 existing equivalent document under `local/` (update it instead of creating a second one). Existing README/docs/scripts
 that describe local setup must stay consistent: update them in the same change.

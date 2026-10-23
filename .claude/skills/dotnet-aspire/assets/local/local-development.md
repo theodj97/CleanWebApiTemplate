@@ -26,13 +26,17 @@ in test modes, so local runs and tests share one topology.
 | .NET SDK | <from global.json / verified> | `dotnet --version` |
 | Aspire CLI | <verified version> or later | `aspire --version`. Install: <https://aspire.dev/get-started/install-cli/> |
 | Container runtime | Docker <version> or Podman (`ASPIRE_CONTAINER_RUNTIME=podman`) | `docker info` |
-| HTTPS dev certificate (optional) | — | `dotnet dev-certs https --check --trust`; trust it with `aspire certs trust` or `dotnet dev-certs https --trust` |
+| HTTPS dev certificate | trusted | `dotnet dev-certs https --check --trust` (exit 0); see "First time on this machine" |
 
 ## First time on this machine
 
 ```bash
+aspire certs trust                      # trusts the HTTPS development certificate (or: dotnet dev-certs https --trust)
 dotnet local/tools/devtoken.cs init     # creates the local JWT signing key in the AppHost user secrets (outside the repo)
 ```
+
+<Platform notes that apply: Windows confirmation dialog, macOS keychain password, Linux SSL_CERT_DIR, WSL: also trust
+on the Windows side.>
 
 ## Topology
 
@@ -101,13 +105,24 @@ of `local/database/seed/` and signs with the same local key.
   between runs and there are no volumes to clean up.
 - Schema: <strategy, e.g. "EF Core migrations in src/<…>/Migrations, applied by local/aspire/{App}.DbInitializer">.
 - Seed: the scripts in `local/database/seed/` run in name order right after the schema, before the APIs start. They
-  contain synthetic data only. The tests use the same initializer without the seed.
+  contain synthetic data only and are reinstalled on every start. The tests use the same initializer without the seed.
+
+### Seed coverage
+
+Every endpoint works right after start with these profiles and seeded rows (verified with the seed coverage check):
+
+| Endpoint | devtoken profile | Seeded data (ids) | Expected |
+|---|---|---|---|
+| <GET /orders> | <orders-customer> | <2 orders of local.customer: 5e0d…0001, 5e0d…0002> | <200, 2 items> |
+| <DELETE /orders/{id}> | <orders-admin> | <order 5e0d…0001> | <204> |
+| <GET /orders> | <orders-no-roles> | — | <403> |
 - The initializer's output is in the dashboard or `aspire logs db-init`.
 
 ### Adding seed data
 
 Add `local/database/seed/NNN_description.sql` (next free number) written for an empty database with the current
-schema, then restart the AppHost. A broken script stops the initializer and the APIs keep waiting: check
+schema, add its rows to the seed coverage table, then restart the AppHost. A new endpoint, migration or policy updates
+the seed and the table in the same change. A broken script stops the initializer and the APIs keep waiting: check
 `aspire logs db-init`.
 
 ### Adding a migration
@@ -121,6 +136,19 @@ schema, then restart the AppHost. A broken script stops the initializer and the 
 | <Parameters:x / external API key> | <feature> | `aspire secret set Parameters:<x> <value> --apphost …` or env `Parameters__<x>` |
 
 <Services that stay external and what happens without them. Identity providers are never needed locally.>
+
+## Bruno collection
+
+<Only with a brunoGen layer in tools/bruno.> The `<aspire-local>` environment targets this AppHost and the seeded data;
+tokens come from devtoken, never from the login endpoint.
+
+```bash
+dotnet local/tools/devtoken.cs dotenv tools/bruno/custom/.env     # DEVTOKEN_<PROFILE> keys, git-ignored (re-run when they expire)
+brunoGen import                                                   # regenerate the collection (edit only tools/bruno/custom)
+cd <Solution>Collection && npx -y @usebruno/cli run --env <aspire-local>
+```
+
+Requests that change data (<delete, ship…>) consume their seeded rows: restart the AppHost to reinstall the seed.
 
 ## Tests
 
@@ -164,5 +192,6 @@ aspire resource <resource> restart --apphost <csproj>
 | Schema or seed failed | `aspire logs db-init` (a seed script may not match the current schema) |
 | Service shows Unhealthy | `/health` exists only in Development; `aspire logs <service>` |
 | My data disappeared after a restart | Expected: every run starts from scratch. Put what you need in `local/database/seed/` |
-| HTTPS/certificate errors | Use the HTTP endpoint, or trust the dev certificate (`aspire certs trust`) |
+| HTTPS/certificate errors | `dotnet dev-certs https --check --trust`; run `aspire certs trust` (WSL: also on Windows) |
+| An endpoint returns an empty list or 404 locally | The seed lacks data for it: add rows and a coverage-table entry |
 | Port already in use | Another instance running? `aspire ps`; use `aspire start --isolated` for a parallel copy |

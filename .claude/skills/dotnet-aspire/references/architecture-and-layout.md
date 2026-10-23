@@ -105,7 +105,7 @@ the example deployable.
 
 | Project | References |
 |---|---|
-| `src/*` | Each other and `src/{App}.ServiceDefaults` only. Never `local/` or `tests/`. Check: `grep -rn --include='*.csproj' -E '(local\|tests)[/\\]' src` prints nothing. |
+| `src/*` | Each other and `src/{App}.ServiceDefaults` only. Never `local/` or `tests/`. Check: the `src` reference grep of `validation-and-checklist.md` § 1 prints nothing. |
 | `{App}.AppHost` | Executable projects it runs (the SDK marks them non-runtime references, so nothing is copied into the AppHost) and `{App}.DbInitializer`. A plain library that is not a resource needs `IsAspireProjectResource="false"`. |
 | `{App}.DbInitializer` | The project that owns the `DbContext`/migrations or schema scripts, and ServiceDefaults. |
 | `*.UnitTests` | The tested project (and libraries whose classes are tested). Never Shared, never the AppHost: unit tests bring no Aspire. |

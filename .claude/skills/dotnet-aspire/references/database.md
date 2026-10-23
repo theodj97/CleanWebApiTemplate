@@ -268,20 +268,59 @@ inferred and must be reviewed, and ask before relying on it.
 
 ## Seed data (Local mode)
 
-- **Location:** `local/database/seed/NNN_description.sql` (`001_reference_data.sql`, `002_sample_orders.sql`…), run in
-  ordinal name order after the schema. One transaction per script. Test modes never run it.
-- **Content:** the reference data the application needs to start (lookups, default tenants or roles), then synthetic
-  sample data for the main flows; synthetic or approved for development only, never copied from production, no real
-  personal data or secrets. Synthetic local passwords for seeded users are allowed and documented as local-only.
-- **Write it for an empty database:** no `IF NOT EXISTS` guards, no history table; rely on generated identity and
-  sequence values where possible, or set sequences after inserting fixed ids.
+*Changed (user decision):* seeding is no longer optional. In Local mode every endpoint must work against the database
+as soon as the AppHost is up, with synthetic data reinstalled from scratch on every start. The agent derives that data
+from the code; it does not wait to be told which rows are needed. Skip it only when the user explicitly declines.
+Test modes never run the seed: tests build their own data (§ Test repositories).
+
+### Designing the seed from the endpoints
+
+1. **Inventory every endpoint** of every application that touches a database: minimal API `Map*` calls, controllers,
+   gRPC services, message consumers, scheduled jobs. For each one record the route and method, the authorization
+   policy (roles, scopes, claims), the entities and tables it reads and writes, its parameters (route ids, query
+   filters, paging), ownership filters (by `sub`, tenant, organisation), state preconditions (an order must be
+   `Pending` to be paid) and the foreign keys and reference data its queries join.
+2. **Derive the rows each endpoint needs to answer meaningfully** (not just 200 with an empty list):
+   - reference and lookup data the application needs to start or to validate input (countries, statuses, categories,
+     default tenant, configuration rows);
+   - parent rows for every foreign key;
+   - users/tenants matching the devtoken profile subjects (and roles) when the application looks them up by `sub`;
+   - for list and search endpoints: rows visible to each allowed profile, rows owned by someone else to show that
+     ownership filters work, more rows than one page when there is paging, and values that match the main filters;
+   - for detail, update and delete endpoints: fixed, documented ids in every state each operation accepts, plus one
+     state it rejects;
+   - for flows: one record at the start of each flow (an order waiting for payment, a document awaiting approval).
+3. **Write a seed coverage table** in `local/local-development.md` § Database: endpoint | devtoken profile | seeded
+   data used (ids) | expected status and content (plus the Bruno request when the repository has a brunoGen collection,
+   `bruno-collection.md`). It is the specification the scripts must satisfy and the manual
+   test guide for developers.
+4. **Write the scripts** in `local/database/seed/NNN_description.sql`, ordered by dependency (`001_reference_data.sql`,
+   `002_users.sql`, `003_orders.sql`…), run in ordinal name order after the schema, one transaction per script.
+5. **Verify every row of the table** (§ Verification in Local mode, seed coverage check). A row that fails is fixed in
+   the seed, never by changing the application.
+
+### Rules for seed scripts
+
+- **Synthetic only**, or explicitly approved for development: never copied from production, no real personal data or
+  secrets. Synthetic local passwords for seeded users are allowed and documented as local-only.
+- **Written for an empty database:** no `IF NOT EXISTS` guards, no history table. Fixed GUIDs (or explicit ids with the
+  sequences reset afterwards) for the rows the coverage table and the docs refer to; generated ids for the rest.
+- **Relative dates** (`now() - interval '2 days'`, `DATEADD(day, -2, SYSUTCDATETIME())`), so "recent", "expired" and
+  "upcoming" data stays meaningful whenever the AppHost starts.
+- **Unique values** for columns with unique indexes; realistic sizes and formats for validated columns.
 - **Same SQL dialect as the engine**, identifiers quoted as the schema created them (`"Orders"` for EF Core on
   PostgreSQL).
-- **Reuse what exists:** existing local/dev seed data (SQL, JSON fixtures, a seeding command) is used or converted,
-  never duplicated in a parallel set.
-- **Align with devtoken profiles** when users live in the database: seeded user ids can equal profile subjects.
-- **No seed needed?** If the application works with empty tables and the user wants no sample data, leave the folder
-  out and say so: the initializer skips a missing folder.
+- **Reuse what exists:** existing local/dev seed data (SQL, JSON fixtures, a seeding command, `HasData` is schema and
+  stays in migrations) is used or converted, never duplicated in a parallel set.
+- **Align with devtoken:** seeded user ids equal the profile subjects, so a token and the data it should see refer to
+  the same person; at least one profile sees data, and the permission-less profiles still get 403.
+- **Non-relational stores** (MongoDB, Redis, Azure Storage, Cosmos DB): the same rules with seed files in
+  `local/database/seed/<store>/` (JSON documents, keys) that the initializer loads with the client the application
+  already uses, after the relational seed when they reference it.
+- **Keep it in sync:** a change that adds a migration, a required column, a new endpoint or a new policy updates the
+  seed and the coverage table in the same change, and the Bruno layer when there is one (`bruno-collection.md`
+  § Populating every request). A failing initializer usually means the seed no longer matches the
+  schema: fix the script, not the migration.
 
 ## Safety
 
@@ -300,7 +339,9 @@ Every start is a fresh-database start, so verify it on every validation:
 
 - the initializer finished with exit code 0 (`aspire describe` shows `Finished`, `exitCode` 0);
 - its logs list the applied migrations or schema scripts, then each seed script (`aspire logs <initializer>`);
-- a smoke request returns the seed data and can write;
+- **seed coverage check**: for every row of the coverage table, request the endpoint with a token from its devtoken
+  profile and check the expected status and content (non-empty lists, the seeded ids, the expected 403s); mutations
+  run against seeded ids and succeed;
 - **two-run check**: write a record, `aspire stop`, `aspire start` again: the record is gone, the seed data is back;
 - `docker volume ls` / `docker ps -a` show nothing left by the AppHost once clean-up has finished.
 
