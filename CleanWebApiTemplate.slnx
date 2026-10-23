@@ -15,5 +15,10 @@
     <Project Path="src/CleanWebApiTemplate.Infrastructure/CleanWebApiTemplate.Infrastructure.csproj" />
     <Project Path="src/CleanWebApiTemplate.ServiceDefaults/CleanWebApiTemplate.ServiceDefaults.csproj" />
   </Folder>
-  <Folder Name="/tests/" />
+  <Folder Name="/tests/">
+    <Project Path="tests/CleanWebApiTemplate.Api.ComponentTests/CleanWebApiTemplate.Api.ComponentTests.csproj" />
+    <Project Path="tests/CleanWebApiTemplate.Api.FunctionalTests/CleanWebApiTemplate.Api.FunctionalTests.csproj" />
+    <Project Path="tests/CleanWebApiTemplate.Api.UnitTests/CleanWebApiTemplate.Api.UnitTests.csproj" />
+    <Project Path="tests/CleanWebApiTemplate.Tests.Shared/CleanWebApiTemplate.Tests.Shared.csproj" />
+  </Folder>
 </Solution>

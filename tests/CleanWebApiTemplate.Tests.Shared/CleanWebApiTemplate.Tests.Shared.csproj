@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3.extensibility.core" />
+    <PackageReference Include="xunit.v3.assert" />
+    <PackageReference Include="Aspire.Hosting.Testing" />
+    <PackageReference Include="Respawn" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+    <PackageReference Include="Bogus" />
+    <PackageReference Include="Npgsql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Owned by the AppHost (local/); public here, internal there. -->
+    <Compile Include="..\..\local\aspire\CleanWebApiTemplate.AppHost\AppHostContract.cs" Link="AppHostContract.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CleanWebApiTemplate.Domain\CleanWebApiTemplate.Domain.csproj" />
+    <ProjectReference Include="..\..\src\CleanWebApiTemplate.Infrastructure\CleanWebApiTemplate.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

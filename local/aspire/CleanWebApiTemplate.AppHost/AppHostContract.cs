@@ -52,6 +52,9 @@ static class AppHostContract
 
         /// <summary>OIDC authority. The local environment clears it: validation uses the local key only.</summary>
         public const string Authority = "Authentication:Authority";
+
+        /// <summary>Issuers the API accepts (array read as <c>ValidIssuers:0</c>).</summary>
+        public const string ValidIssuers = "ValidIssuers:0";
     }
 
     /// <summary>
@@ -100,6 +103,9 @@ static class AppHostContract
         [
             new(AppSettings.Authority, TrustValue.Empty),
             new(AppSettings.ApiKey, TrustValue.SigningKeyText),
+            // Issuer is read from configuration (ValidIssuers), so local development and every test run
+            // can use a different one; the audience stays the value pinned in ConfigureServices.
+            new(AppSettings.ValidIssuers, TrustValue.Issuer),
         ],
         _ => throw new ArgumentOutOfRangeException(nameof(resourceName), resourceName, "No JWT trust mapping for this resource."),
     };

@@ -139,12 +139,17 @@ No external service is needed locally.
 ## Tests
 
 ```bash
-dotnet test CleanWebApiTemplate.slnx
+dotnet test --solution CleanWebApiTemplate.slnx
 ```
 
-There are no test projects yet, so this currently reports nothing to run. The AppHost already accepts the
-`RunMode=Component|Functional` switch and exposes `AppHostContract` for the fixtures that will be added later; only
-Local mode is wired and validated today.
+`global.json` selects the Microsoft Testing Platform runner, so `dotnet test` requires `--solution` or `--project`.
+The suite has unit, component and functional projects (see `tests/README.md`): component tests run the API in-process
+against the AppHost's PostgreSQL container, functional tests run it as a separate process. Both use the same AppHost
+through `RunMode=Component|Functional`, with no dashboard, no telemetry and empty (schema-only) databases.
+
+The test modes use `ASPNETCORE_ENVIRONMENT=Testing`, so the API loads `appsettings.Testing.json`. The test issuer is
+`urn:CleanWebApiTemplate:tests` and every run gets a new signing key in memory; the audience stays the value pinned in
+`ConfigureServices` (`http://localhost:7210`). No identity provider is contacted.
 
 ## AI coding agents
 

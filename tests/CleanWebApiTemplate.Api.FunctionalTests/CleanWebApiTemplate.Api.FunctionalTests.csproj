@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3.mtp-v2" />
+    <PackageReference Include="Aspire.Hosting.Testing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CleanWebApiTemplate.Tests.Shared\CleanWebApiTemplate.Tests.Shared.csproj" />
+    <!-- Aliased: the AppHost exposes a public Program class (CS0433 otherwise). -->
+    <ProjectReference Include="..\..\local\aspire\CleanWebApiTemplate.AppHost\CleanWebApiTemplate.AppHost.csproj" Aliases="apphost" />
+  </ItemGroup>
+
+</Project>
