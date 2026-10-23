@@ -10,7 +10,7 @@ Nothing here is required by deployed environments: `src/` never references anyth
 | Folder | Contents |
 |---|---|
 | `src/` | Application and shared runtime code for every environment: `Api`, `Application`, `Domain`, `Infrastructure`, `ServiceDefaults`. |
-| `tests/` | Test projects (currently empty). |
+| `tests/` | Test projects: Api.UnitTests, Api.ComponentTests, Api.FunctionalTests, Tests.Shared. |
 | `local/aspire/` | Local orchestration only: `CleanWebApiTemplate.AppHost` and `CleanWebApiTemplate.DbInitializer`. |
 | `local/database/` | PostgreSQL schema scripts and `seed/` synthetic data. |
 | `local/tools/` | `devtoken.cs` / `devtoken.json`: locally signed JWTs, no identity provider. |
@@ -26,8 +26,9 @@ environment for OpenTelemetry, health checks, service discovery and HTTP resilie
 | Aspire CLI | 13.6.1 | `aspire --version`. Install: <https://aspire.dev/get-started/install-cli/> |
 | Container runtime | Docker 29.8.2 | `docker info` |
 
-The HTTPS development certificate is not needed: the AppHost uses a loopback HTTP profile and the API endpoint is
-HTTP. Dashboard authentication stays enabled.
+The HTTPS development certificate is trusted for this user. The AppHost uses a loopback HTTP profile and the API
+endpoint is HTTP, so the certificate is not required for local runs. On Linux, trust depends on the
+`SSL_CERT_DIR` environment variable including `$HOME/.aspnet/dev-certs/trust` (see the troubleshooting section).
 
 ## Topology
 
@@ -112,8 +113,23 @@ it.
 - **Schema:** `local/database/*.sql`, applied in ordinal file-name order by `db-init` before the API starts.
   `0001__initial_schema.sql` creates the `Todo` table (`Id bytea` for the Ulid, texts, `timestamptz`, `integer`) and
   its indexes.
-- **Seed:** `local/database/seed/*.sql`, applied after the schema and only in Local mode (three synthetic TODOs).
+- **Seed:** `local/database/seed/*.sql`, applied after the schema and only in Local mode (four synthetic TODOs, one per devtoken profile email).
 - **Persistence:** none. Data disappears with the container when the AppHost stops.
+
+### Seed coverage
+
+Every seeded row uses a `CreatedBy` value that matches the `email` claim of a `devtoken` profile. Right after
+`aspire start` each profile can exercise the endpoints and get meaningful results:
+
+| devtoken profile | Rol | Endpoint de ejemplo | Dato de la semilla |
+|---|---|---|---|
+| `user` | `User` | `GET /api/Todo/01HWXHRB80000G000000000001` | TODO 1, `CreatedBy = local.user@example.com` |
+| `user` | `User` | `POST /api/Todo/filter { "createdBy": ["local.user@example.com"] }` | TODO 1 |
+| `operator` | `Operator` | `DELETE /api/Todo/01HWXHRB80000G000000000004` | TODO 4, `CreatedBy = local.operator@example.com` |
+| `operator` | `Operator` | `POST /api/Todo/filter { "status": [2, 4] }` | TODOs 2 y 4 |
+| `admin` | `Admin` | `PUT /api/Todo/01HWXHRB80000G000000000003` | TODO 3, `CreatedBy = local.admin@example.com` |
+| `external` | `External` | — | Ningún endpoint expuesto usa la política `External` |
+| `no-role` | — | `POST /api/Todo/` | Devuelve `403` (caso negativo esperado) |
 
 ### Adding a schema or seed change
 
@@ -153,8 +169,8 @@ The test modes use `ASPNETCORE_ENVIRONMENT=Testing`, so the API loads `appsettin
 
 ## AI coding agents
 
-The repository ships the `dotnet-aspire` skill in `.agents/skills`, next to the official Aspire skills. Refresh the
-official ones after upgrading the Aspire CLI:
+The repository ships the `dotnet-aspire` skill in `.claude/skills/dotnet-aspire`, next to the official Aspire skills.
+Refresh the official ones after upgrading the Aspire CLI:
 
 ```bash
 aspire agent init --non-interactive --workspace-root . \
@@ -187,4 +203,5 @@ aspire resource api restart
 | Port 5000 already in use | Another API is running; stop it or change the launch profile. |
 | 401 from the API | The token expired or was signed with a different key; run `devtoken init --rotate` and restart the AppHost. |
 | 403 from the API | The profile lacks the policy's role; try `operator`, `admin` or `external`. |
+| HTTPS dev cert not trusted on Linux | `dotnet dev-certs https --trust` created `$HOME/.aspnet/dev-certs/trust`; add it to `SSL_CERT_DIR`, e.g. `export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs"`. |
 | No database spans in traces | Npgsql is not instrumented in this project, so only HTTP spans appear. |

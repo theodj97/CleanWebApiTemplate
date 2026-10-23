@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using CleanWebApiTemplate.Api.Common;
 using CleanWebApiTemplate.Api.Common.Abstractions;
@@ -22,8 +21,6 @@ namespace CleanWebApiTemplate.Api.Routes.Todo;
 
 public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRouter(httpContextAccessor)
 {
-    [RequiresDynamicCode()]
-    [RequiresUnreferencedCode()]
     public override void MapGroup(IEndpointRouteBuilder app)
     {
         var userGroup = app.CreateAuthorizedRouteGroupBuilder(RouteName, [Constants.USER_POLICY]);
