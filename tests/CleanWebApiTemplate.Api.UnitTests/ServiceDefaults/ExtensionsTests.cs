@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace CleanWebApiTemplate.Api.UnitTests.ServiceDefaults;
 
-/// <summary>Telemetry export is opt-in through the Aspire-provided endpoint; health endpoints are Development only.</summary>
+/// <summary>Telemetry export is opt-in through the Aspire-provided endpoint; health endpoints are mapped everywhere.</summary>
 public class ExtensionsTests
 {
     [Fact]
@@ -57,7 +57,7 @@ public class ExtensionsTests
     }
 
     [Fact]
-    public async Task MapDefaultEndpoints_OutsideDevelopment_MapsNothing()
+    public async Task MapDefaultEndpoints_OutsideDevelopment_MapsHealthAndAlive()
     {
         // Arrange
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -71,7 +71,9 @@ public class ExtensionsTests
         app.MapDefaultEndpoints();
 
         // Assert
-        Assert.Empty(MappedRoutes(app));
+        var routes = MappedRoutes(app);
+        Assert.Contains("/health", routes);
+        Assert.Contains("/alive", routes);
     }
 
     private static bool IsOtlpRegistration(ServiceDescriptor descriptor) =>

@@ -16,8 +16,9 @@ Nothing here is required by deployed environments: `src/` never references anyth
 | `local/tools/` | `devtoken.cs` / `devtoken.json`: locally signed JWTs, no identity provider. |
 | `tools/bruno/` | brunoGen layer (`custom/`) for the `aspire-local` Bruno collection. |
 
-`src/CleanWebApiTemplate.ServiceDefaults` is shared runtime code: services call `AddServiceDefaults()` in every
-environment for OpenTelemetry, health checks, service discovery and HTTP resilience. That is why it lives in `src/`.
+`src/CleanWebApiTemplate.ServiceDefaults` is shared runtime code: the API calls `AddServiceDefaults()` in every
+environment for OpenTelemetry and the base health checks (`/health`, `/alive`). That is why it lives in `src/`: the
+telemetry and the probes are needed in deployed environments too, not only locally.
 
 ## Prerequisites
 

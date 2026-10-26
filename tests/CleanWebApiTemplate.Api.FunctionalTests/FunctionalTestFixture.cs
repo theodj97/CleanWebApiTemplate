@@ -49,7 +49,8 @@ public sealed class FunctionalTestFixture : TestServerFixtureBase
     }
 
     // Without a health check in Functional mode, "healthy" only means "running": wait until the application answers
-    // HTTP before the first test. /health/api is mapped in every environment (ServiceDefaults maps /health in Development only).
+    // HTTP before the first test. /health/api is mapped in every environment and, unlike /health, does not depend on
+    // the database check, so it only reports whether the process is serving requests.
     protected override async Task WaitUntilApplicationIsReadyAsync(CancellationToken cancellationToken)
     {
         foreach (var name in ApplicationResources)

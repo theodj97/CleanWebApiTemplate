@@ -11,9 +11,8 @@ using OpenTelemetry.Trace;
 namespace CleanWebApiTemplate.ServiceDefaults;
 
 /// <summary>
-/// Shared runtime concerns for every service: OpenTelemetry (traces, metrics and logs over
-/// OTLP when the Aspire dashboard provides an endpoint), health checks, service discovery
-/// and HTTP resilience.
+/// Shared runtime concerns for this service: OpenTelemetry (traces, metrics and logs over
+/// OTLP when the Aspire dashboard provides an endpoint) and the base health checks.
 /// </summary>
 public static class Extensions
 {
@@ -24,17 +23,6 @@ public static class Extensions
     {
         builder.ConfigureOpenTelemetry();
         builder.AddDefaultHealthChecks();
-
-        builder.Services.AddServiceDiscovery();
-
-        builder.Services.ConfigureHttpClientDefaults(http =>
-        {
-            // Turn on resilience by default for every HttpClient created through IHttpClientFactory.
-            http.AddStandardResilienceHandler();
-
-            // Resolve service names registered by Aspire (service discovery).
-            http.AddServiceDiscovery();
-        });
 
         return builder;
     }
@@ -87,17 +75,15 @@ public static class Extensions
 
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
-        // Only in Development: these endpoints expose dependency status and are meant for
-        // the local orchestrator, not for deployed environments.
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapHealthChecks(HealthEndpointPath);
+        // Mapped in every environment: orchestrators and load balancers use them as probes,
+        // and they are needed wherever the app runs, not only locally. The default response
+        // writer reports the aggregate status, never the failing dependency.
+        app.MapHealthChecks(HealthEndpointPath);
 
-            app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
-            {
-                Predicate = check => check.Tags.Contains("live")
-            });
-        }
+        app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
+        {
+            Predicate = check => check.Tags.Contains("live")
+        });
 
         return app;
     }
