@@ -47,7 +47,7 @@
       "source": "theodj97/aspire-skills",
       "sourceType": "github",
       "skillPath": "dotnet-aspire/SKILL.md",
-      "computedHash": "bbabcef18130b878cfe130abced6092658ce78d4e8b1ea38d754f0e7dae99ed1"
+      "computedHash": "684d41ad33fbc663bf58f615ec26d95d1b11443afc1a6e294aa57a514c01b238"
     },
     "git-guardrails-claude-code": {
       "source": "mattpocock/skills",
