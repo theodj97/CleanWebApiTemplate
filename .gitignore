@@ -483,3 +483,9 @@ $RECYCLE.BIN/
 
 # Colección Bruno generada por brunoGen
 /CleanWebApiTemplateCollection/
+
+# Code coverage report
+coverage-report/
+
+# Opencode
+.agents/

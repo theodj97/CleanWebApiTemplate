@@ -179,4 +179,84 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
         Assert.NotNull(body);
         Assert.Contains(body!, item => item.Title == existing.Title);
     }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoUser)]
+    public async Task Create_WithOverlongTitle_ReturnsBadRequest()
+    {
+        // Act
+        var response = await Client.PostAsJsonAsync(
+            "/api/Todo/", new { title = new string('a', 256) }, CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoUser)]
+    public async Task Create_WithOverlongDescription_ReturnsBadRequest()
+    {
+        // Act
+        var response = await Client.PostAsJsonAsync(
+            "/api/Todo/", new { title = TestData.Unique("long-description"), description = new string('a', 1001) }, CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoUser)]
+    public async Task Update_WithNewTitle_ReplacesIt()
+    {
+        // Arrange
+        var existing = await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+        var newTitle = TestData.Unique("renamed");
+
+        // Act
+        var response = await Client.PutAsJsonAsync(
+            $"/api/Todo/{existing.Id}", new { title = newTitle }, CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var stored = await Fixture.Todos.FindAsync(existing.Id);
+        Assert.NotNull(stored);
+        Assert.Equal(newTitle, stored!.Title);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoUser)]
+    public async Task Update_WithTitleAlreadyUsedByAnotherTodo_ReturnsBadRequest()
+    {
+        // Arrange
+        await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+        var target = await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+        var taken = await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+
+        // Act
+        var response = await Client.PutAsJsonAsync(
+            $"/api/Todo/{target.Id}", new { title = taken.Title }, CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoUser)]
+    public async Task Update_WithOverlongDescription_ReturnsBadRequest()
+    {
+        // Arrange
+        var existing = await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+
+        // Act
+        var response = await Client.PutAsJsonAsync(
+            $"/api/Todo/{existing.Id}", new { description = new string('a', 1001) }, CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }
