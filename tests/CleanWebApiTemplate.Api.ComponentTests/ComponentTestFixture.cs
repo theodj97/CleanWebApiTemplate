@@ -38,15 +38,20 @@ public sealed class ComponentTestFixture : TestServerFixtureBase
         {
             [$"ConnectionStrings:{AppSettings.PostgresConnectionName}"] =
                 await RequiredConnectionStringAsync(Resources.PostgresDb, cancellationToken),
+            // There is no appsettings.Testing.json: test-only values arrive as configuration, like the JWT trust below.
+            // The API's appsettings.json logs at Trace for local development; a test run only keeps warnings and errors.
+            ["Logging:LogLevel:Default"] = "Warning",
+            ["Logging:LogLevel:Microsoft"] = "Warning",
+            ["Logging:LogLevel:Microsoft.AspNetCore"] = "Warning",
+            ["Logging:LogLevel:Microsoft.Hosting.Lifetime"] = "Warning",
         };
         foreach (var (key, value) in TokenIssuer.TrustSettings(ApplicationResource))
         {
             _settings[key] = value;
         }
 
-        // Program.cs reads ASPNETCORE_ENVIRONMENT straight from the process environment (it does not use
-        // builder.Environment), and it reads its configuration before Build(). Process environment variables are the
-        // source that reliably wins for those eager reads; the component project runs serially, so this is safe.
+        // builder.Environment reads ASPNETCORE_ENVIRONMENT from the process in WebApplicationFactory, so the process
+        // variable is the source that reliably selects the Testing environment for the in-process application.
         var previousEnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
         using var restoreSettings = ApplyProcessEnvironment(_settings);

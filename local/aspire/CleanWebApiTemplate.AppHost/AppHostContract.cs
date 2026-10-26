@@ -53,6 +53,9 @@ static class AppHostContract
         /// <summary>OIDC authority. The local environment clears it: validation uses the local key only.</summary>
         public const string Authority = "Authentication:Authority";
 
+        /// <summary>Audience the API validates. Supplied per run by <see cref="JwtTrust"/>.</summary>
+        public const string Audience = "Audience";
+
         /// <summary>Issuers the API accepts (array read as <c>ValidIssuers:0</c>).</summary>
         public const string ValidIssuers = "ValidIssuers:0";
     }
@@ -93,9 +96,8 @@ static class AppHostContract
     }
 
     /// <summary>
-    /// How the API trusts the local issuer, written in the configuration keys it ALREADY reads.
-    /// The issuer and audience stay the values the application pins in appsettings (ValidIssuers) and code (Audience);
-    /// only the signing key and the (cleared) authority are supplied locally.
+    /// How the API trusts the local issuer, written in the configuration keys it already reads: the (cleared)
+    /// authority, the signing key, and the issuer and audience of this run.
     /// </summary>
     public static IReadOnlyList<KeyValuePair<string, TrustValue>> JwtTrust(string resourceName) => resourceName switch
     {
@@ -103,9 +105,10 @@ static class AppHostContract
         [
             new(AppSettings.Authority, TrustValue.Empty),
             new(AppSettings.ApiKey, TrustValue.SigningKeyText),
-            // Issuer is read from configuration (ValidIssuers), so local development and every test run
-            // can use a different one; the audience stays the value pinned in ConfigureServices.
+            // Issuer and audience come from configuration, so local development and every test run
+            // can use different values without touching the application code.
             new(AppSettings.ValidIssuers, TrustValue.Issuer),
+            new(AppSettings.Audience, TrustValue.Audience),
         ],
         _ => throw new ArgumentOutOfRangeException(nameof(resourceName), resourceName, "No JWT trust mapping for this resource."),
     };

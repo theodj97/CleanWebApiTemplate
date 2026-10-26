@@ -20,7 +20,6 @@
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
     <!-- Program.cs reads appsettings from AppContext.BaseDirectory: keep the app's files in the test output. -->
     <Content Include="..\..\src\CleanWebApiTemplate.Api\appsettings.json" Link="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\src\CleanWebApiTemplate.Api\appsettings.Testing.json" Link="appsettings.Testing.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

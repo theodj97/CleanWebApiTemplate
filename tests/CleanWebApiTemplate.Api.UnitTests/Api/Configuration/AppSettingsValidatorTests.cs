@@ -26,8 +26,11 @@ public class AppSettingsValidatorTests
         var options = new AppSettings
         {
             ConnectionStrings = null!,
-            CorsAllow = ["http://localhost"],
-            ValidIssuers = ["http://localhost"],
+            CorsAllowedOrigins = ["https://localhost:5001"],
+            CorsAllowCredentials = false,
+            OpenApiEnabled = true,
+            ValidIssuers = ["https://localhost"],
+            Audience = "https://localhost:5001",
         };
 
         // Act
@@ -52,17 +55,6 @@ public class AppSettingsValidatorTests
     }
 
     [Fact]
-    public void Validate_WithoutCorsAllow_Fails()
-    {
-        // Act
-        var result = _validator.Validate(null, Settings(cors: []));
-
-        // Assert
-        Assert.False(result.Succeeded);
-        Assert.Contains("CorsAllow must contain at least one entry.", result.Failures!);
-    }
-
-    [Fact]
     public void Validate_WithoutValidIssuers_Fails()
     {
         // Act
@@ -73,6 +65,29 @@ public class AppSettingsValidatorTests
         Assert.Contains("ValidIssuers must contain at least one entry.", result.Failures!);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Validate_WithoutAudience_Fails(string audience)
+    {
+        // Act
+        var result = _validator.Validate(null, Settings(audience: audience));
+
+        // Assert
+        Assert.False(result.Succeeded);
+        Assert.Contains("Audience is required.", result.Failures!);
+    }
+
+    [Fact]
+    public void Validate_WithoutCorsOrigins_Succeeds()
+    {
+        // Act
+        var result = _validator.Validate(null, Settings(origins: []));
+
+        // Assert
+        Assert.True(result.Succeeded);
+    }
+
     [Fact]
     public void Validate_WithSeveralProblems_ReportsEveryFailure()
     {
@@ -80,8 +95,11 @@ public class AppSettingsValidatorTests
         var options = new AppSettings
         {
             ConnectionStrings = new ConnectionStringsSection { Postgres = string.Empty },
-            CorsAllow = [],
+            CorsAllowedOrigins = [],
+            CorsAllowCredentials = false,
+            OpenApiEnabled = true,
             ValidIssuers = [],
+            Audience = string.Empty,
         };
 
         // Act
@@ -93,11 +111,15 @@ public class AppSettingsValidatorTests
     }
 
     private static AppSettings Settings(string postgres = "Host=localhost",
-                                        string[]? cors = null,
-                                        string[]? issuers = null) => new()
+                                        string[]? origins = null,
+                                        string[]? issuers = null,
+                                        string audience = "https://localhost:5001") => new()
                                         {
                                             ConnectionStrings = new ConnectionStringsSection { Postgres = postgres },
-                                            CorsAllow = cors ?? ["http://localhost"],
-                                            ValidIssuers = issuers ?? ["http://localhost"],
+                                            CorsAllowedOrigins = origins ?? ["https://localhost:5001"],
+                                            CorsAllowCredentials = false,
+                                            OpenApiEnabled = true,
+                                            ValidIssuers = issuers ?? ["https://localhost"],
+                                            Audience = audience,
                                         };
 }

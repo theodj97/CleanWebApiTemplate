@@ -9,14 +9,18 @@ public class Program
     {
         var builder = WebApplication.CreateSlimBuilder(args);
 
+        // CreateSlimBuilder leaves out the Kestrel HTTPS wiring: without it an https:// address stops the host
+        // at startup. The certificate and the addresses stay configuration (launch profile or environment).
+        builder.WebHost.UseKestrelHttpsConfiguration();
+
         builder.AddServiceDefaults();
 
-        var (appSettings, environment) = builder.LoadAppSettings();
+        var appSettings = builder.LoadAppSettings(args);
 
-        builder.Services.AddApiServices(builder.Configuration, appSettings, environment);
+        builder.Services.AddApiServices(builder.Configuration, appSettings);
 
         var app = builder.Build();
-        app.ConfigureApiApplication(environment);
+        app.ConfigureApiApplication(appSettings);
         app.MapDefaultEndpoints();
         app.Run();
     }

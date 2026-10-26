@@ -31,9 +31,17 @@ indent_size = 2
 dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = false
 csharp_using_directive_placement = outside_namespace:silent
-# IDE0005: `using` innecesario. Es una regla de estilo: la aplica `dotnet format`,
-# no la compilación (no se activa EnforceCodeStyleInBuild).
+# IDE0005: `using` innecesario. Se aplica con `dotnet format` y también en build
+# (EnforceCodeStyleInBuild en Directory.Build.props).
 dotnet_diagnostic.IDE0005.severity = warning
+
+# --- parámetros sin usar ---
+# IDE0060: parámetro sin usar. Error en el IDE y en build.
+# No analiza lambdas, overrides, implementaciones de interfaz, virtual/abstract,
+# accessors, event handlers, métodos usados como delegado ni constructores primarios.
+# Si la firma es obligatoria, renombrar a `_` o `_1` (no `_algo`).
+dotnet_code_quality_unused_parameters = all
+dotnet_diagnostic.IDE0060.severity = error
 
 # --- namespaces: siempre con ámbito de fichero ---
 csharp_style_namespace_declarations = file_scoped:warning

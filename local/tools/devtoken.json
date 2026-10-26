@@ -2,11 +2,11 @@
   "LocalAuth": {
     "AppHostProject": "../aspire/CleanWebApiTemplate.AppHost/CleanWebApiTemplate.AppHost.csproj",
     "Algorithm": "HS256",
-    "Issuer": "http://localhost",
+    "Issuer": "https://localhost",
     "DefaultLifetimeMinutes": 60,
     "Apis": {
       "api": {
-        "Audience": "http://localhost:7210",
+        "Audience": "https://localhost:5001",
         "RoleClaim": "role"
       }
     },

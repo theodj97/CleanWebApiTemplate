@@ -20,15 +20,14 @@ public class ConstantsTests
     }
 
     [Fact]
-    public void EnvironmentAndConfigurationKeys_HaveTheExpectedValues()
+    public void ConfigurationKeys_HaveTheExpectedValues()
     {
-        Assert.Equal("Development", Constants.DEV_ENVIRONMNET);
-        Assert.Equal("Integration", Constants.INTEGRATION_ENVIRONMENT);
-        Assert.Equal("Staging", Constants.STAGING_ENVIRONMENT);
-        Assert.Equal("Production", Constants.PRODUCTION_ENVIRONMENT);
-        Assert.Equal("Test", Constants.TEST_ENVIRONMENT);
         Assert.Equal("API_KEY", Constants.API_KEY);
         Assert.Equal("Authentication:Authority", Constants.AUTHORITY);
+        Assert.Equal("Audience", Constants.AUDIENCE);
+        Assert.Equal("Cors:AllowedOrigins", Constants.CORS_ALLOWED_ORIGINS);
+        Assert.Equal("Cors:AllowCredentials", Constants.CORS_ALLOW_CREDENTIALS);
+        Assert.Equal("OpenApi:Enabled", Constants.OPENAPI_ENABLED);
         Assert.Equal("DefaultCorsPolicy", Constants.DEFAULT_CORS_POLICY_NAME);
         Assert.Equal("JWTBearer", Constants.AUTHENTICATION_SCHEME);
     }

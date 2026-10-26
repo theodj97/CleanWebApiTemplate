@@ -6,22 +6,25 @@ namespace CleanWebApiTemplate.Api;
 
 public static class ConfigureApplication
 {
-    public static void ConfigureApiApplication(this WebApplication app, string environment)
+    public static void ConfigureApiApplication(this WebApplication app, AppSettings appSettings)
     {
         app.UseExceptionHandler();
         app.UseResponseCompression();
         app.UseHttpsRedirection();
 
+        // After routing and before authorization; the policy allows no origin when none is configured.
+        app.UseCors(Constants.DEFAULT_CORS_POLICY_NAME);
+
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.ConfigureRoutes(environment);
+        app.ConfigureRoutes(appSettings.OpenApiEnabled);
         app.MapCustomHealthChecks();
     }
 
-    private static void ConfigureRoutes(this WebApplication app, string environment)
+    private static void ConfigureRoutes(this WebApplication app, bool openApiEnabled)
     {
-        if (environment is not Constants.PRODUCTION_ENVIRONMENT)
+        if (openApiEnabled)
         {
             app.MapOpenApi();
 

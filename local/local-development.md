@@ -27,16 +27,24 @@ telemetry and the probes are needed in deployed environments too, not only local
 | .NET SDK | 10.0.113 (`global.json`) | `dotnet --version` |
 | Aspire CLI | 13.6.1 | `aspire --version`. Install: <https://aspire.dev/get-started/install-cli/> |
 | Container runtime | Docker 29.8.2 | `docker info` |
+| HTTPS development certificate | trusted for `localhost` | `dotnet dev-certs https --check --trust` |
 
-The HTTPS development certificate is trusted for this user. The AppHost uses a loopback HTTP profile and the API
-endpoint is HTTP, so the certificate is not required for local runs. On Linux, trust depends on the
-`SSL_CERT_DIR` environment variable including `$HOME/.aspnet/dev-certs/trust` (see the troubleshooting section).
+The API serves HTTPS only, with the ASP.NET development certificate. Create and trust it once per machine:
+
+```bash
+dotnet dev-certs https --trust
+# Linux: .NET exports the certificate instead of installing it in the system store.
+export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs"
+```
+
+Export `SSL_CERT_DIR` in the shell that runs `aspire start`, so the AppHost, its health checks and `curl` trust the
+certificate. Node (the Bruno CLI) ignores it: pass `NODE_EXTRA_CA_CERTS=~/.aspnet/dev-certs/trust/*.pem` instead.
 
 ## Topology
 
 ```text
 postgres (container, ephemeral, no volume)
-  └── postgresdb ──► db-init (runs once, applies schema + seed) ──► api (http://localhost:5000)
+  └── postgresdb ──► db-init (runs once, applies schema + seed) ──► api (https://localhost:5001)
 local-jwt-signing-key (secret parameter) ──► api: API_KEY
 ```
 
@@ -75,8 +83,8 @@ container and its data. There is nothing to reset by hand.
 
 - **Dashboard:** open the link printed by `aspire start`/`aspire run`, or get it again with
   `aspire ps --format Json` (`dashboardUrl`). The link contains a personal login token: do not commit or share it.
-- **API:** `http://localhost:5000`
-  - `GET /swagger` — OpenAPI UI (`Development` only)
+- **API:** `https://localhost:5001`
+  - `GET /swagger` — OpenAPI UI (when `OpenApi:Enabled` is true, as in local development)
   - `GET /openapi/v1.json` — OpenAPI document
   - `GET /health` (all checks), `GET /alive`, `GET /health/api`, `GET /health/postgresDb`
 
@@ -91,7 +99,7 @@ dotnet local/tools/devtoken.cs get --profile user            # token on stdout
 dotnet local/tools/devtoken.cs dotenv tools/bruno/custom/.env # one DEVTOKEN_<PROFILE> per profile (Bruno)
 TOKEN=$(dotnet local/tools/devtoken.cs get --profile operator)
 
-curl -X POST http://localhost:5000/api/Todo/ \
+curl -X POST https://localhost:5001/api/Todo/ \
   -H "Authorization: Bearer $TOKEN" -H 'content-type: application/json' \
   -d '{"title":"Smoke test","description":"From local development"}'
 ```
@@ -104,10 +112,9 @@ curl -X POST http://localhost:5000/api/Todo/ \
 | `external` | `External` | External policy |
 | `no-role` | — | Authenticated token without permissions: expect `403` |
 
-The issuer (`http://localhost`) and audience (`http://localhost:7210`) are the values the application already pins
-(`ValidIssuers` in `appsettings.json` and `Audience` in `ConfigureServices`); only the signing key changes per machine.
-`devtoken init` stores it in the AppHost user secrets, outside the repository. Run `devtoken init --rotate` to replace
-it.
+The issuer (`https://localhost`) and audience (`https://localhost:5001`) come from `appsettings.json` (`ValidIssuers`
+and `Audience`), and the AppHost passes them to the API; only the signing key changes per machine. `devtoken init`
+stores it in the AppHost user secrets, outside the repository. Run `devtoken init --rotate` to replace it.
 
 ## Bruno collection (`tools/bruno/`)
 
@@ -125,9 +132,10 @@ brunoGen import && brunoGen check
 cd CleanWebApiTemplateCollection && npx -y @usebruno/cli run --env aspire-local
 ```
 
-- **Environment `aspire-local`:** `baseUrl = http://localhost:5000` (the `Development` launch profile). The seed ids
+- **Environment `aspire-local`:** `baseUrl = https://localhost:5001` (the `Development` launch profile). The seed ids
   live here as `seed…` variables (`seedUserTodoId`, `seedOperatorTodoId`, `seedAdminTodoId`,
-  `seedDeletableTodoId`).
+  `seedDeletableTodoId`). The Bruno CLI is Node: export `NODE_EXTRA_CA_CERTS` pointing at the development certificate
+  or it will reject the TLS connection.
 - **Authentication:** collection auth is `bearer {{token}}`; the collection `before-request` script reads
   `DEVTOKEN_<PROFILE>` from `.env` and assigns it to `{{token}}`. Each request chooses its identity with the request
   variable `devtokenProfile` (`user`, `operator`, `admin`, `external`, `no-role`). No login endpoint is called.
@@ -182,7 +190,13 @@ environment variables (Aspire does it locally):
 |---|---|---|
 | `ConnectionStrings__Postgres` | Database location | Injected by the AppHost (`ConnectionStrings:Postgres`). Outside Aspire, set the environment variable. |
 | `API_KEY` | JWT signing key | Injected by the AppHost from the secret parameter `local-jwt-signing-key` (`devtoken init`). |
-| `Authentication__Authority` | OIDC metadata address | Empty locally (no metadata download). When unset, the API keeps its previous default `http://localhost:7210`. |
+| `Authentication__Authority` | OIDC metadata address | Empty locally (no metadata download). When unset, no authority is configured and tokens are validated with `API_KEY` only. Metadata over plain HTTP is always refused (`RequireHttpsMetadata` keeps its default `true`). |
+| `Audience` | JWT audience the API validates | `appsettings.json`; the AppHost overrides it per mode. |
+| `Cors__AllowedOrigins__0…` | Origins allowed to call the API from a browser | Empty locally (no browser client). An empty list disables CORS; credentials require explicit origins. |
+| `OpenApi__Enabled` | OpenAPI document and Swagger UI | `true` in `appsettings.json`, `false` in `appsettings.PRODUCTION.json`. |
+
+The API reads these values and never branches on the environment name. What changes per environment lives in
+`appsettings.{Environment}.json` or in environment variables.
 
 In `Development`, environment variables take precedence over user secrets, so values injected by the AppHost win over
 a developer's local configuration.
@@ -200,9 +214,10 @@ The suite has unit, component and functional projects (see `tests/README.md`): c
 against the AppHost's PostgreSQL container, functional tests run it as a separate process. Both use the same AppHost
 through `RunMode=Component|Functional`, with no dashboard, no telemetry and empty (schema-only) databases.
 
-The test modes use `ASPNETCORE_ENVIRONMENT=Testing`, so the API loads `appsettings.Testing.json`. The test issuer is
-`urn:CleanWebApiTemplate:tests` and every run gets a new signing key in memory; the audience stays the value pinned in
-`ConfigureServices` (`http://localhost:7210`). No identity provider is contacted.
+The test modes run under the `Testing` environment name, but there is no `appsettings.Testing.json`: everything the
+tests need arrives as configuration, from the AppHost as environment variables (functional) or from the in-memory
+settings of `ComponentAppFactory` (component). The test issuer is `urn:CleanWebApiTemplate:tests` and every run gets a
+new signing key in memory; issuer and audience are passed to the API the same way. No identity provider is contacted.
 
 ## AI coding agents
 
@@ -236,10 +251,10 @@ aspire resource api restart
 | `ConnectionStrings.Postgres is required` | The environment variable `ConnectionStrings__Postgres` is missing; the AppHost injects it. |
 | Every request returns 500 | `API_KEY` must be configured and long enough for HS256; check `aspire logs api`. |
 | `db-init` failed | `aspire logs db-init`: the failing script and PostgreSQL error are printed there. |
-| API `Unhealthy` | `curl http://localhost:5000/health`; the health check reports the failing dependency. |
-| Port 5000 already in use | Another API is running; stop it or change the launch profile. |
+| API `Unhealthy` | `curl --cacert "$HOME/.aspnet/dev-certs/trust" https://localhost:5001/health`; the health check reports the failing dependency. |
+| Port 5001 already in use | Another API is running; stop it or change the launch profile. |
 | 401 from the API | The token expired or was signed with a different key; run `devtoken init --rotate` and restart the AppHost. |
 | 401 in Bruno | Tokens in `tools/bruno/custom/.env` expired (or the key was rotated): run `devtoken dotenv …` and `brunoGen import`; restart Aspire if you rotated the key. |
 | 403 from the API | The profile lacks the policy's role; try `operator`, `admin` or `external`. |
-| HTTPS dev cert not trusted on Linux | `dotnet dev-certs https --trust` created `$HOME/.aspnet/dev-certs/trust`; add it to `SSL_CERT_DIR`, e.g. `export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs"`. |
+| TLS error / `SSL certificate problem` | The dev certificate is not trusted. Run `dotnet dev-certs https --trust` and export `SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs"` in the shell that runs the client or `aspire start`. For Node (Bruno CLI) use `NODE_EXTRA_CA_CERTS`. |
 | No database spans in traces | Npgsql is not instrumented in this project, so only HTTP spans appear. |

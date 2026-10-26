@@ -6,10 +6,10 @@ namespace CleanWebApiTemplate.Tests.Shared.Auth;
 public sealed record TestApi(string Audience, string RoleClaimType, string? ScopeClaimType);
 
 /// <summary>
-/// Test-only token settings derived from discovery. The issuer is different from local development
-/// (<see cref="CleanWebApiTemplate.AppHost.AppHostContract.LocalAuth"/>/devtoken.json) whenever the application reads it from
-/// configuration; the audience is pinned in <c>ConfigureServices</c> and is therefore reused unchanged. The signing key is
-/// not here: <see cref="TestTokenIssuer"/> creates a new one for every test run.
+/// Test-only token settings derived from discovery. Issuer and audience are injected into the applications as
+/// configuration (<see cref="CleanWebApiTemplate.AppHost.AppHostContract.JwtTrust"/>), so a test never depends on
+/// the values written in <c>appsettings</c>. The signing key is not here: <see cref="TestTokenIssuer"/> creates a
+/// new one for every test run.
 /// </summary>
 public static class TestAuthSettings
 {
@@ -27,11 +27,11 @@ public static class TestAuthSettings
     /// <summary>
     /// Claim names come from the API's code: <c>AddJwtBearer</c> keeps the default inbound claim mapping, so the short
     /// <c>role</c> claim becomes <c>ClaimTypes.Role</c> and <c>email</c> becomes <c>ClaimTypes.Email</c>.
-    /// The audience is the value pinned in <c>ConfigureServices.ConfigureAuth</c>.
+    /// The audience is injected into the application as configuration for this run.
     /// </summary>
     public static TestApi For(string resourceName) => resourceName switch
     {
-        Resources.Api => new("http://localhost:7210", RoleClaimType: "role", ScopeClaimType: null),
+        Resources.Api => new("https://localhost:5001", RoleClaimType: "role", ScopeClaimType: null),
         _ => throw new ArgumentOutOfRangeException(nameof(resourceName), resourceName, "No token settings for this application."),
     };
 }

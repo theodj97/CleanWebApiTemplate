@@ -1,0 +1,17 @@
+<Project>
+
+  <!--
+    Respeta en `dotnet build`/`dotnet publish` las severidades de las reglas de
+    estilo de .editorconfig (IDE0060 = error, entre otras).
+  -->
+  <PropertyGroup>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!--
+      IDE0005 (using innecesario) necesita un fichero de documentación para
+      analizarse en build. No lo generamos: la regla sigue aplicándose con
+      `dotnet format` y en el IDE. Es el workaround documentado por Roslyn.
+    -->
+    <NoWarn>$(NoWarn);EnableGenerateDocumentationFile</NoWarn>
+  </PropertyGroup>
+
+</Project>

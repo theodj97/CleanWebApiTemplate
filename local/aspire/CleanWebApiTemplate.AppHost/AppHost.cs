@@ -62,7 +62,8 @@ IResourceBuilder<ProjectResource> AddApplication<TProject>(string name) where TP
 {
     if (!isTest)
     {
-        // Local: the project's launch profile (Development), dashboard telemetry and its health endpoint.
+        // Local: the project's launch profile (Development, HTTPS), dashboard telemetry and its health endpoint.
+        // WithHttpHealthCheck is scheme-agnostic in Aspire 13: it follows the endpoint the profile exposes.
         return builder.AddProject<TProject>(name, launchProfileName: "Development").WithHttpHealthCheck("/health");
     }
 
@@ -70,6 +71,10 @@ IResourceBuilder<ProjectResource> AddApplication<TProject>(string name) where TP
         // HTTP only: no development-certificate trust needed; Aspire assigns the port.
         .WithHttpEndpoint()
         .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Testing")
+        // No appsettings.Testing.json: the test-only values arrive as environment variables.
+        .WithEnvironment("Logging__LogLevel__Default", "Warning")
+        .WithEnvironment("Logging__LogLevel__Microsoft", "Warning")
+        .WithEnvironment("Logging__LogLevel__Microsoft.Hosting.Lifetime", "Warning")
         // No telemetry in tests.
         .WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", string.Empty)
         // Safety net: outbound HTTP calls go to a dead proxy instead of reaching a real service.

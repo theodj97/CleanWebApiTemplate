@@ -28,11 +28,10 @@ public static class ConfigureServices
 {
     public static IServiceCollection AddApiServices(this IServiceCollection services,
                                                    IConfiguration configuration,
-                                                   AppSettings appSettings,
-                                                   string environment)
+                                                   AppSettings appSettings)
     {
         services.AddPersistence(appSettings.ConnectionStrings);
-        services.AddApplication();
+        services.ConfigureServicesAndValidators();
 
         var healthChecksBuilder = services.AddHealthChecks()
                 .AddCheck("api-health-check", () => HealthCheckResult.Healthy("API is up and running"), tags: ["api"]);
@@ -42,16 +41,16 @@ public static class ConfigureServices
             failureStatus: HealthStatus.Unhealthy,
             tags: ["postgresDb", "sql"]);
 
-        services.ConfigureCors(environment, appSettings.CorsAllow);
+        services.ConfigureCors(appSettings.CorsAllowedOrigins, appSettings.CorsAllowCredentials);
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
 
         services.ConfigureResponseCompression();
 
-        services.ConfigureAuth(environment, appSettings.ValidIssuers, configuration);
+        services.ConfigureAuth(appSettings, configuration);
 
-        if (environment is not Constants.PRODUCTION_ENVIRONMENT)
+        if (appSettings.OpenApiEnabled)
         {
             services.AddEndpointsApiExplorer();
             services.AddOpenApi();
@@ -80,7 +79,7 @@ public static class ConfigureServices
     /// Validators and application services. Registered one by one on purpose: no assembly scanning,
     /// so every type stays statically visible to the Native AOT analyzer.
     /// </summary>
-    private static IServiceCollection AddApplication(this IServiceCollection services)
+    private static IServiceCollection ConfigureServicesAndValidators(this IServiceCollection services)
     {
         // Validators
         services.AddTransient<IValidator<CreateTodoInput>, CreateTodoInputValidator>();
@@ -101,23 +100,24 @@ public static class ConfigureServices
         return services;
     }
 
+    /// <summary>
+    /// One CORS policy for every host: methods and headers stay open, origins and credentials come from
+    /// configuration. An empty origin list allows nobody, which is the local default.
+    /// </summary>
     private static IServiceCollection ConfigureCors(this IServiceCollection services,
-                                                    string environment,
-                                                    string[] corsAllow)
+                                                    string[] allowedOrigins,
+                                                    bool allowCredentials)
     {
-        if (corsAllow is not null && corsAllow.Length != 0)
-            services.AddCors(opts =>
+        services.AddCors(opts =>
+            opts.AddPolicy(Constants.DEFAULT_CORS_POLICY_NAME, builder =>
             {
-                opts.AddPolicy(Constants.DEFAULT_CORS_POLICY_NAME, builder =>
-                {
-                    builder.AllowAnyMethod()
-                           .AllowAnyHeader();
+                builder.AllowAnyMethod()
+                       .AllowAnyHeader()
+                       .WithOrigins(allowedOrigins);
 
-                    if (environment is not Constants.DEV_ENVIRONMNET)
-                        builder.WithOrigins(corsAllow)
-                               .AllowCredentials();
-                });
-            });
+                if (allowCredentials)
+                    builder.AllowCredentials();
+            }));
 
         return services;
     }
@@ -136,11 +136,9 @@ public static class ConfigureServices
     }
 
     private static IServiceCollection ConfigureAuth(this IServiceCollection services,
-                                                    string environment,
-                                                    string[] validIssuers,
+                                                    AppSettings appSettings,
                                                     IConfiguration configuration)
     {
-
         services.AddAuthorizationBuilder()
             .AddPolicy(Constants.ADMIN_POLICY, policy => policy.RequireRole(Constants.ADMIN_POLICY))
             .AddPolicy(Constants.OPERATOR_POLICY, policy => policy.RequireRole(Constants.OPERATOR_POLICY,
@@ -155,28 +153,30 @@ public static class ConfigureServices
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                var authority = configuration[Constants.AUTHORITY] ?? "http://localhost:7210";
-                if (authority.Length > 0)
+                // No default authority: an empty value is the explicit "no identity provider" mode used
+                // locally and by the tests, where tokens are validated with the signing key only.
+                // RequireHttpsMetadata keeps its secure default (true): metadata over plain HTTP is never allowed.
+                var authority = configuration[Constants.AUTHORITY];
+                if (string.IsNullOrWhiteSpace(authority) is false)
                 {
-                    var authorityUri = new Uri(authority, UriKind.Absolute);
+                    if (Uri.TryCreate(authority, UriKind.Absolute, out _) is false)
+                        throw new InvalidOperationException($"'{Constants.AUTHORITY}' must be an absolute URI.");
 
                     options.Authority = authority;
-                    // HTTPS stays mandatory for real authorities; the local development
-                    // setup clears it and validates with the locally signed key only.
-                    options.RequireHttpsMetadata = authorityUri.Scheme == Uri.UriSchemeHttps;
                 }
 
-                options.Audience = "http://localhost:7210";
+                options.Audience = appSettings.Audience;
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
-                    ValidIssuers = validIssuers,
+                    ValidIssuers = appSettings.ValidIssuers,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration[Constants.API_KEY]
-                    ?? throw new Exception("No API KEY environmnet variable found")))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                        configuration[Constants.API_KEY]
+                        ?? throw new InvalidOperationException($"'{Constants.API_KEY}' is required.")))
                 };
             });
 

@@ -14,11 +14,11 @@ public class AppSettingsValidator : IValidateOptions<AppSettings>
         else if (string.IsNullOrWhiteSpace(options.ConnectionStrings.Postgres))
             failures.Add("ConnectionStrings.Postgres is required.");
 
-        if (options.CorsAllow is null || options.CorsAllow.Length == 0)
-            failures.Add("CorsAllow must contain at least one entry.");
-
         if (options.ValidIssuers is null || options.ValidIssuers.Length == 0)
             failures.Add("ValidIssuers must contain at least one entry.");
+
+        if (string.IsNullOrWhiteSpace(options.Audience))
+            failures.Add("Audience is required.");
 
         return failures.Count != 0
             ? ValidateOptionsResult.Fail(failures)

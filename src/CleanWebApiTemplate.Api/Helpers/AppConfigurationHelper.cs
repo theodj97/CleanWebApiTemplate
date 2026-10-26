@@ -6,11 +6,9 @@ namespace CleanWebApiTemplate.Api.Helpers;
 
 public static class AppConfigurationHelper
 {
-    public static (AppSettings appSettings, string environment) LoadAppSettings(this WebApplicationBuilder builder)
+    public static AppSettings LoadAppSettings(this WebApplicationBuilder builder, string[] args)
     {
-        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? throw new Exception("No environment variable was setted!");
-
-        ConfigureSources(builder, environment);
+        ConfigureSources(builder, builder.Environment.EnvironmentName, args);
 
         // Manual binding (no reflection-based ConfigurationBinder, Native AOT friendly).
         var appSettings = new AppSettings
@@ -20,8 +18,11 @@ public static class AppConfigurationHelper
                 Postgres = builder.Configuration.GetSection(nameof(AppSettings.ConnectionStrings))
                                               [nameof(ConnectionStringsSection.Postgres)] ?? string.Empty
             },
-            CorsAllow = GetStringArray(builder.Configuration, nameof(AppSettings.CorsAllow)),
-            ValidIssuers = GetStringArray(builder.Configuration, nameof(AppSettings.ValidIssuers))
+            CorsAllowedOrigins = GetStringArray(builder.Configuration, Constants.CORS_ALLOWED_ORIGINS),
+            CorsAllowCredentials = GetBoolean(builder.Configuration, Constants.CORS_ALLOW_CREDENTIALS),
+            OpenApiEnabled = GetBoolean(builder.Configuration, Constants.OPENAPI_ENABLED),
+            ValidIssuers = GetStringArray(builder.Configuration, nameof(AppSettings.ValidIssuers)),
+            Audience = builder.Configuration[Constants.AUDIENCE] ?? string.Empty
         };
 
         var validator = new AppSettingsValidator();
@@ -29,29 +30,26 @@ public static class AppConfigurationHelper
 
         if (validationResult.Failed) throw new OptionsValidationException(nameof(AppSettings), typeof(AppSettings), validationResult.Failures!);
 
-        return (appSettings, environment);
+        return appSettings;
     }
 
+    /// <summary>
+    /// Reads the files that ship next to the binary and re-states the host sources in the host's own precedence
+    /// order, so the last one still wins: files &lt; user secrets &lt; environment variables &lt; command line.
+    /// The host already created these sources; re-adding them keeps their relative order intact while pointing
+    /// the files at <see cref="AppContext.BaseDirectory"/>.
+    /// </summary>
     private static void ConfigureSources(WebApplicationBuilder builder,
-                                         string environment)
+                                         string environment,
+                                         string[] args)
     {
-        var basePath = AppContext.BaseDirectory;
-        builder.Configuration.SetBasePath(basePath);
+        builder.Configuration.SetBasePath(AppContext.BaseDirectory);
 
-        if (File.Exists(Path.Combine(basePath, $"appsettings.{environment}.json")) is false && environment is not Constants.DEV_ENVIRONMNET)
-            throw new Exception($"Warning: appsettings.{environment}.json not found.");
-
-        if (environment is Constants.DEV_ENVIRONMNET)
-        {
-            builder.Configuration.AddUserSecrets<Program>();
-
-            // Added last on purpose: when an orchestrator (Aspire, containers, CI) injects
-            // configuration as environment variables, those values must win over the
-            // developer's local user secrets instead of being silently overridden by them.
-            builder.Configuration.AddEnvironmentVariables();
-        }
-        else
-            builder.Configuration.AddJsonFile($"appsettings.{environment}.json", optional: false, reloadOnChange: false);
+        builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
+        builder.Configuration.AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: false);
+        builder.Configuration.AddUserSecrets<Program>(optional: true);
+        builder.Configuration.AddEnvironmentVariables();
+        builder.Configuration.AddCommandLine(args);
     }
 
     private static string[] GetStringArray(ConfigurationManager configuration, string sectionName) =>
@@ -59,4 +57,7 @@ public static class AppConfigurationHelper
                          .GetChildren()
                          .Select(x => x.Value)
                          .OfType<string>()];
+
+    private static bool GetBoolean(ConfigurationManager configuration, string key) =>
+        bool.TryParse(configuration[key], out var value) && value;
 }
