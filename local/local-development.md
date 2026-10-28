@@ -26,7 +26,7 @@ telemetry and the probes are needed in deployed environments too, not only local
 | Tool | Version used | Check |
 |---|---|---|
 | .NET SDK | 10.0.113 (`global.json`) | `dotnet --version` |
-| Aspire CLI | 13.6.1 | `aspire --version`. Install: <https://aspire.dev/get-started/install-cli/> |
+| Aspire CLI | 13.6.4 | `aspire --version`. Install: <https://aspire.dev/get-started/install-cli/> |
 | Container runtime | Docker 29.8.2 | `docker info` |
 | HTTPS development certificate | trusted for `localhost` | `dotnet dev-certs https --check --trust` |
 
