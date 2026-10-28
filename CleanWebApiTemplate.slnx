@@ -9,6 +9,7 @@
     <Project Path="local/aspire/CleanWebApiTemplate.DbInitializer/CleanWebApiTemplate.DbInitializer.csproj" />
     <Project Path="local/aspire/CleanWebApiTemplate.OpenBaoInitializer/CleanWebApiTemplate.OpenBaoInitializer.csproj" />
     <Project Path="local/openapi/CleanWebApiTemplate.OpenApiExamples/CleanWebApiTemplate.OpenApiExamples.csproj" />
+    <Project Path="local/openapi/CleanWebApiTemplate.OpenApiExamples.UnitTests/CleanWebApiTemplate.OpenApiExamples.UnitTests.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/CleanWebApiTemplate.Application/CleanWebApiTemplate.Application.csproj" />
@@ -22,7 +23,6 @@
     <Project Path="tests/CleanWebApiTemplate.Api.ComponentTests/CleanWebApiTemplate.Api.ComponentTests.csproj" />
     <Project Path="tests/CleanWebApiTemplate.Api.FunctionalTests/CleanWebApiTemplate.Api.FunctionalTests.csproj" />
     <Project Path="tests/CleanWebApiTemplate.Api.UnitTests/CleanWebApiTemplate.Api.UnitTests.csproj" />
-    <Project Path="tests/CleanWebApiTemplate.OpenApiExamples.UnitTests/CleanWebApiTemplate.OpenApiExamples.UnitTests.csproj" />
     <Project Path="tests/CleanWebApiTemplate.Tests.Shared/CleanWebApiTemplate.Tests.Shared.csproj" />
   </Folder>
 </Solution>

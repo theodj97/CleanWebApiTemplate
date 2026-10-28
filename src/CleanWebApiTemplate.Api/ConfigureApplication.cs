@@ -24,15 +24,9 @@ public static class ConfigureApplication
 
     private static void ConfigureRoutes(this WebApplication app, bool openApiEnabled)
     {
+        // The OpenAPI document feeds the local swagger sidecar; the API does not serve a UI.
         if (openApiEnabled)
-        {
             app.MapOpenApi();
-
-            app.UseSwaggerUI(opts =>
-            {
-                opts.SwaggerEndpoint("/openapi/v1.json", "OpenAPI v1");
-            });
-        }
 
         // Configure API routes.
         app.MapRoutes();

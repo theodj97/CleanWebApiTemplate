@@ -61,15 +61,111 @@ public static partial class OpenApiExamplesMerger
             }
 
             ApplyRequestBody(document, operation, operationSpec, basePath, operationKey, problems);
+            ApplyResponses(document, operation, operationSpec, basePath, operationKey, problems);
             ApplyParameters(document, pathItem, operation, operationSpec, operationKey, problems);
         }
 
         ApplyServers(document);
         ApplyInfo(document);
         ApplyBearerSecurity(document);
+        ApplyProblemExamples(document);
 
         return problems;
     }
+
+    /// <summary>
+    /// Gives every error response a believable ProblemDetails example when the catalog does not
+    /// provide one. Swagger UI would otherwise render the schema defaults ("string", status 0),
+    /// which look like placeholder data.
+    /// </summary>
+    private static void ApplyProblemExamples(JsonObject document)
+    {
+        if (document["paths"] is not JsonObject paths)
+            return;
+
+        foreach (var (_, pathItemNode) in paths)
+        {
+            if (pathItemNode is not JsonObject pathItem)
+                continue;
+
+            foreach (var (_, operationNode) in pathItem)
+            {
+                if (operationNode is not JsonObject operation
+                    || operation["responses"] is not JsonObject responses)
+                {
+                    continue;
+                }
+
+                foreach (var (statusCode, responseNode) in responses)
+                {
+                    if (!int.TryParse(statusCode, out var status) || status < 400)
+                        continue;
+
+                    if (responseNode is not JsonObject response
+                        || response["content"] is not JsonObject content)
+                    {
+                        continue;
+                    }
+
+                    foreach (var (contentType, mediaTypeNode) in content)
+                    {
+                        if (!contentType.StartsWith("application/problem+json", StringComparison.OrdinalIgnoreCase)
+                            || mediaTypeNode is not JsonObject mediaType
+                            || mediaType["examples"] is not null)
+                        {
+                            continue;
+                        }
+
+                        mediaType["examples"] = new JsonObject
+                        {
+                            ["problem"] = new JsonObject
+                            {
+                                ["summary"] = ProblemTitle(status),
+                                ["value"] = new JsonObject
+                                {
+                                    ["title"] = ProblemTitle(status),
+                                    ["status"] = status,
+                                    ["detail"] = ProblemDetail(status),
+                                },
+                            },
+                        };
+                    }
+                }
+            }
+        }
+    }
+
+    private static string ProblemTitle(int status) => status switch
+    {
+        400 => "Bad Request",
+        401 => "Unauthorized",
+        403 => "Forbidden",
+        404 => "Not Found",
+        409 => "Conflict",
+        415 => "Unsupported Media Type",
+        422 => "Unprocessable Entity",
+        500 => "Internal Server Error",
+        502 => "Bad Gateway",
+        503 => "Service Unavailable",
+        504 => "Gateway Timeout",
+        _ => "Error",
+    };
+
+    private static string ProblemDetail(int status) => status switch
+    {
+        400 => "The request is not valid. Check the field values and try again.",
+        401 => "A valid bearer token is required.",
+        403 => "The token does not grant access to this operation.",
+        404 => "The requested TODO was not found.",
+        409 => "The request conflicts with the current state.",
+        415 => "The request uses an unsupported content type.",
+        422 => "The request is well-formed but cannot be processed.",
+        500 => "An unexpected error occurred.",
+        502 => "The API is not reachable.",
+        503 => "The API is temporarily unavailable.",
+        504 => "The API did not answer in time.",
+        _ => "The request could not be completed.",
+    };
 
     private static Dictionary<string, string> BuildPathIndex(JsonObject paths, List<string> problems)
     {
@@ -130,7 +226,7 @@ public static partial class OpenApiExamplesMerger
             return;
         }
 
-        var requestedContentType = ReadString(requestBodySpec["contentType"]);
+        var requestedContentType = JsonText.Read(requestBodySpec["contentType"]);
         var contentKey = FindContentKey(content, requestedContentType);
         if (contentKey is null)
         {
@@ -144,6 +240,88 @@ public static partial class OpenApiExamplesMerger
             return;
         }
 
+        ApplyExamples(mediaType, examplesSpec, basePath, operationKey, "request body", problems);
+    }
+
+    private static void ApplyResponses(
+        JsonObject document,
+        JsonObject operation,
+        JsonObject operationSpec,
+        string basePath,
+        string operationKey,
+        List<string> problems)
+    {
+        if (operationSpec["responses"] is null)
+            return;
+
+        if (operationSpec["responses"] is not JsonObject responsesSpec)
+        {
+            problems.Add($"'{operationKey}': 'responses' must be a JSON object.");
+            return;
+        }
+
+        if (operation["responses"] is not JsonObject responses)
+        {
+            problems.Add($"'{operationKey}': the operation has no responses.");
+            return;
+        }
+
+        foreach (var (statusCode, responseSpecNode) in responsesSpec)
+        {
+            if (responseSpecNode is not JsonObject responseSpec)
+            {
+                problems.Add($"'{operationKey}' response '{statusCode}': the specification must be a JSON object.");
+                continue;
+            }
+
+            if (responseSpec["examples"] is null)
+                continue;
+
+            if (responseSpec["examples"] is not JsonObject examplesSpec)
+            {
+                problems.Add($"'{operationKey}' response '{statusCode}': 'examples' must be a JSON object.");
+                continue;
+            }
+
+            var response = ResolveReference(document, responses[statusCode]);
+            if (response is null)
+            {
+                problems.Add($"'{operationKey}': the OpenAPI document has no response '{statusCode}'.");
+                continue;
+            }
+
+            if (response["content"] is not JsonObject content)
+            {
+                problems.Add($"'{operationKey}' response '{statusCode}': the response has no content.");
+                continue;
+            }
+
+            var requestedContentType = JsonText.Read(responseSpec["contentType"]);
+            var contentKey = FindContentKey(content, requestedContentType);
+            if (contentKey is null)
+            {
+                problems.Add($"'{operationKey}' response '{statusCode}': no content type matches '{requestedContentType ?? "application/json"}'.");
+                continue;
+            }
+
+            if (content[contentKey] is not JsonObject mediaType)
+            {
+                problems.Add($"'{operationKey}' response '{statusCode}': the content '{contentKey}' is not a JSON object.");
+                continue;
+            }
+
+            ApplyExamples(mediaType, examplesSpec, basePath, operationKey, $"response '{statusCode}'", problems);
+        }
+    }
+
+    private static void ApplyExamples(
+        JsonObject mediaType,
+        JsonObject examplesSpec,
+        string basePath,
+        string operationKey,
+        string location,
+        List<string> problems)
+    {
         var examples = mediaType["examples"] as JsonObject ?? new JsonObject();
         mediaType["examples"] = examples;
 
@@ -151,7 +329,7 @@ public static partial class OpenApiExamplesMerger
         {
             if (exampleSpecNode is not JsonObject exampleSpec)
             {
-                problems.Add($"'{operationKey}' example '{exampleName}': the specification must be a JSON object.");
+                problems.Add($"'{operationKey}' {location} example '{exampleName}': the specification must be a JSON object.");
                 continue;
             }
 
@@ -164,10 +342,10 @@ public static partial class OpenApiExamplesMerger
                 ["value"] = value,
             };
 
-            if (ReadString(exampleSpec["summary"]) is { Length: > 0 } summary)
+            if (JsonText.Read(exampleSpec["summary"]) is { Length: > 0 } summary)
                 example["summary"] = summary;
 
-            if (ReadString(exampleSpec["description"]) is { Length: > 0 } description)
+            if (JsonText.Read(exampleSpec["description"]) is { Length: > 0 } description)
                 example["description"] = description;
 
             examples[exampleName] = example;
@@ -201,8 +379,8 @@ public static partial class OpenApiExamplesMerger
                 continue;
             }
 
-            var name = ReadString(parameterSpec["name"]);
-            var location = ReadString(parameterSpec["in"]);
+            var name = JsonText.Read(parameterSpec["name"]);
+            var location = JsonText.Read(parameterSpec["in"]);
             var value = parameterSpec["value"];
 
             if (string.IsNullOrWhiteSpace(name) || value is null)
@@ -212,9 +390,9 @@ public static partial class OpenApiExamplesMerger
             }
 
             var matches = parameters
-                .Where(parameter => string.Equals(ReadString(parameter["name"]), name, StringComparison.Ordinal)
+                .Where(parameter => string.Equals(JsonText.Read(parameter["name"]), name, StringComparison.Ordinal)
                     && (string.IsNullOrWhiteSpace(location)
-                        || string.Equals(ReadString(parameter["in"]), location, StringComparison.Ordinal)))
+                        || string.Equals(JsonText.Read(parameter["in"]), location, StringComparison.Ordinal)))
                 .ToList();
 
             if (matches.Count == 0)
@@ -254,11 +432,11 @@ public static partial class OpenApiExamplesMerger
                 continue;
 
             // An operation-level parameter overrides a path-level one with the same name and location.
-            var name = ReadString(resolved["name"]);
-            var location = ReadString(resolved["in"]);
+            var name = JsonText.Read(resolved["name"]);
+            var location = JsonText.Read(resolved["in"]);
             parameters.RemoveAll(existing =>
-                string.Equals(ReadString(existing["name"]), name, StringComparison.Ordinal)
-                && string.Equals(ReadString(existing["in"]), location, StringComparison.Ordinal));
+                string.Equals(JsonText.Read(existing["name"]), name, StringComparison.Ordinal)
+                && string.Equals(JsonText.Read(existing["in"]), location, StringComparison.Ordinal));
 
             parameters.Add(resolved);
         }
@@ -269,7 +447,7 @@ public static partial class OpenApiExamplesMerger
         if (node is not JsonObject obj)
             return null;
 
-        var reference = ReadString(obj["$ref"]);
+        var reference = JsonText.Read(obj["$ref"]);
         if (reference is null)
             return obj;
 
@@ -295,7 +473,7 @@ public static partial class OpenApiExamplesMerger
         string exampleName,
         List<string> problems)
     {
-        var body = ReadString(exampleSpec["body"]);
+        var body = JsonText.Read(exampleSpec["body"]);
         var inline = exampleSpec["value"];
 
         if (body is not null && inline is not null)
@@ -334,7 +512,7 @@ public static partial class OpenApiExamplesMerger
             var text = File.ReadAllText(fullPath);
             return JsonNode.Parse(text) ?? throw new JsonException("The body file is empty.");
         }
-        catch (Exception exception) when (exception is IOException or JsonException)
+        catch (Exception exception) when (exception is IOException or JsonException or ArgumentException)
         {
             problems.Add($"'{operationKey}' example '{exampleName}': could not read '{body}': {exception.Message}");
             return null;
@@ -374,18 +552,12 @@ public static partial class OpenApiExamplesMerger
             document["info"] = info;
         }
 
-        if (ReadString(info["title"]) is { Length: > 0 } title
-            && !title.Contains("local examples", StringComparison.OrdinalIgnoreCase))
-        {
-            info["title"] = $"{title} (local examples)";
-        }
-
+        // The API owns the title: this sidecar is a local viewer, not a different product.
         const string note =
-            "Local examples loaded from `local/openapi`. Authorize with a token from "
-            + "`dotnet local/tools/devtoken.cs get --profile <profile>`. Nothing is persisted: "
-            + "the seed is rebuilt on every `aspire start`.";
+            "Local explorer: requests are proxied to the development API. Pick a local profile to mint "
+            + "a short-lived JWT, then try any operation. The seed is rebuilt on every `aspire start`.";
 
-        info["description"] = ReadString(info["description"]) is { Length: > 0 } description
+        info["description"] = JsonText.Read(info["description"]) is { Length: > 0 } description
             ? $"{description}\n\n{note}"
             : note;
     }
@@ -405,6 +577,9 @@ public static partial class OpenApiExamplesMerger
                 ["type"] = "http",
                 ["scheme"] = "bearer",
                 ["bearerFormat"] = "JWT",
+                ["description"] =
+                    "Local JWT minted by the explorer. Select a profile in the header, or paste a token "
+                    + "created with the `devtoken` tool.",
             };
         }
 
@@ -416,9 +591,6 @@ public static partial class OpenApiExamplesMerger
             document["security"] = security;
         }
     }
-
-    private static string? ReadString(JsonNode? node) =>
-        node is JsonValue value && value.TryGetValue<string>(out var text) ? text : null;
 
     private static string NormalizePath(string path)
     {

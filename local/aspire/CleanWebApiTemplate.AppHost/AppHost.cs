@@ -80,6 +80,15 @@ if (mode != Modes.Component)
             .WithEnvironment("API_BASE_URL", api.GetEndpoint("https"))
             .WithEnvironment("EXAMPLES_PATH",
                 Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "../../openapi")))
+            // The sidecar mints the same HS256 token as devtoken. It receives the signing key text
+            // (the value openbao-init writes as API_KEY) and the issuer/audience/role claim the API validates.
+            .WithEnvironment(LocalLogin.SigningKey, localJwt.SigningKey
+                ?? throw new InvalidOperationException(
+                    $"The local login requires the HS256 signing key; LocalAuth:Algorithm is '{localJwt.Algorithm}'."))
+            .WithEnvironment(LocalLogin.Issuer, localJwt.Issuer)
+            .WithEnvironment(LocalLogin.Audience, localJwt.AudienceFor(Resources.Api))
+            .WithEnvironment(LocalLogin.RoleClaim,
+                localJwt.Configuration[LocalAuth.RoleClaimKey(Resources.Api)] ?? "role")
             .WaitFor(api)
             .WithHttpHealthCheck("/health");
     }

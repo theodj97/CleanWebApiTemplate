@@ -8,8 +8,9 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <!--
       IDE0005 (using innecesario) necesita un fichero de documentación para
-      analizarse en build. No lo generamos: la regla sigue aplicándose con
-      `dotnet format` y en el IDE. Es el workaround documentado por Roslyn.
+      analizarse en build. Las librerías no lo generan: la regla sigue
+      aplicándose con `dotnet format` y en el IDE. La API sí lo genera porque
+      Microsoft.AspNetCore.OpenApi lee los comentarios XML para el documento.
     -->
     <NoWarn>$(NoWarn);EnableGenerateDocumentationFile</NoWarn>
   </PropertyGroup>

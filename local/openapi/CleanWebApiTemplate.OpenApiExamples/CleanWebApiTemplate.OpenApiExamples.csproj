@@ -15,4 +15,13 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Configuration keys owned by the AppHost; linked like Tests.Shared does. -->
+    <Compile Include="../../aspire/CleanWebApiTemplate.AppHost/AppHostContract.cs" Link="AppHostContract.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="CleanWebApiTemplate.OpenApiExamples.UnitTests" />
+  </ItemGroup>
+
 </Project>

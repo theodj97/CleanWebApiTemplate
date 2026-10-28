@@ -1,0 +1,11 @@
+[
+  {
+    "id": "01HWXHRB80000G000000000001",
+    "title": "Set up the local environment",
+    "description": "Started with Aspire, PostgreSQL and locally signed JWTs.",
+    "createdAt": "2026-10-26T09:15:00Z",
+    "status": 1,
+    "createdBy": "local.user@example.com",
+    "updatedBy": "local.user@example.com"
+  }
+]

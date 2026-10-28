@@ -70,6 +70,20 @@ static class AppHostContract
     }
 
     /// <summary>
+    /// Configuration the local Swagger sidecar reads to mint the same JWT as devtoken. The signing key
+    /// is the same text seeded into OpenBao as API_KEY; the issuer, audience and role claim are the
+    /// values the API validates.
+    /// </summary>
+    public static class LocalLogin
+    {
+        public const string SigningKey = "LocalAuth__SigningKey";
+        public const string Issuer = "LocalAuth__Issuer";
+        public const string Audience = "LocalAuth__Audience";
+        public const string RoleClaim = "LocalAuth__RoleClaim";
+        public const string LifetimeMinutes = "LocalAuth__LifetimeMinutes";
+    }
+
+    /// <summary>
     /// OpenBao: the secrets store the applications read at startup, in every mode. The application never receives the
     /// secret values as environment variables; it receives how to reach the store and its token.
     /// </summary>
@@ -115,6 +129,8 @@ static class AppHostContract
         public const string PublicKeyParameter = "local-jwt-public-key";
 
         public static string AudienceKey(string resourceName) => $"LocalAuth:Apis:{resourceName}:Audience";
+
+        public static string RoleClaimKey(string resourceName) => $"LocalAuth:Apis:{resourceName}:RoleClaim";
 
         public static string ParameterKey(string parameterName) => $"Parameters:{parameterName}";
     }

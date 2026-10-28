@@ -22,7 +22,7 @@ internal sealed class OpenApiDocumentService(
             document = JsonNode.Parse(documentJson) as JsonObject
                 ?? throw new OpenApiExamplesException(["The API OpenAPI document is not a JSON object."]);
         }
-        catch (JsonException exception)
+        catch (Exception exception) when (exception is JsonException or ArgumentException)
         {
             throw new OpenApiExamplesException([$"The API OpenAPI document is not valid JSON: {exception.Message}"]);
         }
@@ -61,7 +61,7 @@ internal sealed class OpenApiDocumentService(
             return JsonNode.Parse(json) as JsonObject
                 ?? throw new OpenApiExamplesException([$"'{catalog.CatalogPath}' is not a JSON object."]);
         }
-        catch (JsonException exception)
+        catch (Exception exception) when (exception is JsonException or ArgumentException)
         {
             throw new OpenApiExamplesException([$"'{catalog.CatalogPath}' is not valid JSON: {exception.Message}"]);
         }

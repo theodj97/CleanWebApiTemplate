@@ -53,7 +53,7 @@ public static class ConfigureServices
         if (appSettings.OpenApiEnabled)
         {
             services.AddEndpointsApiExplorer();
-            services.AddOpenApi();
+            services.AddApiOpenApi();
         }
 
         services.AddHttpContextAccessor();

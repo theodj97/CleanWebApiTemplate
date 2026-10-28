@@ -1,5 +1,5 @@
 #!/usr/bin/env dotnet
-// devtoken: locally signed JWTs for local development. No network, no identity provider, no login endpoint.
+// devtoken: locally signed JWTs for local development. No network, no identity provider, no login endpoint in the app.
 //
 //   dotnet local/tools/devtoken.cs init [--rotate]                 create the local signing key (once per machine)
 //   dotnet local/tools/devtoken.cs list                            list the profiles defined in devtoken.json

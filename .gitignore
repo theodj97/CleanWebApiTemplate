@@ -481,12 +481,12 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-# Colección Bruno generada por brunoGen
-/CleanWebApiTemplateCollection/
-
 # Code coverage report
 coverage-report/
 
 # Opencode
 .agents/
 skills-lock.json
+
+# Taste skill
+.task-skill/

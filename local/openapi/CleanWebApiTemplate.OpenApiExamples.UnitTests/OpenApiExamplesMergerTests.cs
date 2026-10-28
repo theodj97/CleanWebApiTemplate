@@ -7,7 +7,7 @@ public sealed class OpenApiExamplesMergerTests
     [Fact]
     public void Merge_AddsBodyExampleFromFile()
     {
-        using var temp = new TempDirectory();
+        using var temp = new TestDirectory();
         temp.Write("bodies/create.json", """{"title":"from-file"}""");
 
         var document = Document(MinimalPostDocument());
@@ -230,7 +230,7 @@ public sealed class OpenApiExamplesMergerTests
     [Fact]
     public void Merge_ReportsMissingBodyFile()
     {
-        using var temp = new TempDirectory();
+        using var temp = new TestDirectory();
 
         var document = Document(MinimalPostDocument());
         var catalog = Catalog("""
@@ -376,7 +376,211 @@ public sealed class OpenApiExamplesMergerTests
         Assert.Equal("http", document["components"]!["securitySchemes"]!["Bearer"]!["type"]!.GetValue<string>());
         Assert.Equal("bearer", document["components"]!["securitySchemes"]!["Bearer"]!["scheme"]!.GetValue<string>());
         Assert.NotNull(document["security"]![0]!["Bearer"]);
-        Assert.Contains("local examples", document["info"]!["title"]!.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("Test", document["info"]!["title"]!.GetValue<string>());
+        Assert.Contains("Local explorer", document["info"]!["description"]!.GetValue<string>(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Merge_AddsDefaultProblemExample()
+    {
+        var document = Document("""
+        {
+          "openapi": "3.1.0",
+          "info": { "title": "Test", "version": "1.0.0" },
+          "paths": {
+            "/api/Todo/{id}": {
+              "get": {
+                "responses": {
+                  "400": {
+                    "description": "Bad Request",
+                    "content": {
+                      "application/problem+json": {
+                        "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """);
+
+        var catalog = Catalog("""{ "operations": {} }""");
+        var problems = OpenApiExamplesMerger.Merge(document, catalog, ".");
+
+        Assert.Empty(problems);
+        var example = document["paths"]!["/api/Todo/{id}"]!["get"]!["responses"]!["400"]!["content"]!["application/problem+json"]!["examples"]!["problem"]!;
+        Assert.Equal(400, example["value"]!["status"]!.GetValue<int>());
+        Assert.Equal("Bad Request", example["value"]!["title"]!.GetValue<string>());
+        Assert.False(string.IsNullOrWhiteSpace(example["value"]!["detail"]!.GetValue<string>()));
+    }
+
+    [Fact]
+    public void Merge_KeepsCatalogProblemExample()
+    {
+        var document = Document("""
+        {
+          "openapi": "3.1.0",
+          "info": { "title": "Test", "version": "1.0.0" },
+          "paths": {
+            "/api/Todo/{id}": {
+              "get": {
+                "responses": {
+                  "400": {
+                    "description": "Bad Request",
+                    "content": {
+                      "application/problem+json": {
+                        "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """);
+
+        var catalog = Catalog("""
+        {
+          "operations": {
+            "GET /api/Todo/{id}": {
+              "responses": {
+                "400": {
+                  "examples": {
+                    "custom": { "value": { "title": "Custom", "status": 400, "detail": "Custom detail." } }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """);
+
+        var problems = OpenApiExamplesMerger.Merge(document, catalog, ".");
+
+        Assert.Empty(problems);
+        var examples = document["paths"]!["/api/Todo/{id}"]!["get"]!["responses"]!["400"]!["content"]!["application/problem+json"]!["examples"]!;
+        Assert.NotNull(examples["custom"]);
+        Assert.Null(examples["problem"]);
+    }
+
+    [Fact]
+    public void Merge_AddsResponseExampleFromFile()
+    {
+        using var temp = new TestDirectory();
+        temp.Write("responses/todo.json", """{"id":"01HWXHRB80000G000000000001"}""");
+
+        var document = Document("""
+        {
+          "openapi": "3.1.0",
+          "info": { "title": "Test", "version": "1.0.0" },
+          "paths": {
+            "/api/Todo/{id}": {
+              "get": {
+                "parameters": [
+                  { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "OK",
+                    "content": { "application/json": { "schema": { "type": "object" } } }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """);
+
+        var catalog = Catalog("""
+        {
+          "operations": {
+            "GET /api/Todo/{id}": {
+              "responses": {
+                "200": {
+                  "examples": {
+                    "todo": { "summary": "A TODO", "body": "responses/todo.json" }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """);
+
+        var problems = OpenApiExamplesMerger.Merge(document, catalog, temp.Root);
+
+        Assert.Empty(problems);
+        var example = document["paths"]!["/api/Todo/{id}"]!["get"]!["responses"]!["200"]!["content"]!["application/json"]!["examples"]!["todo"]!;
+        Assert.Equal("A TODO", example["summary"]!.GetValue<string>());
+        Assert.Equal("01HWXHRB80000G000000000001", example["value"]!["id"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public void Merge_ReportsUnknownResponse()
+    {
+        var document = Document(MinimalDocument());
+        var catalog = Catalog("""
+        {
+          "operations": {
+            "GET /api/Todo/{id}": {
+              "responses": {
+                "404": {
+                  "examples": {
+                    "missing": { "value": { "title": "missing" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """);
+
+        var problems = OpenApiExamplesMerger.Merge(document, catalog, ".");
+
+        Assert.Single(problems);
+        Assert.Contains("no response '404'", problems[0], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Merge_ReportsResponseWithoutContent()
+    {
+        var document = Document("""
+        {
+          "openapi": "3.1.0",
+          "info": { "title": "Test", "version": "1.0.0" },
+          "paths": {
+            "/api/Todo/{id}": {
+              "get": {
+                "responses": { "204": { "description": "No Content" } }
+              }
+            }
+          }
+        }
+        """);
+
+        var catalog = Catalog("""
+        {
+          "operations": {
+            "GET /api/Todo/{id}": {
+              "responses": {
+                "204": {
+                  "examples": {
+                    "empty": { "value": null }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """);
+
+        var problems = OpenApiExamplesMerger.Merge(document, catalog, ".");
+
+        Assert.Single(problems);
+        Assert.Contains("has no content", problems[0], StringComparison.Ordinal);
     }
 
     [Fact]
@@ -443,27 +647,4 @@ public sealed class OpenApiExamplesMergerTests
         }
         """;
 
-    private sealed class TempDirectory : IDisposable
-    {
-        public TempDirectory()
-        {
-            Root = Path.Combine(Path.GetTempPath(), "openapi-examples-" + Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(Root);
-        }
-
-        public string Root { get; }
-
-        public void Write(string relativePath, string content)
-        {
-            var fullPath = Path.Combine(Root, relativePath);
-            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
-            File.WriteAllText(fullPath, content);
-        }
-
-        public void Dispose()
-        {
-            if (Directory.Exists(Root))
-                Directory.Delete(Root, recursive: true);
-        }
-    }
 }

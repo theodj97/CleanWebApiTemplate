@@ -19,8 +19,10 @@ internal static class EndpointRouteBuilderExtensions
                                                                                   openApiParameters);
 
             if (addOpenApiMetadata)
-                routeGroupBuilder.ProducesProblem(
-                    (int)HttpStatusCode.Unauthorized);
+            {
+                routeGroupBuilder.ProducesProblem((int)HttpStatusCode.Unauthorized);
+                routeGroupBuilder.ProducesProblem((int)HttpStatusCode.Forbidden);
+            }
 
             if (authPolicy is { Length: > 0 })
                 routeGroupBuilder.RequireAuthorization(authPolicy);
@@ -42,6 +44,7 @@ internal static class EndpointRouteBuilderExtensions
                 routeGroupBuilder.WithMetadata(new ExcludeFromDescriptionAttribute());
             else
             {
+                routeGroupBuilder.ProducesProblem((int)HttpStatusCode.BadRequest);
                 routeGroupBuilder.ProducesProblem((int)HttpStatusCode.InternalServerError);
 
                 if (addOpenApiMetadata && openApiParameters is not null && openApiParameters.Length != 0)
@@ -66,7 +69,10 @@ internal static class EndpointRouteBuilderExtensions
             RouteGroupBuilder routeGroupBuilder = app.CreateBaseRouteGroupBuilder(routeName, addOpenApiMetadata, openApiParameters);
 
             if (addOpenApiMetadata is true)
+            {
                 routeGroupBuilder.ProducesProblem((int)HttpStatusCode.Unauthorized);
+                routeGroupBuilder.ProducesProblem((int)HttpStatusCode.Forbidden);
+            }
 
             if (authPolicy is not null && authPolicy.Length != 0)
                 routeGroupBuilder.RequireAuthorization(authPolicy);

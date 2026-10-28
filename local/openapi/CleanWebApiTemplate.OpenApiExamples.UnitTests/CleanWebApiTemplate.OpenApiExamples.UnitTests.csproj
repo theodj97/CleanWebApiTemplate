@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\local\openapi\CleanWebApiTemplate.OpenApiExamples\CleanWebApiTemplate.OpenApiExamples.csproj" />
+    <ProjectReference Include="..\CleanWebApiTemplate.OpenApiExamples\CleanWebApiTemplate.OpenApiExamples.csproj" />
   </ItemGroup>
 
 </Project>

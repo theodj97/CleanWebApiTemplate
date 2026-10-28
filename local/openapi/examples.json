@@ -19,6 +19,24 @@
             "body": "bodies/filter-admin.json"
           }
         }
+      },
+      "responses": {
+        "200": {
+          "examples": {
+            "user": {
+              "summary": "TODO 1, owned by the user",
+              "body": "responses/todos-user.json"
+            },
+            "operator": {
+              "summary": "TODOs 2 and 4, owned by the operator",
+              "body": "responses/todos-operator.json"
+            },
+            "admin": {
+              "summary": "TODOs 1, 2 and 4 across both owners",
+              "body": "responses/todos.json"
+            }
+          }
+        }
       }
     },
     "POST /api/Todo/titles": {
@@ -27,6 +45,16 @@
           "first-page": {
             "summary": "First page of titles",
             "body": "bodies/titles.json"
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "examples": {
+            "first-page": {
+              "summary": "First page of titles",
+              "body": "responses/titles.json"
+            }
           }
         }
       }
@@ -40,6 +68,16 @@
             "body": "bodies/create-todo.json"
           }
         }
+      },
+      "responses": {
+        "201": {
+          "examples": {
+            "created": {
+              "summary": "The stored TODO",
+              "body": "responses/created.json"
+            }
+          }
+        }
       }
     },
     "GET /api/Todo/{id}": {
@@ -49,7 +87,17 @@
           "in": "path",
           "value": "01HWXHRB80000G000000000001"
         }
-      ]
+      ],
+      "responses": {
+        "200": {
+          "examples": {
+            "todo": {
+              "summary": "TODO 1, owned by the user",
+              "body": "responses/todo-user.json"
+            }
+          }
+        }
+      }
     },
     "PUT /api/Todo/{id}": {
       "parameters": [
@@ -67,6 +115,16 @@
             "body": "bodies/update-admin.json"
           }
         }
+      },
+      "responses": {
+        "200": {
+          "examples": {
+            "updated": {
+              "summary": "The updated TODO",
+              "body": "responses/updated.json"
+            }
+          }
+        }
       }
     },
     "DELETE /api/Todo/{id}": {
@@ -76,7 +134,17 @@
           "in": "path",
           "value": "01HWXHRB80000G000000000004"
         }
-      ]
+      ],
+      "responses": {
+        "200": {
+          "examples": {
+            "deleted": {
+              "summary": "The row was deleted",
+              "body": "responses/deleted.json"
+            }
+          }
+        }
+      }
     }
   }
 }
