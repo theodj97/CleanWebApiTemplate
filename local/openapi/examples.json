@@ -1,0 +1,82 @@
+{
+  "operations": {
+    "POST /api/Todo/filter": {
+      "requestBody": {
+        "examples": {
+          "user": {
+            "summary": "TODOs of the local user",
+            "description": "Matches TODO 1. Authorize with the user profile.",
+            "body": "bodies/filter-user.json"
+          },
+          "operator": {
+            "summary": "Pending and cancelled TODOs",
+            "description": "Matches TODOs 2 and 4. Authorize with the operator profile.",
+            "body": "bodies/filter-operator.json"
+          },
+          "admin": {
+            "summary": "TODOs of several users",
+            "description": "Matches TODOs 1, 2 and 4, owned by local.user@example.com and local.operator@example.com. Authorize with the admin profile.",
+            "body": "bodies/filter-admin.json"
+          }
+        }
+      }
+    },
+    "POST /api/Todo/titles": {
+      "requestBody": {
+        "examples": {
+          "first-page": {
+            "summary": "First page of titles",
+            "body": "bodies/titles.json"
+          }
+        }
+      }
+    },
+    "POST /api/Todo": {
+      "requestBody": {
+        "examples": {
+          "new-todo": {
+            "summary": "Create a TODO",
+            "description": "Returns 201 once. Edit the title to create another one, or restart Aspire to rebuild the seed.",
+            "body": "bodies/create-todo.json"
+          }
+        }
+      }
+    },
+    "GET /api/Todo/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "value": "01HWXHRB80000G000000000001"
+        }
+      ]
+    },
+    "PUT /api/Todo/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "value": "01HWXHRB80000G000000000003"
+        }
+      ],
+      "requestBody": {
+        "examples": {
+          "admin": {
+            "summary": "Update the admin TODO",
+            "description": "TODO 3, owned by local.admin@example.com. Authorize with the admin profile.",
+            "body": "bodies/update-admin.json"
+          }
+        }
+      }
+    },
+    "DELETE /api/Todo/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "value": "01HWXHRB80000G000000000004"
+        }
+      ]
+    }
+  }
+}

@@ -10,6 +10,9 @@ public sealed class UpdateTodoInput
     public int? Status { get; set; }
     public required string UpdatedBy { get; set; }
 
+    /// <summary>Owner filter: the JWT email for non-admins, null for administrators.</summary>
+    public string? CreatedBy { get; set; }
+
     internal bool PatchFields(TodoEntity entityToUpdate)
     {
         bool isUpdated = false;

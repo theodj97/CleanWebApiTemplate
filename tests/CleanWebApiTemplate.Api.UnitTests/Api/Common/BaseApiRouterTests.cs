@@ -48,11 +48,37 @@ public class BaseApiRouterTests
         var userName = router.UserName;
         var userEmail = router.UserEmail;
         var role = router.Role;
+        var isAdmin = router.IsAdmin;
+        var ownerScope = router.OwnerScope;
 
         // Assert
         Assert.Equal("theo", userName);
         Assert.Equal("theo@example.com", userEmail);
         Assert.Equal("User", role);
+        Assert.False(isAdmin);
+        Assert.Equal("theo@example.com", ownerScope);
+    }
+
+    [Fact]
+    public void IsAdmin_WithAdminRole_ReturnsTrue()
+    {
+        // Arrange
+        var accessor = new HttpContextAccessor
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(
+                [
+                    new Claim(ClaimTypes.Email, "admin@example.com"),
+                    new Claim(ClaimTypes.Role, "Admin"),
+                ], authenticationType: "Test")),
+            },
+        };
+        var router = new TodoRoutes(accessor);
+
+        // Act & Assert
+        Assert.True(router.IsAdmin);
+        Assert.Null(router.OwnerScope);
     }
 
     // The base constructor sets RouteName; the compiler does not see that through [SetsRequiredMembers].

@@ -26,6 +26,9 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
     private static readonly string SelectByIdSql =
         $"SELECT {TodoColumns} FROM \"{TodoTable.Name}\" WHERE \"{TodoTable.IdColumn}\" = @id;";
 
+    private static readonly string SelectByIdAndCreatedBySql =
+        $"SELECT {TodoColumns} FROM \"{TodoTable.Name}\" WHERE \"{TodoTable.IdColumn}\" = @id AND \"{TodoTable.CreatedByColumn}\" = @createdBy;";
+
     private static readonly string InsertSql = $"""
         INSERT INTO "{TodoTable.Name}" ({TodoColumns})
         VALUES (@id, @title, @description, @createdAt, @updatedAt, @status, @createdBy, @updatedBy);
@@ -46,13 +49,17 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
     private static readonly string DeleteSql =
         $"DELETE FROM \"{TodoTable.Name}\" WHERE \"{TodoTable.IdColumn}\" = @id;";
 
-    public async Task<TodoEntity?> GetByIdAsync(Ulid id, CancellationToken cancellationToken = default)
+    private static readonly string DeleteByCreatedBySql =
+        $"DELETE FROM \"{TodoTable.Name}\" WHERE \"{TodoTable.IdColumn}\" = @id AND \"{TodoTable.CreatedByColumn}\" = @createdBy;";
+
+    public async Task<TodoEntity?> GetByIdAsync(Ulid id, string? createdBy = null, CancellationToken cancellationToken = default)
     {
         using var connection = connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken);
 
-        using var command = new NpgsqlCommand(SelectByIdSql, connection);
+        using var command = new NpgsqlCommand(createdBy is null ? SelectByIdSql : SelectByIdAndCreatedBySql, connection);
         AddIdParameter(command, id);
+        AddCreatedByParameter(command, createdBy);
 
         using var reader = await command.ExecuteReaderAsync(cancellationToken);
         return await reader.ReadAsync(cancellationToken) ? MapTodo(reader) : null;
@@ -61,6 +68,7 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
     public async Task<IReadOnlyList<TodoDto>> GetTitlesAsync(int? pageNumber,
                                                              int? pageSize,
                                                              IEnumerable<KeyValuePair<string, bool>>? sortProperties,
+                                                             string? createdBy = null,
                                                              CancellationToken cancellationToken = default)
     {
         using var connection = connectionFactory.CreateConnection();
@@ -71,6 +79,7 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
 
         var sql = new StringBuilder(
             $"SELECT \"{TodoTable.IdColumn}\", \"{TodoTable.TitleColumn}\" FROM \"{TodoTable.Name}\"");
+        AppendCreatedByCondition(command, sql, createdBy);
         AppendOrderBy(sql, sortProperties);
         AppendPagination(command, sql, pageNumber, pageSize);
         command.CommandText = sql.ToString();
@@ -168,13 +177,14 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
         return await command.ExecuteNonQueryAsync(cancellationToken) > 0;
     }
 
-    public async Task<bool> DeleteAsync(Ulid id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(Ulid id, string? createdBy = null, CancellationToken cancellationToken = default)
     {
         using var connection = connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken);
 
-        using var command = new NpgsqlCommand(DeleteSql, connection);
+        using var command = new NpgsqlCommand(createdBy is null ? DeleteSql : DeleteByCreatedBySql, connection);
         AddIdParameter(command, id);
+        AddCreatedByParameter(command, createdBy);
 
         return await command.ExecuteNonQueryAsync(cancellationToken) > 0;
     }
@@ -217,6 +227,21 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
 
     private static void AddIdParameter(NpgsqlCommand command, Ulid id) =>
         command.Parameters.Add("@id", NpgsqlDbType.Bytea).Value = id.ToByteArray();
+
+    private static void AddCreatedByParameter(NpgsqlCommand command, string? createdBy)
+    {
+        if (createdBy is not null)
+            command.Parameters.Add("@createdBy", NpgsqlDbType.Text).Value = createdBy;
+    }
+
+    private static void AppendCreatedByCondition(NpgsqlCommand command, StringBuilder sql, string? createdBy)
+    {
+        if (createdBy is null)
+            return;
+
+        sql.Append($" WHERE \"{TodoTable.CreatedByColumn}\" = @createdBy");
+        command.Parameters.Add("@createdBy", NpgsqlDbType.Text).Value = createdBy;
+    }
 
     private static void AddEntityParameters(NpgsqlCommand command, TodoEntity entity)
     {

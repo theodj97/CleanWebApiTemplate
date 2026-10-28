@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CleanWebApiTemplate.Api.Models.Interfaces;
+using CleanWebApiTemplate.Domain.Configuration;
 
 namespace CleanWebApiTemplate.Api.Common;
 
@@ -9,6 +10,13 @@ public abstract class BaseApiRouter : IGroupMap
     public string UserName => contextAccessor.HttpContext!.User.Claims.First(x => x.Type == ClaimTypes.Name).Value;
     public string UserEmail => contextAccessor.HttpContext!.User.Claims.First(x => x.Type == ClaimTypes.Email).Value;
     public string Role => contextAccessor.HttpContext!.User.Claims.First(x => x.Type == ClaimTypes.Role).Value;
+    public bool IsAdmin => contextAccessor.HttpContext!.User.IsInRole(Constants.ADMIN_POLICY);
+
+    /// <summary>
+    /// Owner email that non-administrators are restricted to. Administrators get
+    /// <see langword="null"/> because they may access any TODO.
+    /// </summary>
+    public string? OwnerScope => IsAdmin ? null : UserEmail;
     public required string RouteName { get; init; }
     private const string ROUTE_TERMINATION_NAME = "Routes";
 

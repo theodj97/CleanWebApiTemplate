@@ -60,7 +60,7 @@ var openBaoInitializer = builder.AddOpenBaoInitializer(openBao, openBaoToken, Op
 // Component mode stops here: the API under test runs in-process inside the component tests.
 if (mode != Modes.Component)
 {
-    AddApplication<Projects.CleanWebApiTemplate_Api>(Resources.Api)
+    var api = AddApplication<Projects.CleanWebApiTemplate_Api>(Resources.Api)
         .WithOpenBaoSecrets(openBao, openBaoToken, OpenBao.SecretsPath(mode))
         .WithReference(todoDb, connectionName: AppSettings.PostgresConnectionName)
         .WaitFor(todoDb)
@@ -68,6 +68,21 @@ if (mode != Modes.Component)
         .WaitForCompletion(openBaoInitializer)
         .WaitForCompletion(dbInitializer)
         .WithLocalJwtTrust(localJwt, Resources.Api);
+
+    // Local Swagger UI with the examples in local/openapi. It reads the catalog and the API document
+    // on every request: nothing is generated, cached or persisted. Tests never start it.
+    if (!isTest)
+    {
+        builder.AddProject<Projects.CleanWebApiTemplate_OpenApiExamples>(
+                Resources.Swagger, launchProfileName: null)
+            .WithHttpEndpoint()
+            .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
+            .WithEnvironment("API_BASE_URL", api.GetEndpoint("https"))
+            .WithEnvironment("EXAMPLES_PATH",
+                Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "../../openapi")))
+            .WaitFor(api)
+            .WithHttpHealthCheck("/health");
+    }
 }
 
 builder.Build().Run();

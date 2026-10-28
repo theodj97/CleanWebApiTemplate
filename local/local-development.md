@@ -11,8 +11,9 @@ Nothing here is required by deployed environments: `src/` never references anyth
 | Folder | Contents |
 |---|---|
 | `src/` | Application and shared runtime code for every environment: `Api`, `Application`, `Domain`, `Infrastructure`, `ServiceDefaults`. |
-| `tests/` | Test projects: Api.UnitTests, Api.ComponentTests, Api.FunctionalTests, Tests.Shared. |
+| `tests/` | Test projects: Api.UnitTests, Api.ComponentTests, Api.FunctionalTests, OpenApiExamples.UnitTests, Tests.Shared. |
 | `local/aspire/` | Local orchestration only: `CleanWebApiTemplate.AppHost`, `CleanWebApiTemplate.DbInitializer` and `CleanWebApiTemplate.OpenBaoInitializer`. |
+| `local/openapi/` | Local-only Swagger sidecar and the versioned examples catalog (`examples.json`, `bodies/`). |
 | `local/database/` | PostgreSQL schema scripts and `seed/` synthetic data. |
 | `local/tools/` | `devtoken.cs` / `devtoken.json`: locally signed JWTs, no identity provider. |
 | `tools/bruno/` | brunoGen layer (`custom/`) for the `aspire-local` Bruno collection. |
@@ -49,6 +50,7 @@ postgres (container, ephemeral, no volume)
 openbao (container, ephemeral, dev mode, no volume)
   └── openbao-init (runs once, writes the application's secrets) ──► api: OpenBao__* (reads API_KEY from the store)
 local-jwt-signing-key (secret parameter) ──► openbao-init: API_KEY ──► openbao
+api ──► swagger (Local only: UI + examples catalog, proxies /api/* to api)
 ```
 
 | Resource | Kind | Purpose | Waits for |
@@ -60,6 +62,7 @@ local-jwt-signing-key (secret parameter) ──► openbao-init: API_KEY ──�
 | `openbao-init` | Project (one-shot) | Writes the application's secrets (today `API_KEY`) into `secret/cleanwebapitemplate/local`; exits 0 when the store is ready. | `openbao` |
 | `local-jwt-signing-key` | Secret parameter | HS256 key stored in the AppHost user secrets; passed to `openbao-init` as `API_KEY`. | — |
 | `api` | Project | The API in the `Development` environment. | `postgresdb`, `db-init`, `openbao`, `openbao-init` completion |
+| `swagger` | Project | Local-only Swagger UI with the examples in `local/openapi/`; proxies `/api/*` to `api`. Not started by the tests. | `api` |
 
 ## Start and stop
 
@@ -89,9 +92,10 @@ container and its data. There is nothing to reset by hand.
 - **Dashboard:** open the link printed by `aspire start`/`aspire run`, or get it again with
   `aspire ps --format Json` (`dashboardUrl`). The link contains a personal login token: do not commit or share it.
 - **API:** `https://localhost:5001`
-  - `GET /swagger` — OpenAPI UI (when `OpenApi:Enabled` is true, as in local development)
+  - `GET /swagger` — plain OpenAPI UI (when `OpenApi:Enabled` is true, as in local development)
   - `GET /openapi/v1.json` — OpenAPI document
   - `GET /health` (all checks), `GET /alive`, `GET /health/api`, `GET /health/postgresDb`
+- **Swagger with local examples:** the `swagger` resource in the dashboard (see § Swagger with local examples).
 
 ## Authentication: locally signed JWTs
 
@@ -121,6 +125,25 @@ curl -X POST https://localhost:5001/api/Todo/ \
 The issuer (`https://localhost`) and audience (`https://localhost:5001`) come from `appsettings.json` (`ValidIssuers`
 and `Audience`), and the AppHost passes them to the API; only the signing key changes per machine. `devtoken init`
 stores it in the AppHost user secrets, outside the repository. Run `devtoken init --rotate` to replace it.
+
+## Swagger with local examples (`local/openapi/`)
+
+The `swagger` resource is a small sidecar that fetches the API's OpenAPI document, adds the examples in
+`local/openapi/examples.json` and `local/openapi/bodies/`, and serves its own Swagger UI. It proxies `/api/*` to the
+API, so the browser only talks to one origin.
+
+- Open the `swagger` resource in the dashboard. The API's `/swagger` remains the plain UI.
+- The catalog is read on every request: edit a body, refresh the page, and it is there. Nothing is generated, cached
+  or persisted; the seed is rebuilt on every `aspire start`.
+- Authentication is manual: click Authorize and paste a token from
+  `dotnet local/tools/devtoken.cs get --profile user` (or `operator`, `admin`). The token is not stored; paste it again
+  after a refresh.
+- The fixed seed ids live in `examples.json`. Update them if `local/database/seed/0001__todos.sql` changes.
+- The sidecar is Local-only: the Component and Functional tests do not start it and it is not published.
+- Full catalog format and troubleshooting: `local/openapi/README.md`.
+
+The API's `/swagger` is intentionally left untouched: a local-only feature must not change the API project, so the
+examples live in the sidecar.
 
 ## Bruno collection (`tools/bruno/`)
 
@@ -155,6 +178,9 @@ cd CleanWebApiTemplateCollection && npx -y @usebruno/cli run --env aspire-local
   `aspire-local` environment. The same `custom/` layer is the source of truth; use `brunoGen export` to bring back
   changes made in the UI.
 
+The Swagger sidecar (§ Swagger with local examples) is a separate, interactive layer. It does not run assertions;
+Bruno remains the collection runner.
+
 ## Database
 
 - **Engine:** PostgreSQL, provisioned by Aspire in an ephemeral container (no volume, session lifetime).
@@ -173,14 +199,22 @@ Every seeded row uses a `CreatedBy` value that matches the `email` claim of a `d
 | devtoken profile | Rol | Endpoint de ejemplo | Dato de la semilla | Bruno request |
 |---|---|---|---|---|
 | `user` | `User` | `GET /api/Todo/01HWXHRB80000G000000000001` | TODO 1, `CreatedBy = local.user@example.com` | `GET /api/Todo/{}` |
-| `user` | `User` | `POST /api/Todo/filter { "createdBy": ["local.user@example.com"] }` | TODO 1 | `POST /api/Todo/filter` |
+| `user` | `User` | `POST /api/Todo/filter` | TODO 1, solo los suyos | `POST /api/Todo/filter` |
 | `user` | `User` | `POST /api/Todo/` | Nueva fila, título generado por el script | `POST /api/Todo/` |
 | `operator` | `Operator` | `DELETE /api/Todo/01HWXHRB80000G000000000004` | TODO 4, `CreatedBy = local.operator@example.com` | `DELETE /api/Todo/{}` |
-| `operator` | `Operator` | `POST /api/Todo/filter { "status": [2, 4] }` | TODOs 2 y 4 | `POST /api/Todo/filter` cambiando cuerpo y `devtokenProfile` |
+| `operator` | `Operator` | `POST /api/Todo/filter { "status": [2, 4] }` | TODOs 2 y 4, solo los suyos | `POST /api/Todo/filter` cambiando cuerpo y `devtokenProfile` |
 | `admin` | `Admin` | `PUT /api/Todo/01HWXHRB80000G000000000003` | TODO 3, `CreatedBy = local.admin@example.com` | `PUT /api/Todo/{}` |
-| `user` | `User` | `POST /api/Todo/titles` | Títulos paginados | `POST /api/Todo/titles` |
+| `admin` | `Admin` | `POST /api/Todo/filter { "createdBy": ["local.user@example.com", "local.operator@example.com"] }` | TODOs 1, 2 y 4, de otros usuarios | `POST /api/Todo/filter` cambiando cuerpo y `devtokenProfile` |
+| `user` | `User` | `POST /api/Todo/titles` | Títulos paginados, solo los suyos | `POST /api/Todo/titles` |
 | `external` | `External` | — | Ningún endpoint expuesto usa la política `External` | — (403 en Todo) |
 | `no-role` | — | `POST /api/Todo/` | Devuelve `403` (caso negativo esperado) | `POST /api/Todo/` con `devtokenProfile: no-role` |
+
+Only the `admin` profile can read or modify TODOs owned by another user. The `user` and `operator` profiles are
+restricted to rows whose `CreatedBy` matches their token email, including `GET /api/Todo/{id}`,
+`POST /api/Todo/titles`, `PUT /api/Todo/{id}` and `DELETE /api/Todo/{id}`.
+
+The same rows are available as Swagger examples in `local/openapi/examples.json` (the `swagger` resource); the fixed
+ids in that catalog match this table.
 
 ### Adding a schema or seed change
 
@@ -293,6 +327,10 @@ aspire resource api restart
 | Port 5001 already in use | Another API is running; stop it or change the launch profile. |
 | 401 from the API | The token expired or was signed with a different key; run `devtoken init --rotate` and restart the AppHost. |
 | 401 in Bruno | Tokens in `tools/bruno/custom/.env` expired (or the key was rotated): run `devtoken dotenv …` and `brunoGen import`; restart Aspire if you rotated the key. |
+| `swagger` resource: `Could not read the OpenAPI document` | The API is not ready or `OpenApi:Enabled` is false; wait for the API and refresh. |
+| `swagger` resource: `500` with problems | `local/openapi/examples.json` references an operation or parameter that the API document does not have; check `aspire logs swagger`. |
+| `swagger` resource: TLS error | Same development certificate as the other clients: `dotnet dev-certs https --trust` and `SSL_CERT_DIR` in the shell that runs `aspire start`. |
+| `swagger` resource: 401 after Authorize | The pasted token expired or belongs to another key/profile; get a new one with `devtoken get`. |
 | 403 from the API | The profile lacks the policy's role; try `operator`, `admin` or `external`. |
 | TLS error / `SSL certificate problem` | The dev certificate is not trusted. Run `dotnet dev-certs https --trust` and export `SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs"` in the shell that runs the client or `aspire start`. For Node (Bruno CLI) use `NODE_EXTRA_CA_CERTS`. |
 | No database spans in traces | Npgsql is not instrumented in this project, so only HTTP spans appear. |

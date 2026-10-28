@@ -13,7 +13,7 @@ public sealed class GetTodoByIdService(ITodoRepository todoRepository,
     public Task<Result<TodoDto?>> GetAsync(GetTodoByIdInput input, CancellationToken cancellationToken) =>
         ExecuteAsync(input, validators, async () =>
         {
-            var todoDb = await todoRepository.GetByIdAsync(Ulid.Parse(input.Id), cancellationToken);
+            var todoDb = await todoRepository.GetByIdAsync(Ulid.Parse(input.Id), input.CreatedBy, cancellationToken);
             return Result<TodoDto?>.Success(todoDb?.ToDto());
         }, cancellationToken);
 }

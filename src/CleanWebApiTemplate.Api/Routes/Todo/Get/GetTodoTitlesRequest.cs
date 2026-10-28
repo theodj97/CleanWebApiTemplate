@@ -8,10 +8,11 @@ public sealed class GetTodoTitlesRequest
     public byte? PageSize { get; set; }
     public IEnumerable<KeyValuePair<string, bool>>? SortProperties { get; set; }
 
-    public GetTodoTitlesInput ToInput() => new()
+    public GetTodoTitlesInput ToInput(string? ownerScope) => new()
     {
         PageNumber = PageNumber,
         PageSize = PageSize,
-        SortProperties = SortProperties
+        SortProperties = SortProperties,
+        CreatedBy = ownerScope
     };
 }

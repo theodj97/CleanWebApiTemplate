@@ -67,7 +67,8 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
     public async Task GetById_WithExistingTodo_ReturnsOkWithTitle()
     {
         // Arrange
-        var existing = await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+        var existing = await Fixture.Todos.AddAsync(
+            new TodoBuilder().CreatedBy(TestUsers.Email(TestUser.TodoUser)).Build());
 
         // Act
         var response = await Client.GetAsync($"/api/Todo/{existing.Id}", CancellationToken);
@@ -97,7 +98,8 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
     public async Task Update_WithExistingTodo_PatchesFieldsAndUpdatedBy()
     {
         // Arrange
-        var existing = await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+        var existing = await Fixture.Todos.AddAsync(
+            new TodoBuilder().CreatedBy(TestUsers.Email(TestUser.TodoUser)).Build());
 
         // Act
         var response = await Client.PutAsJsonAsync(
@@ -133,7 +135,8 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
     public async Task Delete_WithExistingTodo_RemovesRow()
     {
         // Arrange
-        var existing = await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+        var existing = await Fixture.Todos.AddAsync(
+            new TodoBuilder().CreatedBy(TestUsers.Email(TestUser.TodoOperator)).Build());
 
         // Act
         var response = await Client.DeleteAsync($"/api/Todo/{existing.Id}", CancellationToken);
@@ -149,8 +152,9 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
     public async Task Filter_WithSeededRows_ReturnsThem()
     {
         // Arrange
-        await Fixture.Todos.AddAsync(new TodoBuilder().Build());
-        await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+        var createdBy = TestUsers.Email(TestUser.TodoUser);
+        await Fixture.Todos.AddAsync(new TodoBuilder().CreatedBy(createdBy).Build());
+        await Fixture.Todos.AddAsync(new TodoBuilder().CreatedBy(createdBy).Build());
 
         // Act
         var response = await Client.PostAsJsonAsync("/api/Todo/filter", new { }, CancellationToken);
@@ -168,7 +172,8 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
     public async Task Titles_WithSeededRow_ReturnsProjection()
     {
         // Arrange
-        var existing = await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+        var existing = await Fixture.Todos.AddAsync(
+            new TodoBuilder().CreatedBy(TestUsers.Email(TestUser.TodoUser)).Build());
 
         // Act
         var response = await Client.PostAsJsonAsync("/api/Todo/titles", new { }, CancellationToken);
@@ -212,7 +217,8 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
     public async Task Update_WithNewTitle_ReplacesIt()
     {
         // Arrange
-        var existing = await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+        var existing = await Fixture.Todos.AddAsync(
+            new TodoBuilder().CreatedBy(TestUsers.Email(TestUser.TodoUser)).Build());
         var newTitle = TestData.Unique("renamed");
 
         // Act
@@ -232,9 +238,10 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
     public async Task Update_WithTitleAlreadyUsedByAnotherTodo_ReturnsBadRequest()
     {
         // Arrange
-        await Fixture.Todos.AddAsync(new TodoBuilder().Build());
-        var target = await Fixture.Todos.AddAsync(new TodoBuilder().Build());
-        var taken = await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+        var createdBy = TestUsers.Email(TestUser.TodoUser);
+        await Fixture.Todos.AddAsync(new TodoBuilder().CreatedBy(createdBy).Build());
+        var target = await Fixture.Todos.AddAsync(new TodoBuilder().CreatedBy(createdBy).Build());
+        var taken = await Fixture.Todos.AddAsync(new TodoBuilder().CreatedBy(createdBy).Build());
 
         // Act
         var response = await Client.PutAsJsonAsync(
@@ -250,7 +257,8 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
     public async Task Update_WithOverlongDescription_ReturnsBadRequest()
     {
         // Arrange
-        var existing = await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+        var existing = await Fixture.Todos.AddAsync(
+            new TodoBuilder().CreatedBy(TestUsers.Email(TestUser.TodoUser)).Build());
 
         // Act
         var response = await Client.PutAsJsonAsync(

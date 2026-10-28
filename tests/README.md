@@ -3,6 +3,7 @@
 | Project | What it tests | Needs Docker | Runs in parallel |
 |---|---|---|---|
 | `CleanWebApiTemplate.Api.UnitTests` | Validators and other pure logic in isolation. Dependencies are substitutes; no Aspire, no containers. | No | Yes |
+| `CleanWebApiTemplate.OpenApiExamples.UnitTests` | The local OpenAPI examples merger: path normalization, body and parameter examples, catalog errors. No Aspire, no containers. | No | Yes |
 | `CleanWebApiTemplate.Api.ComponentTests` | The API in-process (`WebApplicationFactory<Program>`) against the real PostgreSQL and OpenBao containers started by the shared AppHost in `Component` mode. Covers endpoints, validation, database state and the authentication/authorization matrix. | Yes | No (shared database) |
 | `CleanWebApiTemplate.Api.FunctionalTests` | Complete flows with the API running as a separate process under the shared AppHost in `Functional` mode. Black box: HTTP only. | Yes | No (shared database) |
 | `CleanWebApiTemplate.Tests.Shared` | Fixtures, base classes, attributes, test users and token issuer, database resetters, test repository, builders and helpers. | — | — |

@@ -8,12 +8,13 @@ public sealed class UpdateTodoRequest
     public string? Description { get; set; }
     public int? Status { get; set; }
 
-    public UpdateTodoInput ToInput(string id, string userEmail) => new()
+    public UpdateTodoInput ToInput(string id, string userEmail, string? ownerScope) => new()
     {
         Id = id,
         Title = Title,
         Description = Description,
         Status = Status,
-        UpdatedBy = userEmail
+        UpdatedBy = userEmail,
+        CreatedBy = ownerScope
     };
 }

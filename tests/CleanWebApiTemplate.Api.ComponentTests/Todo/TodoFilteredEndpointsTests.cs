@@ -21,9 +21,9 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     public async Task Filter_WithSeveralIds_ReturnsOnlyTheSelectedTodos()
     {
         // Arrange
-        var first = await Fixture.Todos.AddAsync(new TodoBuilder().Build());
-        var second = await Fixture.Todos.AddAsync(new TodoBuilder().Build());
-        await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+        var first = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
+        var second = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
+        await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
 
         // Act
         var response = await Client.PostAsJsonAsync(
@@ -45,12 +45,12 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     public async Task Filter_WithEveryCriteria_ReturnsOnlyTheMatchingTodo()
     {
         // Arrange
-        var createdBy = TestData.Unique("filter-user") + "@example.com";
+        var createdBy = TestUsers.Email(TestUser.TodoUser);
         var matching = await Fixture.Todos.AddAsync(new TodoBuilder()
             .CreatedBy(createdBy)
             .WithStatus(ETodoStatus.InProgress)
             .Build());
-        var other = await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+        var other = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
 
         var request = new
         {
@@ -77,7 +77,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     public async Task Filter_WithDateRangeOutsideTheTodo_ReturnsNoTodos()
     {
         // Arrange
-        await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+        await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
 
         // Act
         var response = await Client.PostAsJsonAsync(
@@ -100,7 +100,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     public async Task Filter_WithLocalOffsetDateRange_ReturnsTheTodo()
     {
         // Arrange
-        await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+        await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
 
         // Act
         var response = await Client.PostAsJsonAsync(
@@ -125,8 +125,8 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
         // Arrange
         var lower = TestData.Unique("aaa-sort");
         var higher = TestData.Unique("zzz-sort");
-        await Fixture.Todos.AddAsync(new TodoBuilder().WithTitle(lower).Build());
-        await Fixture.Todos.AddAsync(new TodoBuilder().WithTitle(higher).Build());
+        await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).WithTitle(lower).Build());
+        await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).WithTitle(higher).Build());
 
         // Act
         var response = await Client.PostAsJsonAsync(
@@ -149,8 +149,8 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
         // Arrange
         var first = TestData.Unique("aaa-page");
         var second = TestData.Unique("bbb-page");
-        await Fixture.Todos.AddAsync(new TodoBuilder().WithTitle(first).Build());
-        await Fixture.Todos.AddAsync(new TodoBuilder().WithTitle(second).Build());
+        await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).WithTitle(first).Build());
+        await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).WithTitle(second).Build());
 
         // Act
         var response = await Client.PostAsJsonAsync(
@@ -172,13 +172,126 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     [Fact]
     [ResetDatabase]
     [AuthenticatedAs(TestUser.TodoUser)]
+    public async Task Filter_AsUser_WithoutCreatedBy_ReturnsOnlyOwnTodos()
+    {
+        // Arrange
+        var own = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
+        await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoAdmin).Build());
+
+        // Act
+        var response = await Client.PostAsJsonAsync("/api/Todo/filter", new { }, CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var todo = Assert.Single(await ReadTodosAsync(response));
+        Assert.Equal(own.Id, todo.Id);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoUser)]
+    public async Task Filter_AsUser_WithAnotherUsersCreatedBy_ReturnsOnlyOwnTodos()
+    {
+        // Arrange
+        var own = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
+        await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoAdmin).Build());
+
+        // Act
+        var response = await Client.PostAsJsonAsync(
+            "/api/Todo/filter",
+            new { createdBy = new[] { TestUsers.Email(TestUser.TodoAdmin) } },
+            CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var todo = Assert.Single(await ReadTodosAsync(response));
+        Assert.Equal(own.Id, todo.Id);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoAdmin)]
+    public async Task Filter_AsAdmin_WithoutCreatedBy_ReturnsTodosFromEveryUser()
+    {
+        // Arrange
+        var userTodo = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
+        var operatorTodo = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoOperator).Build());
+        var adminTodo = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoAdmin).Build());
+
+        // Act
+        var response = await Client.PostAsJsonAsync("/api/Todo/filter", new { }, CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await ReadTodosAsync(response);
+        Assert.Equal(3, body.Count);
+        Assert.Contains(body, todo => todo.Id == userTodo.Id);
+        Assert.Contains(body, todo => todo.Id == operatorTodo.Id);
+        Assert.Contains(body, todo => todo.Id == adminTodo.Id);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoAdmin)]
+    public async Task Filter_AsAdmin_WithCreatedBy_ReturnsOnlyThatUsersTodos()
+    {
+        // Arrange
+        var userTodo = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
+        await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoOperator).Build());
+
+        // Act
+        var response = await Client.PostAsJsonAsync(
+            "/api/Todo/filter",
+            new { createdBy = new[] { TestUsers.Email(TestUser.TodoUser) } },
+            CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var todo = Assert.Single(await ReadTodosAsync(response));
+        Assert.Equal(userTodo.Id, todo.Id);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoAdmin)]
+    public async Task Filter_AsAdmin_WithSeveralCreatedBy_ReturnsTheUnionOfTheirTodos()
+    {
+        // Arrange
+        var userTodo = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
+        var operatorTodo = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoOperator).Build());
+        await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoAdmin).Build());
+
+        // Act
+        var response = await Client.PostAsJsonAsync(
+            "/api/Todo/filter",
+            new
+            {
+                createdBy = new[]
+                {
+                    TestUsers.Email(TestUser.TodoUser),
+                    TestUsers.Email(TestUser.TodoOperator),
+                },
+            },
+            CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await ReadTodosAsync(response);
+        Assert.Equal(2, body.Count);
+        Assert.Contains(body, todo => todo.Id == userTodo.Id);
+        Assert.Contains(body, todo => todo.Id == operatorTodo.Id);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoUser)]
     public async Task Titles_WithSortAndPagination_ReturnsOnlyTheRequestedPage()
     {
         // Arrange
         var first = TestData.Unique("aaa-titles");
         var second = TestData.Unique("bbb-titles");
-        await Fixture.Todos.AddAsync(new TodoBuilder().WithTitle(first).Build());
-        await Fixture.Todos.AddAsync(new TodoBuilder().WithTitle(second).Build());
+        await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).WithTitle(first).Build());
+        await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).WithTitle(second).Build());
 
         // Act
         var response = await Client.PostAsJsonAsync(
@@ -254,6 +367,9 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    private static TodoBuilder TodoOwnedBy(TestUser user) =>
+        new TodoBuilder().CreatedBy(TestUsers.Email(user));
 
     private static async Task<List<TodoResponse>> ReadTodosAsync(HttpResponseMessage response) =>
         await response.Content.ReadFromJsonAsync<List<TodoResponse>>(JsonSerializerOptions.Web, TestContext.Current.CancellationToken) ?? [];

@@ -16,6 +16,7 @@ public sealed class GetTodoTitlesService(ITodoRepository todoRepository,
             var projectedTodos = await todoRepository.GetTitlesAsync(input.PageNumber,
                                                                      input.PageSize,
                                                                      input.SortProperties,
+                                                                     input.CreatedBy,
                                                                      cancellationToken);
 
             return Result<IEnumerable<TodoDto?>>.Success(projectedTodos);

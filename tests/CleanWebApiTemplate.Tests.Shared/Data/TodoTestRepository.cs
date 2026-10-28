@@ -21,7 +21,7 @@ public sealed class TodoTestRepository(string connectionString)
         return entity;
     }
 
-    public Task<TodoEntity?> FindAsync(Ulid id) => _repository.GetByIdAsync(id, TestCancellation.Token);
+    public Task<TodoEntity?> FindAsync(Ulid id) => _repository.GetByIdAsync(id, cancellationToken: TestCancellation.Token);
 
     public async Task<TodoEntity?> FindByTitleAsync(string title)
     {

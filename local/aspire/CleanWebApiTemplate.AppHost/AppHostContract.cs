@@ -40,6 +40,9 @@ static class AppHostContract
         public const string DbInitializer = "db-init";
         public const string Api = "api";
 
+        /// <summary>Swagger UI enriched with the examples catalog in local/openapi. Local mode only.</summary>
+        public const string Swagger = "swagger";
+
         /// <summary>Ephemeral secrets server: OpenBao in dev mode, in memory, no volume.</summary>
         public const string OpenBao = "openbao";
 
