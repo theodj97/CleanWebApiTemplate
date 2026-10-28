@@ -489,3 +489,4 @@ coverage-report/
 
 # Opencode
 .agents/
+skills-lock.json

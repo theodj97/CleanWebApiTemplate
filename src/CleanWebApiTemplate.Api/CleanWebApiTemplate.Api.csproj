@@ -25,6 +25,8 @@
     <ProjectReference
       Include="..\CleanWebApiTemplate.ServiceDefaults\CleanWebApiTemplate.ServiceDefaults.csproj" />
     <ProjectReference
+      Include="..\CleanWebApiTemplate.Secrets\CleanWebApiTemplate.Secrets.csproj" />
+    <ProjectReference
       Include="..\CleanWebApiTemplate.Application\CleanWebApiTemplate.Application.csproj" />
     <ProjectReference
       Include="..\CleanWebApiTemplate.Infrastructure\CleanWebApiTemplate.Infrastructure.csproj" />

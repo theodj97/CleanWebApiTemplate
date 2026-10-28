@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="../../../src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj" />
     <ProjectReference Include="../CleanWebApiTemplate.DbInitializer/CleanWebApiTemplate.DbInitializer.csproj" />
+    <ProjectReference Include="../CleanWebApiTemplate.OpenBaoInitializer/CleanWebApiTemplate.OpenBaoInitializer.csproj" />
   </ItemGroup>
 
 </Project>

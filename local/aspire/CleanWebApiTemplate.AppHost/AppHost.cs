@@ -1,4 +1,6 @@
+using System.Security.Cryptography;
 using System.Text;
+using CleanWebApiTemplate.AppHost;
 using Microsoft.Extensions.Configuration;
 using static CleanWebApiTemplate.AppHost.AppHostContract;
 
@@ -16,7 +18,7 @@ var isTest = mode != Modes.Local;
 var outboundProxy = builder.Configuration[OutboundProxyKey] ?? "http://127.0.0.1:9";
 
 // Ephemeral by design in every mode: no data volumes, no persistent lifetime.
-// Every start begins with an empty container and rebuilds the schema (and the seed in Local mode).
+// Every start begins with empty containers, rebuilds the schema (and the seed in Local mode) and reseeds the secrets.
 var postgres = builder.AddPostgres(Resources.Postgres);
 var todoDb = postgres.AddDatabase(Resources.PostgresDb);
 
@@ -36,22 +38,34 @@ else
     dbInitializer.WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", string.Empty);
 }
 
+// Issuer and audience shared with the devtoken tool. Keys are not here: they live in the AppHost
+// user secrets, outside the repository (`dotnet local/tools/devtoken.cs init`). Test modes pass the same values
+// as arguments, so the file is only read in Local mode.
+if (!isTest)
+{
+    builder.Configuration.AddJsonFile(
+        Path.Combine(builder.AppHostDirectory, "../../tools/devtoken.json"), optional: false);
+}
+
+var localJwt = LocalJwt.Create(builder, requireKeys: !isTest);
+
+// The applications never receive the signing key: it is seeded into OpenBao in every mode. The root token is
+// generated per start, so nothing is persisted and nothing is committed. A test can supply its own through
+// Parameters:openbao-root-token.
+var openBaoToken = builder.Configuration[OpenBao.RootTokenParameterKey]
+                   ?? Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+var openBao = builder.AddOpenBao(openBaoToken);
+var openBaoInitializer = builder.AddOpenBaoInitializer(openBao, openBaoToken, OpenBao.SecretsPath(mode), localJwt);
+
 // Component mode stops here: the API under test runs in-process inside the component tests.
 if (mode != Modes.Component)
 {
-    if (!isTest)
-    {
-        // Issuer and audience shared with the devtoken tool. Keys are not here: they live in the AppHost
-        // user secrets, outside the repository (`dotnet local/tools/devtoken.cs init`).
-        builder.Configuration.AddJsonFile(
-            Path.Combine(builder.AppHostDirectory, "../../tools/devtoken.json"), optional: false);
-    }
-
-    var localJwt = LocalJwt.Create(builder, requireKeys: !isTest);
-
     AddApplication<Projects.CleanWebApiTemplate_Api>(Resources.Api)
+        .WithOpenBaoSecrets(openBao, openBaoToken, OpenBao.SecretsPath(mode))
         .WithReference(todoDb, connectionName: AppSettings.PostgresConnectionName)
         .WaitFor(todoDb)
+        .WaitFor(openBao)
+        .WaitForCompletion(openBaoInitializer)
         .WaitForCompletion(dbInitializer)
         .WithLocalJwtTrust(localJwt, Resources.Api);
 }

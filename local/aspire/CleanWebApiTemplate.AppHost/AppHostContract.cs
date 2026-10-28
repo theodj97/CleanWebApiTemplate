@@ -39,6 +39,12 @@ static class AppHostContract
 
         public const string DbInitializer = "db-init";
         public const string Api = "api";
+
+        /// <summary>Ephemeral secrets server: OpenBao in dev mode, in memory, no volume.</summary>
+        public const string OpenBao = "openbao";
+
+        /// <summary>One-shot job that writes the application's secrets into OpenBao before the application starts.</summary>
+        public const string OpenBaoInitializer = "openbao-init";
     }
 
     /// <summary>Configuration keys exactly as the API reads them (":"-separated).</summary>
@@ -47,7 +53,7 @@ static class AppHostContract
         /// <summary>Connection string NAME read by the API (ConnectionStrings:Postgres).</summary>
         public const string PostgresConnectionName = "Postgres";
 
-        /// <summary>JWT signing key read by the API (CleanWebApiTemplate.Domain.Configuration.Constants.API_KEY).</summary>
+        /// <summary>JWT signing key read by the API. The AppHost seeds it into OpenBao instead of passing it as an environment variable.</summary>
         public const string ApiKey = "API_KEY";
 
         /// <summary>OIDC authority. The local environment clears it: validation uses the local key only.</summary>
@@ -58,6 +64,36 @@ static class AppHostContract
 
         /// <summary>Issuers the API accepts (array read as <c>ValidIssuers:0</c>).</summary>
         public const string ValidIssuers = "ValidIssuers:0";
+    }
+
+    /// <summary>
+    /// OpenBao: the secrets store the applications read at startup, in every mode. The application never receives the
+    /// secret values as environment variables; it receives how to reach the store and its token.
+    /// </summary>
+    public static class OpenBao
+    {
+        /// <summary>Base address of the server.</summary>
+        public const string AddressKey = "OpenBao:Address";
+
+        /// <summary>Token sent in <c>X-Vault-Token</c>.</summary>
+        public const string TokenKey = "OpenBao:Token";
+
+        /// <summary>KV v2 mount point.</summary>
+        public const string MountKey = "OpenBao:Mount";
+
+        /// <summary>Path of the secret that holds the application's configuration.</summary>
+        public const string PathKey = "OpenBao:Path";
+
+        /// <summary>KV v2 mount point configured in the container.</summary>
+        public const string Mount = "secret";
+
+        /// <summary>AppHost configuration entry a test uses to supply its own root token.</summary>
+        public const string RootTokenParameter = "openbao-root-token";
+
+        public static string RootTokenParameterKey => $"Parameters:{RootTokenParameter}";
+
+        /// <summary>One secret path per mode: parallel runs never share values.</summary>
+        public static string SecretsPath(string mode) => $"cleanwebapitemplate/{mode.ToLowerInvariant()}";
     }
 
     /// <summary>
@@ -97,14 +133,14 @@ static class AppHostContract
 
     /// <summary>
     /// How the API trusts the local issuer, written in the configuration keys it already reads: the (cleared)
-    /// authority, the signing key, and the issuer and audience of this run.
+    /// authority, the issuer and the audience of this run. The signing key is not here: the AppHost seeds it into
+    /// OpenBao (see OpenBao.cs), so no secret reaches the application as an environment variable.
     /// </summary>
     public static IReadOnlyList<KeyValuePair<string, TrustValue>> JwtTrust(string resourceName) => resourceName switch
     {
         Resources.Api =>
         [
             new(AppSettings.Authority, TrustValue.Empty),
-            new(AppSettings.ApiKey, TrustValue.SigningKeyText),
             // Issuer and audience come from configuration, so local development and every test run
             // can use different values without touching the application code.
             new(AppSettings.ValidIssuers, TrustValue.Issuer),

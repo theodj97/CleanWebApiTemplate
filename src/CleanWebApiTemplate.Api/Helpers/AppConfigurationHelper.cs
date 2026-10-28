@@ -1,5 +1,6 @@
 using CleanWebApiTemplate.Api.Configuration;
 using CleanWebApiTemplate.Domain.Configuration;
+using CleanWebApiTemplate.Secrets;
 using Microsoft.Extensions.Options;
 
 namespace CleanWebApiTemplate.Api.Helpers;
@@ -48,6 +49,7 @@ public static class AppConfigurationHelper
         builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
         builder.Configuration.AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: false);
         builder.Configuration.AddUserSecrets<Program>(optional: true);
+        builder.Configuration.AddOpenBaoSecrets(builder.Configuration);
         builder.Configuration.AddEnvironmentVariables();
         builder.Configuration.AddCommandLine(args);
     }

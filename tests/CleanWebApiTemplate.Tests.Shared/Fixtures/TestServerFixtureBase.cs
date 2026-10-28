@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
@@ -20,10 +21,11 @@ namespace CleanWebApiTemplate.Tests.Shared.Fixtures;
 /// Startup order matters and is deliberate:
 /// 1. the shared AppHost in <see cref="Mode"/>, with this run's token-trust material; infrastructure healthy;
 /// 2. the schema initializer finished with exit code 0 (the initializer local development uses, without seed);
-/// 3. the test repository;
-/// 4. the application (in-process factory or Aspire project resource);
-/// 5. database resetters, which read the final schema;
-/// 6. surviving data and readiness checks.
+/// 3. the secrets initializer wrote the application's secrets into OpenBao;
+/// 4. the test repository;
+/// 5. the application (in-process factory or Aspire project resource);
+/// 6. database resetters, which read the final schema;
+/// 7. surviving data and readiness checks.
 /// </remarks>
 public abstract class TestServerFixtureBase : IAsyncLifetime
 {
@@ -40,7 +42,8 @@ public abstract class TestServerFixtureBase : IAsyncLifetime
     public abstract string ApplicationResource { get; }
 
     /// <summary>Every AppHost resource awaited before anything else, except applications and one-shot jobs.</summary>
-    protected virtual IReadOnlyList<string> InfrastructureResources => [Resources.Postgres, Resources.PostgresDb];
+    protected virtual IReadOnlyList<string> InfrastructureResources =>
+        [Resources.Postgres, Resources.PostgresDb, Resources.OpenBao];
 
     /// <summary>Extra AppHost configuration for this mode, as "--Key=value" arguments.</summary>
     protected virtual IEnumerable<string> AdditionalAppHostArguments => [];
@@ -48,10 +51,19 @@ public abstract class TestServerFixtureBase : IAsyncLifetime
     /// <summary>One-shot resource that applies the schema (null when the application migrates on startup).</summary>
     protected virtual string? SchemaInitializerResource => Resources.DbInitializer;
 
+    /// <summary>One-shot resource that writes the application's secrets into OpenBao.</summary>
+    protected virtual string? SecretsInitializerResource => Resources.OpenBaoInitializer;
+
     /// <summary>True when the application applies its own schema on startup.</summary>
     protected virtual bool SchemaAppliedByApplication => false;
 
     public DistributedApplication App { get; private set; } = null!;
+
+    /// <summary>
+    /// Root token of this run's OpenBao: generated here and handed to the AppHost, so the component tests can point the
+    /// in-process application at the same server. Never persisted, never reused between runs.
+    /// </summary>
+    public string OpenBaoToken { get; } = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
 
     /// <summary>New signing key per run. The AppHost receives only what the applications need to validate.</summary>
     public TestTokenIssuer TokenIssuer { get; } = new(TestAuthSettings.Issuer, TestAuthSettings.Algorithm);
@@ -70,7 +82,12 @@ public abstract class TestServerFixtureBase : IAsyncLifetime
         // 1. The shared AppHost in a test mode. No dashboard and no telemetry in tests.
         var builder = await DistributedApplicationTestingBuilder.CreateAsync(
             AppHostEntryPoint,
-            [$"--{ModeKey}={Mode}", .. TokenIssuer.AppHostArguments(), .. AdditionalAppHostArguments],
+            [
+                $"--{ModeKey}={Mode}",
+                $"--{OpenBao.RootTokenParameterKey}={OpenBaoToken}",
+                .. TokenIssuer.AppHostArguments(),
+                .. AdditionalAppHostArguments
+            ],
             (applicationOptions, _) => applicationOptions.DisableDashboard = true,
             cancellationToken);
         App = await builder.BuildAsync(cancellationToken);
@@ -87,7 +104,13 @@ public abstract class TestServerFixtureBase : IAsyncLifetime
             await WaitForSuccessfulCompletionAsync(initializer, cancellationToken);
         }
 
-        // 3. Test-side data access.
+        // 3. Secrets: the initializer writes them into OpenBao, and the application reads them from there at startup.
+        if (SecretsInitializerResource is { } secrets)
+        {
+            await WaitForSuccessfulCompletionAsync(secrets, cancellationToken);
+        }
+
+        // 4. Test-side data access.
         var connectionString = await RequiredConnectionStringAsync(Resources.PostgresDb, cancellationToken);
         Todos = new TodoTestRepository(connectionString);
 

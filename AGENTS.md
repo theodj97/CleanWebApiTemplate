@@ -29,3 +29,19 @@ dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj \
 
 Si aparece cualquier advertencia de trimming/AOT, el cambio no está terminado. Distingue siempre
 un build correcto de una publicación AOT correcta: el build no sustituye al publish.
+
+## Agent skills
+
+### Issue tracker
+
+Las incidencias viven en GitHub Issues (`theodj97/CleanWebApiTemplate`), gestionadas con la CLI
+`gh`. Ver `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Vocabulario por defecto de cinco roles: `needs-triage`, `needs-info`, `ready-for-agent`,
+`ready-for-human`, `wontfix`. Ver `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `GLOSSARY.md` en la raíz y `docs/adr/`. Ver `docs/agents/domain.md`.

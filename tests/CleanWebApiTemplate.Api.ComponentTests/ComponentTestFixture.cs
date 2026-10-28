@@ -1,5 +1,6 @@
 extern alias apphost;
 
+using Aspire.Hosting.Testing;
 using CleanWebApiTemplate.Tests.Shared.Fixtures;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -50,6 +51,21 @@ public sealed class ComponentTestFixture : TestServerFixtureBase
             _settings[key] = value;
         }
 
+        // The signing key is not here: the AppHost seeded it into OpenBao, which the application reads at startup.
+        // This fixture only says where the store is and how to authenticate against it.
+        _settings[OpenBao.AddressKey] = App.GetEndpoint(Resources.OpenBao, "http").ToString();
+        _settings[OpenBao.TokenKey] = OpenBaoToken;
+        _settings[OpenBao.MountKey] = OpenBao.Mount;
+        _settings[OpenBao.PathKey] = OpenBao.SecretsPath(Modes.Component);
+
+        // A stray API_KEY in the process would win over the OpenBao source (environment variables are added after it)
+        // and the suite would pass without ever reading the store. Fail before starting the application.
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(AppSettings.ApiKey)) is false)
+        {
+            throw new InvalidOperationException(
+                $"'{AppSettings.ApiKey}' is set in the test process; component tests must read it from OpenBao.");
+        }
+
         // builder.Environment reads ASPNETCORE_ENVIRONMENT from the process in WebApplicationFactory, so the process
         // variable is the source that reliably selects the Testing environment for the in-process application.
         var previousEnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -95,6 +111,13 @@ public sealed class ComponentTestFixture : TestServerFixtureBase
                 throw new InvalidOperationException(
                     $"The application does not read the test value for '{key}'. Check the key name and how Program.cs builds its configuration.");
             }
+        }
+
+        // The signing key must have arrived through OpenBao: it is in no other source this fixture sets.
+        if (configuration[AppSettings.ApiKey] != TokenIssuer.SigningKeyText)
+        {
+            throw new InvalidOperationException(
+                $"The application did not read '{AppSettings.ApiKey}' from OpenBao. Check the secrets initializer and '{OpenBao.PathKey}'.");
         }
     }
 

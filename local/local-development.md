@@ -1,7 +1,8 @@
 # Local development
 
 This repository runs locally with [Aspire](https://aspire.dev). One command starts the API, an ephemeral
-PostgreSQL database built from SQL scripts (plus a synthetic seed) and the dashboard with logs and traces.
+PostgreSQL database built from SQL scripts (plus a synthetic seed), an ephemeral OpenBao server that holds the
+application's secrets, and the dashboard with logs and traces.
 
 Nothing here is required by deployed environments: `src/` never references anything under `local/`.
 
@@ -11,7 +12,7 @@ Nothing here is required by deployed environments: `src/` never references anyth
 |---|---|
 | `src/` | Application and shared runtime code for every environment: `Api`, `Application`, `Domain`, `Infrastructure`, `ServiceDefaults`. |
 | `tests/` | Test projects: Api.UnitTests, Api.ComponentTests, Api.FunctionalTests, Tests.Shared. |
-| `local/aspire/` | Local orchestration only: `CleanWebApiTemplate.AppHost` and `CleanWebApiTemplate.DbInitializer`. |
+| `local/aspire/` | Local orchestration only: `CleanWebApiTemplate.AppHost`, `CleanWebApiTemplate.DbInitializer` and `CleanWebApiTemplate.OpenBaoInitializer`. |
 | `local/database/` | PostgreSQL schema scripts and `seed/` synthetic data. |
 | `local/tools/` | `devtoken.cs` / `devtoken.json`: locally signed JWTs, no identity provider. |
 | `tools/bruno/` | brunoGen layer (`custom/`) for the `aspire-local` Bruno collection. |
@@ -45,7 +46,9 @@ certificate. Node (the Bruno CLI) ignores it: pass `NODE_EXTRA_CA_CERTS=~/.aspne
 ```text
 postgres (container, ephemeral, no volume)
   └── postgresdb ──► db-init (runs once, applies schema + seed) ──► api (https://localhost:5001)
-local-jwt-signing-key (secret parameter) ──► api: API_KEY
+openbao (container, ephemeral, dev mode, no volume)
+  └── openbao-init (runs once, writes the application's secrets) ──► api: OpenBao__* (reads API_KEY from the store)
+local-jwt-signing-key (secret parameter) ──► openbao-init: API_KEY ──► openbao
 ```
 
 | Resource | Kind | Purpose | Waits for |
@@ -53,8 +56,10 @@ local-jwt-signing-key (secret parameter) ──► api: API_KEY
 | `postgres` | Container | PostgreSQL server. Ephemeral: removed with its data when the AppHost stops. | — |
 | `postgresdb` | Database | Database referenced as `ConnectionStrings:Postgres`. | `postgres` |
 | `db-init` | Project (one-shot) | Applies `local/database/*.sql` and, in Local mode, `local/database/seed/*.sql`; exits 0 when ready. | `postgresdb` |
-| `local-jwt-signing-key` | Secret parameter | HS256 key stored in the AppHost user secrets; passed to the API as `API_KEY`. | — |
-| `api` | Project | The API in the `Development` environment. | `postgresdb`, `db-init` completion |
+| `openbao` | Container | OpenBao in dev mode: in-memory, unsealed, no volume. Removed when the AppHost stops. | — |
+| `openbao-init` | Project (one-shot) | Writes the application's secrets (today `API_KEY`) into `secret/cleanwebapitemplate/local`; exits 0 when the store is ready. | `openbao` |
+| `local-jwt-signing-key` | Secret parameter | HS256 key stored in the AppHost user secrets; passed to `openbao-init` as `API_KEY`. | — |
+| `api` | Project | The API in the `Development` environment. | `postgresdb`, `db-init`, `openbao`, `openbao-init` completion |
 
 ## Start and stop
 
@@ -90,7 +95,8 @@ container and its data. There is nothing to reset by hand.
 
 ## Authentication: locally signed JWTs
 
-The API validates JWTs with the symmetric key in `API_KEY` and clears `Authentication:Authority`, so **no identity
+The API validates JWTs with the symmetric key it reads from OpenBao as `API_KEY` and clears `Authentication:Authority`,
+so **no identity
 provider is contacted** in local development. Tokens are signed locally by `local/tools/devtoken.cs`.
 
 ```bash
@@ -183,25 +189,50 @@ Add a new script, for example `local/database/0002__add_todo_due_date.sql` or
 
 ## Configuration and secrets
 
-The `appsettings*.json` files contain **no connection strings and no secrets**. Everything is supplied through
-environment variables (Aspire does it locally):
+The `appsettings*.json` files contain **no connection strings and no secrets**. Non-secret settings live in the
+files; secrets come from OpenBao; locally, the AppHost points the API at both:
 
 | Setting | Needed for | How to provide |
 |---|---|---|
 | `ConnectionStrings__Postgres` | Database location | Injected by the AppHost (`ConnectionStrings:Postgres`). Outside Aspire, set the environment variable. |
-| `API_KEY` | JWT signing key | Injected by the AppHost from the secret parameter `local-jwt-signing-key` (`devtoken init`). |
+| `API_KEY` | JWT signing key | **Read from OpenBao** (`OpenBao:Path`). It never reaches the API as an environment variable: `openbao-init` seeds it from the secret parameter `local-jwt-signing-key` (`devtoken init`). |
+| `OpenBao__Address` | Where the secrets store is | Injected by the AppHost (`http://localhost:<port>`). In a deployed environment, set it to the server URL. |
+| `OpenBao__Token` | Token sent in `X-Vault-Token` | Generated by the AppHost on every start and never persisted. Deployed environments take it from the platform's secret mechanism. |
+| `OpenBao__Mount` | KV v2 mount point | `secret`, injected by the AppHost. |
+| `OpenBao__Path` | Secret that holds the configuration | `cleanwebapitemplate/local` locally; `cleanwebapitemplate/staging` and `.../production` are set per environment. |
+| `OpenBao__TimeoutSeconds` | Timeout of the startup read | Optional, 5 by default. |
 | `Authentication__Authority` | OIDC metadata address | Empty locally (no metadata download). When unset, no authority is configured and tokens are validated with `API_KEY` only. Metadata over plain HTTP is always refused (`RequireHttpsMetadata` keeps its default `true`). |
 | `Audience` | JWT audience the API validates | `appsettings.json`; the AppHost overrides it per mode. |
 | `Cors__AllowedOrigins__0…` | Origins allowed to call the API from a browser | Empty locally (no browser client). An empty list disables CORS; credentials require explicit origins. |
 | `OpenApi__Enabled` | OpenAPI document and Swagger UI | `true` in `appsettings.json`, `false` in `appsettings.PRODUCTION.json`. |
 
+Sources, in increasing precedence: `appsettings*.json` → user secrets → OpenBao → environment variables → command
+line. Environment variables stay the emergency override, and the OpenBao source is a no-op when `OpenBao__Address`
+is empty. The secret is read **once at startup**: rotating it means restarting the application.
+
 The API reads these values and never branches on the environment name. What changes per environment lives in
-`appsettings.{Environment}.json` or in environment variables.
+`appsettings.{Environment}.json`, in environment variables, or in the OpenBao path.
 
-In `Development`, environment variables take precedence over user secrets, so values injected by the AppHost win over
-a developer's local configuration.
+### OpenBao
 
-No external service is needed locally.
+The local server runs in **dev mode**: in memory, unsealed, no volume. It is removed with the AppHost, so every start
+begins empty and `openbao-init` writes the application's secrets again. The application reads them through the same
+code path as in a deployed environment.
+
+- **UI:** `aspire describe` prints the `openbao` URL. Open `<url>/ui/` and authenticate with method **Token** and the
+  root token of this run.
+- **Root token:** generated per start and never written to disk. The dashboard shows it in the `api` or
+  `openbao-init` resource (Environment); `docker inspect` shows it in the container arguments.
+- **Add or change a secret:** in the UI, open `secret/cleanwebapitemplate/local` and add the key exactly as the
+  application reads it (`API_KEY`, `Some__Nested__Key`). Then restart the API with `aspire resource api restart`:
+  the store is read once at startup.
+- **Lost on restart:** anything added by hand disappears when the AppHost stops. `openbao-init` recreates `API_KEY`
+  only.
+
+In a deployed environment, point `OpenBao__Address`, `OpenBao__Token` and `OpenBao__Path` at the real server (and
+`OpenBao__Mount` if the KV mount is not `secret`). Obtaining that token is the platform's job (AppRole, Kubernetes
+auth, or a secret injected by the orchestrator); the application only needs it in configuration.
+
 
 ## Tests
 
@@ -211,13 +242,16 @@ dotnet test --solution CleanWebApiTemplate.slnx
 
 `global.json` selects the Microsoft Testing Platform runner, so `dotnet test` requires `--solution` or `--project`.
 The suite has unit, component and functional projects (see `tests/README.md`): component tests run the API in-process
-against the AppHost's PostgreSQL container, functional tests run it as a separate process. Both use the same AppHost
-through `RunMode=Component|Functional`, with no dashboard, no telemetry and empty (schema-only) databases.
+against the AppHost's PostgreSQL and OpenBao containers, functional tests run it as a separate process. Both use the
+same AppHost through `RunMode=Component|Functional`, with no dashboard, no telemetry, empty (schema-only) databases
+and freshly seeded secrets.
 
 The test modes run under the `Testing` environment name, but there is no `appsettings.Testing.json`: everything the
 tests need arrives as configuration, from the AppHost as environment variables (functional) or from the in-memory
 settings of `ComponentAppFactory` (component). The test issuer is `urn:CleanWebApiTemplate:tests` and every run gets a
-new signing key in memory; issuer and audience are passed to the API the same way. No identity provider is contacted.
+new signing key in memory; the AppHost seeds it into OpenBao and the API reads it from there, the same path as in
+production. The component fixture also asserts that the key did not arrive as an environment variable, so a stray
+`API_KEY` cannot make the suite pass without exercising the store. No identity provider is contacted.
 
 ## AI coding agents
 
@@ -249,8 +283,12 @@ aspire resource api restart
 |---|---|
 | `The local JWT signing key is missing` | Run `dotnet local/tools/devtoken.cs init` from the repository root, then start the AppHost again. |
 | `ConnectionStrings.Postgres is required` | The environment variable `ConnectionStrings__Postgres` is missing; the AppHost injects it. |
-| Every request returns 500 | `API_KEY` must be configured and long enough for HS256; check `aspire logs api`. |
+| Every request returns 500 | `API_KEY` did not reach the API from OpenBao (check `aspire logs openbao-init`), or it is too short for HS256; check `aspire logs api`. |
 | `db-init` failed | `aspire logs db-init`: the failing script and PostgreSQL error are printed there. |
+| `OpenBao initialization failed` | `aspire logs openbao-init`: check `OpenBao__Address`, the token and `OpenBao__Path`. |
+| `'API_KEY' is required` | The secret did not reach the store: check `aspire logs openbao-init` and `OpenBao__Path`. |
+| `OpenBao returned 403` | The token does not match the container's root token (a stale AppHost) or the policy denies the path. |
+| `OpenBao returned 404` | The secret path does not exist: the initializer did not run or `OpenBao__Path` differs. |
 | API `Unhealthy` | `curl --cacert "$HOME/.aspnet/dev-certs/trust" https://localhost:5001/health`; the health check reports the failing dependency. |
 | Port 5001 already in use | Another API is running; stop it or change the launch profile. |
 | 401 from the API | The token expired or was signed with a different key; run `devtoken init --rotate` and restart the AppHost. |
