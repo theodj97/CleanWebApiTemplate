@@ -1,6 +1,6 @@
 using System.Net;
 using System.Text;
-using CleanWebApiTemplate.Secrets;
+using CleanWebApiTemplate.Infrastructure.Secrets;
 
 namespace CleanWebApiTemplate.Api.UnitTests.Secrets;
 

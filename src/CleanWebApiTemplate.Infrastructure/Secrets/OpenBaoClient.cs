@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace CleanWebApiTemplate.Secrets;
+namespace CleanWebApiTemplate.Infrastructure.Secrets;
 
 /// <summary>
 /// Minimal OpenBao (Vault-compatible) client for KV v2 secrets. It is written by hand because the .NET clients
@@ -26,9 +26,7 @@ public sealed class OpenBaoClient
 
         if (Uri.TryCreate(options.Address.TrimEnd('/') + "/", UriKind.Absolute, out var address) is false ||
             address.Scheme is not ("http" or "https"))
-        {
             throw new ArgumentException($"'{options.Address}' is not an absolute HTTP address.", nameof(options));
-        }
 
         if (string.IsNullOrWhiteSpace(options.Token))
             throw new ArgumentException("The OpenBao token is required.", nameof(options));

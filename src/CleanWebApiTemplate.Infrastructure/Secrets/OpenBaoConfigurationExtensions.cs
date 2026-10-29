@@ -1,7 +1,7 @@
 using System.Globalization;
 using Microsoft.Extensions.Configuration;
 
-namespace CleanWebApiTemplate.Secrets;
+namespace CleanWebApiTemplate.Infrastructure.Secrets;
 
 public static class OpenBaoConfigurationExtensions
 {

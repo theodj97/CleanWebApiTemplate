@@ -21,6 +21,9 @@ Nothing here is required by deployed environments: `src/` never references anyth
 environment for OpenTelemetry and the base health checks (`/health`, `/alive`). That is why it lives in `src/`: the
 telemetry and the probes are needed in deployed environments too, not only locally.
 
+`src/CleanWebApiTemplate.Infrastructure` also holds the OpenBao configuration adapter (`Infrastructure/Secrets`),
+shared by the API and the local `openbao-init` job. It stays in `src/` because the API reads it in every environment.
+
 ## Prerequisites
 
 | Tool | Version used | Check |

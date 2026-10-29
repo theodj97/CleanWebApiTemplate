@@ -1,4 +1,4 @@
-namespace CleanWebApiTemplate.Secrets;
+namespace CleanWebApiTemplate.Infrastructure.Secrets;
 
 /// <summary>
 /// How to reach the OpenBao server and which token authenticates the application.

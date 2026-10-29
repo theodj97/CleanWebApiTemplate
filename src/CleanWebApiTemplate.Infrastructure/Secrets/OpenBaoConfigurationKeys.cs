@@ -1,4 +1,4 @@
-namespace CleanWebApiTemplate.Secrets;
+namespace CleanWebApiTemplate.Infrastructure.Secrets;
 
 /// <summary>Configuration keys the application reads to reach OpenBao, plus their defaults.</summary>
 public static class OpenBaoConfigurationKeys

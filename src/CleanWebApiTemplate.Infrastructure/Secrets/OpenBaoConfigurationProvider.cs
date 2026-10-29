@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 
-namespace CleanWebApiTemplate.Secrets;
+namespace CleanWebApiTemplate.Infrastructure.Secrets;
 
 /// <summary>
 /// Exposes the entries of one KV v2 secret as configuration keys. The read happens once, while the host builds its

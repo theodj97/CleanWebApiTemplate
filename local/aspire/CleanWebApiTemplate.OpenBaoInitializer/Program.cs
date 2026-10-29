@@ -1,4 +1,4 @@
-using CleanWebApiTemplate.Secrets;
+using CleanWebApiTemplate.Infrastructure.Secrets;
 
 namespace CleanWebApiTemplate.OpenBaoInitializer;
 

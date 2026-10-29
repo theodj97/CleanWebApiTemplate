@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 
-namespace CleanWebApiTemplate.Secrets;
+namespace CleanWebApiTemplate.Infrastructure.Secrets;
 
 /// <summary>Configuration source that reads one KV v2 secret when the configuration is built.</summary>
 internal sealed class OpenBaoConfigurationSource : IConfigurationSource

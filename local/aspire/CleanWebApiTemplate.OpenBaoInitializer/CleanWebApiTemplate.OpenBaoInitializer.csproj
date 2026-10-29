@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference
-      Include="../../../src/CleanWebApiTemplate.Secrets/CleanWebApiTemplate.Secrets.csproj" />
+      Include="../../../src/CleanWebApiTemplate.Infrastructure/CleanWebApiTemplate.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

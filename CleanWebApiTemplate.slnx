@@ -16,7 +16,6 @@
     <Project Path="src/CleanWebApiTemplate.Domain/CleanWebApiTemplate.Domain.csproj" />
     <Project Path="src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj" />
     <Project Path="src/CleanWebApiTemplate.Infrastructure/CleanWebApiTemplate.Infrastructure.csproj" />
-    <Project Path="src/CleanWebApiTemplate.Secrets/CleanWebApiTemplate.Secrets.csproj" />
     <Project Path="src/CleanWebApiTemplate.ServiceDefaults/CleanWebApiTemplate.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/tests/">
