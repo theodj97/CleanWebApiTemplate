@@ -16,4 +16,9 @@
 		<ProjectReference Include="..\CleanWebApiTemplate.Domain\CleanWebApiTemplate.Domain.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
+		<AdditionalFiles Include="..\..\BannedSymbols.txt" />
+	</ItemGroup>
+
 </Project>

@@ -111,8 +111,8 @@ Result<T>: sin IsCreated/IsNoContent/Created
 
 ## Pendiente
 
-- **Batch 4b**: ArchUnitNET, `BannedApiAnalyzers`, `AppConfigurationHelper`,
-  `BaseApiRouter`, `OpenApiConfiguration`.
+- **Batch 4b**: completado en [`13-batch-4b.md`](13-batch-4b.md) (ArchUnitNET,
+  `BannedApiAnalyzers`, `AppConfigurationHelper`, `ICurrentUser` y split de OpenAPI).
 - **Batch 5**: cobertura de caminos críticos.
 - **Batch 6**: hooks y guardarraíles.
 - **Batch 7**: template y readmes.

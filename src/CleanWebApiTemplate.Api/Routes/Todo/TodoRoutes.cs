@@ -1,13 +1,14 @@
 using System.Net;
-using CleanWebApiTemplate.Api.Common;
 using CleanWebApiTemplate.Api.Common.Abstractions;
 using CleanWebApiTemplate.Api.Configuration;
 using CleanWebApiTemplate.Api.Extensions;
+using CleanWebApiTemplate.Api.Models.Interfaces;
 using CleanWebApiTemplate.Api.Models.Responses.Todo;
 using CleanWebApiTemplate.Api.Routes.Todo.Create;
 using CleanWebApiTemplate.Api.Routes.Todo.Filter;
 using CleanWebApiTemplate.Api.Routes.Todo.Get;
 using CleanWebApiTemplate.Api.Routes.Todo.Update;
+using CleanWebApiTemplate.Application.Abstractions;
 using CleanWebApiTemplate.Application.Dtos.Todo;
 using CleanWebApiTemplate.Application.Results;
 using CleanWebApiTemplate.Application.Todo.Create;
@@ -20,9 +21,11 @@ using Microsoft.OpenApi;
 
 namespace CleanWebApiTemplate.Api.Routes.Todo;
 
-public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRouter(httpContextAccessor)
+public sealed class TodoRoutes(ICurrentUser currentUser) : IGroupMap
 {
-    public override void MapGroup(IEndpointRouteBuilder app)
+    private const string RouteName = "Todo";
+
+    public void MapGroup(IEndpointRouteBuilder app)
     {
         var userGroup = app.CreateAuthorizedRouteGroupBuilder(RouteName, [Constants.USER_POLICY]);
         var operatorGroup = app.CreateAuthorizedRouteGroupBuilder(RouteName, [Constants.OPERATOR_POLICY]);
@@ -34,7 +37,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
                                          IGetTodoByIdService service,
                                          CancellationToken cancellationToken) =>
         {
-            GetTodoByIdInput input = new() { Id = id, CreatedBy = OwnerScope };
+            GetTodoByIdInput input = new() { Id = id, CreatedBy = currentUser.OwnerScope };
             Result<TodoDto?> result = await service.GetAsync(input, cancellationToken);
             return result.ToResponse<TodoDto?, TodoResponse>();
         })
@@ -51,7 +54,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
                                             IFilteredTodoService service,
                                             CancellationToken cancellationToken) =>
         {
-            var input = request.ToInput(OwnerScope);
+            var input = request.ToInput(currentUser.OwnerScope);
             var result = await service.FilterAsync(input, cancellationToken);
             return result.ToResponse<TodoDto?, TodoResponse>();
         })
@@ -68,7 +71,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
                                             IGetTodoTitlesService service,
                                             CancellationToken cancellationToken) =>
         {
-            var input = request.ToInput(OwnerScope);
+            var input = request.ToInput(currentUser.OwnerScope);
             var result = await service.GetAsync(input, cancellationToken);
             return result.ToResponse<TodoDto?, TodoTitleResponse>();
         })
@@ -85,7 +88,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
                                       ICreateTodoService service,
                                       CancellationToken cancellationToken) =>
         {
-            var input = request.ToInput(UserEmail);
+            var input = request.ToInput(currentUser.Email);
             var result = await service.CreateAsync(input, cancellationToken);
             return result.ToCreatedResponse<TodoDto?, TodoResponse>(dto => $"/api/Todo/{dto!.Id}");
         })
@@ -103,7 +106,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
                                          IUpdateTodoService service,
                                          CancellationToken cancellationToken) =>
         {
-            var input = request.ToInput(id, UserEmail, OwnerScope);
+            var input = request.ToInput(id, currentUser.Email, currentUser.OwnerScope);
             var result = await service.UpdateAsync(input, cancellationToken);
             return result.ToResponse<TodoDto?, TodoResponse>();
         })
@@ -122,7 +125,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
                                                 IDeleteTodoService service,
                                                 CancellationToken cancellationToken) =>
         {
-            var input = new DeleteTodoInput() { Id = id, CreatedBy = OwnerScope };
+            var input = new DeleteTodoInput() { Id = id, CreatedBy = currentUser.OwnerScope };
             var result = await service.DeleteAsync(input, cancellationToken);
             return result.ToResponse();
         })

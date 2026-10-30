@@ -77,14 +77,15 @@ inválida falla al arrancar con un mensaje claro.
 **Criterio de aceptación:** regla de unicidad documentada y testeada; no hay carreras
 conocidas; filtros y fechas se comportan igual en cualquier cultura.
 
-### Batch 4 — Arquitectura — 🟡 parcial (4a implementado)
+### Batch 4 — Arquitectura — ✅ implementado (4a + 4b)
 
 **Estado 4a:** estructura repository-centric, Domain limpio, `AppSettings`/`Constants` fuera
 de Domain, ASP.NET fuera de Domain y `Result<T>` sin HTTP. Detalle en
 [`12-batch-4-structure.md`](12-batch-4-structure.md).
 
-**Pendiente 4b:** ArchUnitNET, `BannedApiAnalyzers`, `AppConfigurationHelper`, `BaseApiRouter`
-y `OpenApiConfiguration`.
+**Estado 4b:** ArchUnitNET, `BannedApiAnalyzers`, `AppConfigurationHelper`, `ICurrentUser`
+(sin `BaseApiRouter`) y split de `OpenApiConfiguration` con contract test. Detalle en
+[`13-batch-4b.md`](13-batch-4b.md).
 
 - ARCH-001: mover `ITodoRepository`/`TodoFilter` a Application.
 - ARCH-002: eliminar `Microsoft.AspNetCore.Http*` de Domain.

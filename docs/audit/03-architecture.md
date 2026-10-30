@@ -25,10 +25,11 @@ graph TD
     Local --> Infrastructure
 ```
 
-> **Estado Batch 4a:** ARCH-001, ARCH-002, ARCH-003, ARCH-004 y ARCH-010 están corregidos
-> (ver [`12-batch-4-structure.md`](12-batch-4-structure.md)). El mapa y la tabla siguientes
-> describen la foto original de la auditoría; ARCH-008 y el resto de Batch 4b siguen
-> pendientes.
+> **Estado Batch 4:** ARCH-001, ARCH-002, ARCH-003, ARCH-004, ARCH-005, ARCH-006, ARCH-007,
+> ARCH-008 y ARCH-010 están corregidos (ver [`12-batch-4-structure.md`](12-batch-4-structure.md)
+> y [`13-batch-4b.md`](13-batch-4b.md)). El mapa y la tabla siguientes describen la foto
+> original de la auditoría; ARCH-009 sigue pendiente para cuando el template tenga varios
+> servicios.
 
 La regla de Clean Architecture es que las dependencias apunten hacia dentro:
 `Api -> Application -> Domain`, con `Infrastructure` implementando puertos definidos en
@@ -165,6 +166,9 @@ Cambios concretos:
    - Api es el único composition root.
    - `src/` no usa `System.Reflection`, `dynamic` ni `JsonSerializer` por reflexión.
 8. Añadir `BannedApiAnalyzers` + `BannedSymbols.txt` para reflexión/`Activator`/`MakeGenericType`.
+
+> Los puntos 1–8 están implementados en Batch 4a/4b. Los tests de arquitectura viven en
+> `tests/CleanWebApiTemplate.ArchitectureTests`; los bans de reflexión, en `BannedSymbols.txt`.
 
 ## ADRs propuestos
 

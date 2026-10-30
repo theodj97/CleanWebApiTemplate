@@ -1,0 +1,16 @@
+M:System.Activator.CreateInstance(System.Type);Activator.CreateInstance is not AOT-safe;AOT001
+M:System.Type.GetType(System.String);Type.GetType is not AOT-safe;AOT001
+M:System.Type.GetMethod(System.String);Reflection-based method lookup is not AOT-safe;AOT001
+M:System.Type.GetMethod(System.String,System.Type[]);Reflection-based method lookup is not AOT-safe;AOT001
+M:System.Type.GetProperty(System.String);Reflection-based property lookup is not AOT-safe;AOT001
+M:System.Type.GetProperty(System.String,System.Type);Reflection-based property lookup is not AOT-safe;AOT001
+M:System.Type.GetMember(System.String);Reflection-based member lookup is not AOT-safe;AOT001
+M:System.Reflection.Assembly.Load(System.String);Assembly.Load is not AOT-safe;AOT001
+M:System.Reflection.Assembly.Load(System.Reflection.AssemblyName);Assembly.Load is not AOT-safe;AOT001
+M:System.Reflection.Assembly.GetType(System.String);Assembly.GetType is not AOT-safe;AOT001
+M:System.Reflection.MethodInfo.Invoke(System.Object,System.Object[]);Reflection-based invocation is not AOT-safe;AOT001
+M:System.Reflection.MethodInfo.MakeGenericMethod(System.Type[]);MakeGenericMethod is not AOT-safe;AOT001
+M:System.Reflection.PropertyInfo.GetValue(System.Object);Reflection-based property access is not AOT-safe;AOT001
+M:System.Reflection.PropertyInfo.SetValue(System.Object,System.Object);Reflection-based property access is not AOT-safe;AOT001
+M:System.Text.Json.JsonSerializer.Serialize(System.Object,System.Type,System.Text.Json.JsonSerializerOptions);Use the source-generated JsonSerializerContext;AOT002
+M:System.Text.Json.JsonSerializer.Deserialize(System.String,System.Type,System.Text.Json.JsonSerializerOptions);Use the source-generated JsonSerializerContext;AOT002

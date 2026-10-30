@@ -1,7 +1,9 @@
 using System.Security.Claims;
 using System.Text;
+using CleanWebApiTemplate.Api.Common;
 using CleanWebApiTemplate.Api.Configuration;
 using CleanWebApiTemplate.Api.Extensions;
+using CleanWebApiTemplate.Application.Abstractions;
 using CleanWebApiTemplate.Application.Todo.Abstractions;
 using CleanWebApiTemplate.Application.Todo.Create;
 using CleanWebApiTemplate.Application.Todo.Delete;
@@ -58,6 +60,9 @@ public static class ConfigureServices
         }
 
         services.AddHttpContextAccessor();
+        // Stateless adapter over IHttpContextAccessor: it reads the request per property access. Transient keeps
+        // route mapping (outside any request) from capturing a scoped instance.
+        services.AddTransient<ICurrentUser, HttpContextCurrentUser>();
 
         services.ConfigureHttpJsonOptions(options =>
             options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default));

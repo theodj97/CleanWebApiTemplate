@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3.mtp-v2" />
+    <PackageReference Include="TngTech.ArchUnitNET" />
+    <PackageReference Include="TngTech.ArchUnitNET.xUnitV3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CleanWebApiTemplate.Api\CleanWebApiTemplate.Api.csproj" />
+    <ProjectReference Include="..\..\src\CleanWebApiTemplate.Application\CleanWebApiTemplate.Application.csproj" />
+    <ProjectReference Include="..\..\src\CleanWebApiTemplate.Domain\CleanWebApiTemplate.Domain.csproj" />
+    <ProjectReference Include="..\..\src\CleanWebApiTemplate.Infrastructure\CleanWebApiTemplate.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\CleanWebApiTemplate.ServiceDefaults\CleanWebApiTemplate.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+</Project>

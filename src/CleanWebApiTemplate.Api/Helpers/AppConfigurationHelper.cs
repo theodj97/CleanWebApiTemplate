@@ -34,21 +34,38 @@ public static class AppConfigurationHelper
     }
 
     /// <summary>
-    /// Reads the files that ship next to the binary and re-states the host sources in the host's own precedence
-    /// order, so the last one still wins: files &lt; user secrets &lt; environment variables &lt; command line.
-    /// The host already created these sources; re-adding them keeps their relative order intact while pointing
-    /// the files at <see cref="AppContext.BaseDirectory"/>.
+    /// Builds the configuration sources deterministically: files that ship next to the binary, Development-only
+    /// user secrets, OpenBao, environment variables and command line. Later sources win. OpenBao is located through
+    /// a bootstrap configuration so its address/token can come from the environment or the command line.
     /// </summary>
     private static void ConfigureSources(WebApplicationBuilder builder,
                                          string environment,
                                          string[] args)
     {
-        builder.Configuration.SetBasePath(AppContext.BaseDirectory);
+        // Bootstrap only to locate OpenBao: its address/token can come from the environment
+        // or the command line, which must be read before the OpenBao source is added.
+        ConfigurationBuilder bootstrapBuilder = new();
+        bootstrapBuilder.SetBasePath(AppContext.BaseDirectory);
+        bootstrapBuilder.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
+        bootstrapBuilder.AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: false);
+        if (builder.Environment.IsDevelopment())
+            bootstrapBuilder.AddUserSecrets<Program>(optional: true);
+        bootstrapBuilder.AddEnvironmentVariables();
+        bootstrapBuilder.AddCommandLine(args);
+        IConfiguration bootstrap = bootstrapBuilder.Build();
 
+        // Rebuild the host sources deterministically instead of stacking duplicates on top of
+        // the ones CreateSlimBuilder already added.
+        builder.Configuration.Sources.Clear();
+        builder.Configuration.SetBasePath(AppContext.BaseDirectory);
         builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
         builder.Configuration.AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: false);
-        builder.Configuration.AddUserSecrets<Program>(optional: true);
-        builder.Configuration.AddOpenBaoSecrets(builder.Configuration);
+
+        // Development-only local secrets; deployed environments use OpenBao or the platform.
+        if (builder.Environment.IsDevelopment())
+            builder.Configuration.AddUserSecrets<Program>(optional: true);
+
+        builder.Configuration.AddOpenBaoSecrets(bootstrap);
         builder.Configuration.AddEnvironmentVariables();
         builder.Configuration.AddCommandLine(args);
     }
