@@ -6,12 +6,14 @@ namespace CleanWebApiTemplate.Api.Extensions;
 
 public static class ApiResultExtensions
 {
-    public static IResult ToResponse<TDto, TResponse>(this Result<TDto> result)
+    public static IResult ToResponse<TDto, TResponse>(this Result<TDto> result,
+                                                      Func<TDto, string>? createdLocation = null)
         where TResponse : class, IBaseResponse<TDto, TResponse>
         where TDto : class?
     {
         return result.ToResponseCore(res => res.IsCreated
-            ? Results.Created(string.Empty, TResponse.ToResponseModel(res.Value))
+            ? Results.Created(ToUri(createdLocation, res.Value!),
+                              TResponse.ToResponseModel(res.Value))
             : Results.Ok(TResponse.ToResponseModel(res.Value)));
     }
 
@@ -19,15 +21,27 @@ public static class ApiResultExtensions
         where TResponse : IBaseResponse<TDto, TResponse>
     {
         return result.ToResponseCore(res => res.IsCreated
-            ? Results.Created(string.Empty, (result.Value ?? []).Select(TResponse.ToResponseModel))
-            : Results.Ok((result.Value ?? []).Select(TResponse.ToResponseModel)));
+            ? Results.Created((Uri?)null, (res.Value ?? []).Select(TResponse.ToResponseModel))
+            : Results.Ok((res.Value ?? []).Select(TResponse.ToResponseModel)));
     }
 
-    public static IResult ToResponse<T>(this Result<T> result)
+    public static IResult ToResponse<T>(this Result<T> result,
+                                        Func<T, string>? createdLocation = null)
     {
         return result.ToResponseCore(res => res.IsCreated
-            ? Results.Created(string.Empty, res.Value)
+            ? Results.Created(ToUri(createdLocation, res.Value!), res.Value)
             : Results.Ok(res.Value));
+    }
+
+    private static Uri? ToUri<T>(Func<T, string>? locationFactory, T value)
+    {
+        if (locationFactory is null)
+            return null;
+
+        string location = locationFactory(value);
+        return string.IsNullOrWhiteSpace(location)
+            ? null
+            : new Uri(location, UriKind.RelativeOrAbsolute);
     }
 
     private static IResult ResolveError(Error error) => error switch

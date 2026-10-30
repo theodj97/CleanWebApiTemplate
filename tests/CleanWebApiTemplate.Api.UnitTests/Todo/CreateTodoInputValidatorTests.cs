@@ -42,6 +42,18 @@ public class CreateTodoInputValidatorTests
     }
 
     [Fact]
+    public async Task Validate_WithNullTitle_FailsWithoutThrowing()
+    {
+        // Act
+        var result = await _validator.ValidateAsync(
+            new CreateTodoInput { Title = null!, CreatedBy = "user@example.com" },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+    }
+
+    [Fact]
     public async Task Validate_WithInvalidEmail_Fails()
     {
         // Act

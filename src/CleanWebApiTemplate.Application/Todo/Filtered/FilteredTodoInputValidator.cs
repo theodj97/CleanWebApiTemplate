@@ -15,7 +15,7 @@ public class FilteredTodoInputValidator : TodoValidator<FilteredTodoInput>
             .When(x => x.Ids is not null && x.Ids.Any());
 
         RuleForEach(x => x.Title)
-            .Must(title => title.Length < TodoTable.TitleMaxLength)
+            .Must(title => title is not null && title.Length < TodoTable.TitleMaxLength)
             .WithMessage($"Title must be less than {TodoTable.TitleMaxLength} characters")
             .When(x => x.Title is not null && x.Title.Any());
 

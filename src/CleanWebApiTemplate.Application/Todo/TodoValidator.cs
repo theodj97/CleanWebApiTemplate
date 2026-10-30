@@ -14,6 +14,11 @@ public class TodoValidator<TRequest>(ITodoRepository todoRepository) : BaseAbstr
                                        ValidationContext<TRequest> context,
                                        CancellationToken cancellationToken)
     {
+        // NotNullNotEmpty already reports the missing value. Do not dereference it here: a JSON
+        // body can contain "title": null even when the property is non-nullable.
+        if (string.IsNullOrEmpty(title))
+            return;
+
         if (title.Length > TodoTable.TitleMaxLength)
             AddFailure(context,
                        $"Property '{context.DisplayName}' max length is {TodoTable.TitleMaxLength}.");
@@ -30,9 +35,13 @@ public class TodoValidator<TRequest>(ITodoRepository todoRepository) : BaseAbstr
         var id = idAndTitle.Id;
         if (id is null) AddFailure(context, $"Property '{context.DisplayName}' must be provided.", nameof(IdAndTitle.Id));
         var title = idAndTitle.Title;
-        if (title is null) AddFailure(context, $"Property '{context.DisplayName}' must be provided.", nameof(IdAndTitle.Title));
+        if (title is null)
+        {
+            AddFailure(context, $"Property '{context.DisplayName}' must be provided.", nameof(IdAndTitle.Title));
+            return;
+        }
 
-        if (title!.Length > TodoTable.TitleMaxLength)
+        if (title.Length > TodoTable.TitleMaxLength)
             AddFailure(context,
                        $"Property '{nameof(title)}' max length is {TodoTable.TitleMaxLength}.",
                        nameof(title));
@@ -46,6 +55,9 @@ public class TodoValidator<TRequest>(ITodoRepository todoRepository) : BaseAbstr
     protected void ValidateDescription(string description,
                                        ValidationContext<TRequest> context)
     {
+        if (string.IsNullOrEmpty(description))
+            return;
+
         if (description.Length > TodoTable.DescriptionMaxLength)
             AddFailure(context, $"Property '{context.DisplayName}' max length is {TodoTable.DescriptionMaxLength}.");
     }

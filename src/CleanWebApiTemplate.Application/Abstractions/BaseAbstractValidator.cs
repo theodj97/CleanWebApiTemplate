@@ -29,6 +29,12 @@ public class BaseAbstractValidator<TRequest> : AbstractValidator<TRequest> where
     /// <param name="context">Validation context</param>
     protected void ValidateUlid(string id, ValidationContext<TRequest> context)
     {
+        if (string.IsNullOrEmpty(id))
+        {
+            AddFailure(context, $"Property '{context.DisplayName}' must be a valid ULID");
+            return;
+        }
+
         if (Ulid.TryParse(id, out _) is false)
             AddFailure(context, $"Property '{context.DisplayName}' must be a valid ULID");
 

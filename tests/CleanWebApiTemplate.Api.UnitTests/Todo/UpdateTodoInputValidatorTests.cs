@@ -41,12 +41,14 @@ public class UpdateTodoInputValidatorTests
         Assert.False(result.IsValid);
     }
 
-    [Fact]
-    public async Task Validate_WithUnregisteredStatus_Fails()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(99)]
+    public async Task Validate_WithUnregisteredStatus_Fails(int status)
     {
         // Act
         var result = await _validator.ValidateAsync(
-            new UpdateTodoInput { Id = Ulid.NewUlid().ToString(), Status = 99, UpdatedBy = "user@example.com" },
+            new UpdateTodoInput { Id = Ulid.NewUlid().ToString(), Status = status, UpdatedBy = "user@example.com" },
             TestContext.Current.CancellationToken);
 
         // Assert

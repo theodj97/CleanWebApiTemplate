@@ -55,6 +55,26 @@ public class ResultTests
     }
 
     [Fact]
+    public void Success_WithEmptyGenericCollection_ReturnsNoContent()
+    {
+        // Act
+        var result = Result<IEnumerable<object>>.Success(Array.Empty<object>());
+
+        // Assert
+        Assert.True(result.IsNoContent);
+    }
+
+    [Fact]
+    public void Success_WithEmptyString_IsNotNoContent()
+    {
+        // Act
+        var result = Result<string>.Success(string.Empty);
+
+        // Assert
+        Assert.False(result.IsNoContent);
+    }
+
+    [Fact]
     public void Created_WithValue_ReturnsCreatedResult()
     {
         // Act

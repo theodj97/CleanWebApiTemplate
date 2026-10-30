@@ -24,6 +24,6 @@ public class UpdateTodoInputValidator : TodoValidator<UpdateTodoInput>
 
         RuleFor(x => (int)x.Status!)
             .Custom(ValidateStatus)
-            .When(x => x.Status is not null && x.Status != 0);
+            .When(x => x.Status is not null);
     }
 }

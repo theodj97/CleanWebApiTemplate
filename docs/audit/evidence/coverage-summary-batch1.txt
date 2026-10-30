@@ -1,0 +1,99 @@
+Summary
+  Generated on: 10/29/2026 - 17:07:19
+  Parser: Cobertura
+  Assemblies: 5
+  Classes: 70
+  Files: 56
+  Line coverage: 83%
+  Covered lines: 1461
+  Uncovered lines: 298
+  Coverable lines: 1759
+  Total lines: 3025
+  Branch coverage: 80% (440 of 550)
+  Covered branches: 440
+  Total branches: 550
+  Method coverage: 95% (190 of 200)
+  Full method coverage: 82.5% (165 of 200)
+  Covered methods: 190
+  Fully covered methods: 165
+  Total methods: 200
+
+CleanWebApiTemplate.Api                                                           68.6%
+  CleanWebApiTemplate.Api.Common.Abstractions.EndpointRouteBuilderExtensions      45.4%
+  CleanWebApiTemplate.Api.Common.BaseApiRouter                                     100%
+  CleanWebApiTemplate.Api.Configuration.AppSettingsValidator                       100%
+  CleanWebApiTemplate.Api.Configuration.GlobalExceptionHandler                    95.2%
+  CleanWebApiTemplate.Api.Configuration.OpenApiConfiguration                       1.7%
+  CleanWebApiTemplate.Api.Configuration.ProblemDetailsFactory                      100%
+  CleanWebApiTemplate.Api.ConfigureApplication                                    94.4%
+  CleanWebApiTemplate.Api.ConfigureServices                                       94.5%
+  CleanWebApiTemplate.Api.Extensions.ApiResultExtensions                           100%
+  CleanWebApiTemplate.Api.Extensions.ApiResultExtensions<T>                        100%
+  CleanWebApiTemplate.Api.Extensions.ApiResultExtensions<TDto, TResponse>          100%
+  CleanWebApiTemplate.Api.Extensions.EndpointExtension                             100%
+  CleanWebApiTemplate.Api.Helpers.AppConfigurationHelper                           100%
+  CleanWebApiTemplate.Api.Models.Responses.Todo.TodoResponse                       100%
+  CleanWebApiTemplate.Api.Models.Responses.Todo.TodoTitleResponse                  100%
+  CleanWebApiTemplate.Api.Program                                                  100%
+  CleanWebApiTemplate.Api.Routes.Todo.Create.CreateTodoRequest                     100%
+  CleanWebApiTemplate.Api.Routes.Todo.Filter.FilteredTodoRequest                   100%
+  CleanWebApiTemplate.Api.Routes.Todo.Get.GetTodoTitlesRequest                     100%
+  CleanWebApiTemplate.Api.Routes.Todo.TodoRoutes                                  91.3%
+  CleanWebApiTemplate.Api.Routes.Todo.Update.UpdateTodoRequest                     100%
+
+CleanWebApiTemplate.Application                                                   97.4%
+  CleanWebApiTemplate.Application.Abstractions.BaseAbstractValidator<TRequest>     100%
+  CleanWebApiTemplate.Application.Abstractions.BaseAbstractValidator<TRequest>    95.1%
+  CleanWebApiTemplate.Application.Abstractions.DateRange                           100%
+  CleanWebApiTemplate.Application.Todo.Create.CreateTodoInput                      100%
+  CleanWebApiTemplate.Application.Todo.Create.CreateTodoInputValidator             100%
+  CleanWebApiTemplate.Application.Todo.Create.CreateTodoService                    100%
+  CleanWebApiTemplate.Application.Todo.Delete.DeleteTodoInputValidator             100%
+  CleanWebApiTemplate.Application.Todo.Delete.DeleteTodoService                    100%
+  CleanWebApiTemplate.Application.Todo.Filtered.FilteredTodoInput                  100%
+  CleanWebApiTemplate.Application.Todo.Filtered.FilteredTodoInputValidator         100%
+  CleanWebApiTemplate.Application.Todo.Filtered.FilteredTodoService                100%
+  CleanWebApiTemplate.Application.Todo.GetById.GetTodoByIdInputValidator           100%
+  CleanWebApiTemplate.Application.Todo.GetById.GetTodoByIdService                  100%
+  CleanWebApiTemplate.Application.Todo.GetTitles.GetTodoTitlesInput                100%
+  CleanWebApiTemplate.Application.Todo.GetTitles.GetTodoTitlesInputValidator       100%
+  CleanWebApiTemplate.Application.Todo.GetTitles.GetTodoTitlesService              100%
+  CleanWebApiTemplate.Application.Todo.IdAndTitle                                  100%
+  CleanWebApiTemplate.Application.Todo.TodoValidator<TRequest>                    93.7%
+  CleanWebApiTemplate.Application.Todo.TodoValidator<TRequest>                    87.8%
+  CleanWebApiTemplate.Application.Todo.Update.UpdateTodoInput                      100%
+  CleanWebApiTemplate.Application.Todo.Update.UpdateTodoInputValidator             100%
+  CleanWebApiTemplate.Application.Todo.Update.UpdateTodoService                   93.7%
+  CleanWebApiTemplate.Application.Validation.ValidationRunner<TInput>              100%
+  CleanWebApiTemplate.Application.Validation.ValidationService<TInput, TResult>    100%
+
+CleanWebApiTemplate.Domain                                                         100%
+  CleanWebApiTemplate.Domain.Configuration.Constants                               100%
+  CleanWebApiTemplate.Domain.Configuration.SectionBase                             100%
+  CleanWebApiTemplate.Domain.Models.Entities.TodoEntity                            100%
+  CleanWebApiTemplate.Domain.ResultModel.BadRequestError                           100%
+  CleanWebApiTemplate.Domain.ResultModel.ConflictError                             100%
+  CleanWebApiTemplate.Domain.ResultModel.DomainError                               100%
+  CleanWebApiTemplate.Domain.ResultModel.Error                                     100%
+  CleanWebApiTemplate.Domain.ResultModel.ForbiddenError                            100%
+  CleanWebApiTemplate.Domain.ResultModel.NotFoundError                             100%
+  CleanWebApiTemplate.Domain.ResultModel.Result<T>                                 100%
+  CleanWebApiTemplate.Domain.ResultModel.Result<T>                                 100%
+  CleanWebApiTemplate.Domain.ResultModel.UnauthorizedError                         100%
+
+CleanWebApiTemplate.Infrastructure                                                96.8%
+  CleanWebApiTemplate.Infrastructure.Constants.TodoTable                           100%
+  CleanWebApiTemplate.Infrastructure.Data.NpgsqlConnectionFactory                  100%
+  CleanWebApiTemplate.Infrastructure.Repositories.TodoRepository                  98.1%
+  CleanWebApiTemplate.Infrastructure.Repositories.TodoSortColumns                  100%
+  CleanWebApiTemplate.Infrastructure.Secrets.OpenBaoClient                          90%
+  CleanWebApiTemplate.Infrastructure.Secrets.OpenBaoConfigurationExtensions       96.7%
+  CleanWebApiTemplate.Infrastructure.Secrets.OpenBaoConfigurationProvider          100%
+  CleanWebApiTemplate.Infrastructure.Secrets.OpenBaoConfigurationSource            100%
+  CleanWebApiTemplate.Infrastructure.Secrets.OpenBaoException                      100%
+  CleanWebApiTemplate.Infrastructure.Secrets.OpenBaoOptions                        100%
+  CleanWebApiTemplate.Infrastructure.Secrets.OpenBaoWriteRequest                   100%
+
+CleanWebApiTemplate.ServiceDefaults                                               95.7%
+  CleanWebApiTemplate.ServiceDefaults.Extensions                                  95.7%
+  CleanWebApiTemplate.ServiceDefaults.Extensions<TBuilder>                        95.7%

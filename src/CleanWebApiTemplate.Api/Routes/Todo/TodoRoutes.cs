@@ -87,7 +87,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
         {
             var input = request.ToInput(UserEmail);
             var result = await service.CreateAsync(input, cancellationToken);
-            return result.ToResponse<TodoDto?, TodoResponse>();
+            return result.ToResponse<TodoDto?, TodoResponse>(dto => $"/api/Todo/{dto!.Id}");
         })
         .WithName("CreateTodo")
         .WithSummary("Create a TODO")

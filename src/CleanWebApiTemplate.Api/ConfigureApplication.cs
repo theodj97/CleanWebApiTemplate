@@ -1,3 +1,4 @@
+using CleanWebApiTemplate.Api.Configuration;
 using CleanWebApiTemplate.Api.Extensions;
 using CleanWebApiTemplate.Domain.Configuration;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -11,6 +12,20 @@ public static class ConfigureApplication
         app.UseExceptionHandler();
         app.UseResponseCompression();
         app.UseHttpsRedirection();
+
+        // Routing, authorization and unmatched methods/routes produce status codes without a
+        // body. Give every 4xx/5xx the same ProblemDetails contract.
+        app.UseStatusCodePages(async statusCodeContext =>
+        {
+            HttpContext context = statusCodeContext.HttpContext;
+            if (context.Response.HasStarted)
+                return;
+
+            await ProblemDetailsFactory.WriteAsync(
+                context,
+                ProblemDetailsFactory.Create(context, context.Response.StatusCode),
+                context.RequestAborted);
+        });
 
         // After routing and before authorization; the policy allows no origin when none is configured.
         app.UseCors(Constants.DEFAULT_CORS_POLICY_NAME);

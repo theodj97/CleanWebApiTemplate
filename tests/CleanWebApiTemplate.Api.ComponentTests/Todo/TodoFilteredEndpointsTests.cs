@@ -74,7 +74,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     [Fact]
     [ResetDatabase]
     [AuthenticatedAs(TestUser.TodoUser)]
-    public async Task Filter_WithDateRangeOutsideTheTodo_ReturnsNoTodos()
+    public async Task Filter_WithDateRangeOutsideTheTodo_ReturnsNoContent()
     {
         // Arrange
         await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
@@ -90,8 +90,8 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
             CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Empty(await ReadTodosAsync(response));
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Empty(await response.Content.ReadAsStringAsync(CancellationToken));
     }
 
     [Fact]

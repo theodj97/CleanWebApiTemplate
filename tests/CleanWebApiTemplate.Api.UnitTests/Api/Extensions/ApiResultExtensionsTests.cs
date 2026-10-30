@@ -35,6 +35,19 @@ public class ApiResultExtensionsTests
     }
 
     [Fact]
+    public async Task ToResponse_WithCreatedResultAndLocation_ReturnsLocationHeader()
+    {
+        // Act
+        var response = await ExecuteAsync(
+            Result<TestDto>.Created(new TestDto { Name = "created" })
+                           .ToResponse<TestDto, TestResponse>(_ => "/api/test/1"));
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, response.Response.StatusCode);
+        Assert.Equal("/api/test/1", response.Response.Headers.Location.ToString());
+    }
+
+    [Fact]
     public async Task ToResponse_WithNoContentResult_ReturnsNoContent()
     {
         // Act
@@ -58,6 +71,17 @@ public class ApiResultExtensionsTests
         var body = await ReadBodyAsync(response);
         Assert.Contains("\"one\"", body);
         Assert.Contains("\"two\"", body);
+    }
+
+    [Fact]
+    public async Task ToResponse_WithEmptyCollection_ReturnsNoContent()
+    {
+        // Act
+        var response = await ExecuteAsync(Result<IEnumerable<TestDto>>.Success([])
+                                                          .ToResponse<TestDto, TestResponse>());
+
+        // Assert
+        Assert.Equal(StatusCodes.Status204NoContent, response.Response.StatusCode);
     }
 
     [Fact]

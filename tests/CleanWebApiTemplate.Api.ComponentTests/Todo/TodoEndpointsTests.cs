@@ -26,6 +26,11 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<TodoResponse>(JsonSerializerOptions.Web, CancellationToken);
+        Assert.NotNull(body);
+        Assert.NotNull(response.Headers.Location);
+        Assert.EndsWith($"/api/Todo/{body!.Id}", response.Headers.Location.ToString(), StringComparison.Ordinal);
+
         var stored = await Fixture.Todos.FindByTitleAsync(title);
         Assert.NotNull(stored);
         Assert.Equal(TestUsers.Email(TestUser.TodoUser), stored!.CreatedBy);
