@@ -11,6 +11,8 @@
 | [`coverage-summary-batch1.md`](coverage-summary-batch1.md) | Resumen de cobertura tras Batch 1 en Markdown. |
 | [`coverage-summary-batch2.txt`](coverage-summary-batch2.txt) | Resumen de cobertura tras Batch 2. |
 | [`coverage-summary-batch2.md`](coverage-summary-batch2.md) | Resumen de cobertura tras Batch 2 en Markdown. |
+| [`coverage-summary-batch3.txt`](coverage-summary-batch3.txt) | Resumen de cobertura tras Batch 3. |
+| [`coverage-summary-batch3.md`](coverage-summary-batch3.md) | Resumen de cobertura tras Batch 3 en Markdown. |
 
 No se incluyen tokens, contraseñas, claves ni la URL del dashboard (contiene un token personal).
 Los logs completos de los comandos están en `/tmp/opencode/audit/` durante la sesión de

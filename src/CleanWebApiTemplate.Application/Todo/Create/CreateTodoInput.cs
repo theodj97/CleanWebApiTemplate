@@ -11,7 +11,7 @@ public sealed record CreateTodoInput
     internal TodoEntity ToEntity() => new()
     {
         Id = Ulid.NewUlid(),
-        Title = Title,
+        Title = Title.Trim(),
         Description = Description,
         CreatedBy = CreatedBy,
         UpdatedBy = CreatedBy

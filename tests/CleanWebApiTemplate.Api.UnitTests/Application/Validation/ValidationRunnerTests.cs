@@ -1,5 +1,6 @@
 using CleanWebApiTemplate.Application.Todo.Create;
 using CleanWebApiTemplate.Domain.Models.Entities;
+using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using NSubstitute;
 
@@ -14,7 +15,7 @@ public class ValidationRunnerTests
         // Arrange
         var repository = Substitute.For<ITodoRepository>();
         repository.InsertAsync(Arg.Any<TodoEntity>(), Arg.Any<CancellationToken>())
-                  .Returns(call => call.Arg<TodoEntity>());
+                  .Returns(call => Result<TodoEntity>.Success(call.Arg<TodoEntity>()));
         var service = new CreateTodoService(repository, []);
 
         // Act

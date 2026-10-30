@@ -16,10 +16,14 @@ public sealed class UpdateTodoInput
     internal bool PatchFields(TodoEntity entityToUpdate)
     {
         bool isUpdated = false;
-        if (Title is not null && entityToUpdate.Title != Title)
+        if (Title is not null)
         {
-            entityToUpdate.Title = Title;
-            isUpdated = true;
+            string trimmedTitle = Title.Trim();
+            if (entityToUpdate.Title != trimmedTitle)
+            {
+                entityToUpdate.Title = trimmedTitle;
+                isUpdated = true;
+            }
         }
         if (Description is not null)
         {

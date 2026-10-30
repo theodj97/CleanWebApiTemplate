@@ -1,11 +1,10 @@
-using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Todo.GetById;
 
 public class GetTodoByIdInputValidator : TodoValidator<GetTodoByIdInput>
 {
-    public GetTodoByIdInputValidator(ITodoRepository todoRepository) : base(todoRepository)
+    public GetTodoByIdInputValidator()
     {
         RuleFor(x => x.Id)
             .Custom(NotNullNotEmpty)

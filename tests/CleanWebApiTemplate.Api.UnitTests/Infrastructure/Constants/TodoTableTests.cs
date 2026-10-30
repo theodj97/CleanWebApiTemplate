@@ -17,6 +17,7 @@ public class TodoTableTests
         Assert.Equal("Status", TodoTable.StatusColumn);
         Assert.Equal("CreatedBy", TodoTable.CreatedByColumn);
         Assert.Equal("UpdatedBy", TodoTable.UpdatedByColumn);
+        Assert.Equal("UX_Todo_CreatedBy_Title", TodoTable.UniqueTitleIndexName);
         Assert.Equal(255, TodoTable.TitleMaxLength);
         Assert.Equal(1000, TodoTable.DescriptionMaxLength);
         Assert.Equal(255, TodoTable.CreatedByMaxLength);

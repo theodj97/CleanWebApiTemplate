@@ -53,14 +53,69 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
     [Fact]
     [ResetDatabase]
     [AuthenticatedAs(TestUser.TodoUser)]
-    public async Task Create_WithDuplicateTitle_ReturnsBadRequest()
+    public async Task Create_WithDuplicateTitleForOwner_ReturnsConflict()
     {
         // Arrange
-        var existing = await Fixture.Todos.AddAsync(new TodoBuilder().Build());
+        var existing = await Fixture.Todos.AddAsync(
+            new TodoBuilder().CreatedBy(TestUsers.Email(TestUser.TodoUser)).Build());
 
         // Act
         var response = await Client.PostAsJsonAsync(
             "/api/Todo/", new { title = existing.Title }, CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoUser)]
+    public async Task Create_WithSameTitleForDifferentOwners_ReturnsCreated()
+    {
+        // Arrange
+        var title = TestData.Unique("shared-title");
+        await Fixture.Todos.AddAsync(
+            new TodoBuilder().CreatedBy(TestUsers.Email(TestUser.TodoAdmin)).WithTitle(title).Build());
+
+        // Act
+        var response = await Client.PostAsJsonAsync(
+            "/api/Todo/", new { title }, CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var stored = await Fixture.Todos.FindByTitleAsync(title, TestUsers.Email(TestUser.TodoUser));
+        Assert.NotNull(stored);
+        Assert.Equal(TestUsers.Email(TestUser.TodoUser), stored!.CreatedBy);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoUser)]
+    public async Task Create_WithPaddedTitle_StoresTrimmedTitle()
+    {
+        // Arrange
+        var title = TestData.Unique("padded");
+
+        // Act
+        var response = await Client.PostAsJsonAsync(
+            "/api/Todo/", new { title = $"  {title}  " }, CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<TodoResponse>(
+            JsonSerializerOptions.Web, CancellationToken);
+        Assert.NotNull(body);
+        Assert.Equal(title, body!.Title);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoUser)]
+    public async Task Create_WithWhitespaceTitle_ReturnsBadRequest()
+    {
+        // Act
+        var response = await Client.PostAsJsonAsync(
+            "/api/Todo/", new { title = "   " }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -240,7 +295,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
     [Fact]
     [ResetDatabase]
     [AuthenticatedAs(TestUser.TodoUser)]
-    public async Task Update_WithTitleAlreadyUsedByAnotherTodo_ReturnsBadRequest()
+    public async Task Update_WithTitleAlreadyUsedByAnotherTodo_ReturnsConflict()
     {
         // Arrange
         var createdBy = TestUsers.Email(TestUser.TodoUser);
@@ -253,7 +308,30 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
             $"/api/Todo/{target.Id}", new { title = taken.Title }, CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoUser)]
+    public async Task Update_WithTitleUsedByAnotherOwner_ReturnsOk()
+    {
+        // Arrange
+        var title = TestData.Unique("other-owner-title");
+        await Fixture.Todos.AddAsync(
+            new TodoBuilder().CreatedBy(TestUsers.Email(TestUser.TodoAdmin)).WithTitle(title).Build());
+        var target = await Fixture.Todos.AddAsync(
+            new TodoBuilder().CreatedBy(TestUsers.Email(TestUser.TodoUser)).Build());
+
+        // Act
+        var response = await Client.PutAsJsonAsync(
+            $"/api/Todo/{target.Id}", new { title }, CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var stored = await Fixture.Todos.FindAsync(target.Id);
+        Assert.NotNull(stored);
+        Assert.Equal(title, stored!.Title);
     }
 
     [Fact]

@@ -1,4 +1,5 @@
-using CleanWebApiTemplate.Infrastructure.Repositories;
+using System.Globalization;
+using CleanWebApiTemplate.Infrastructure.Repositories.Helpers.Todo;
 
 namespace CleanWebApiTemplate.Application.Todo.Filtered;
 
@@ -22,14 +23,19 @@ public sealed record FilteredTodoInput
         return new TodoFilter
         {
             Ids = Ids?.Select(Ulid.Parse).ToArray(),
-            Titles = Title?.ToArray(),
+            Titles = Title?.Where(title => string.IsNullOrWhiteSpace(title) is false)
+                          .Select(title => title.Trim())
+                          .ToArray(),
             Statuses = Status?.ToArray(),
             CreatedBys = CreatedBy?.ToArray(),
-            StartDate = hasDateRange ? DateTime.Parse(StartDate!) : null,
-            EndDate = hasDateRange ? DateTime.Parse(EndDate!) : null,
+            StartDate = hasDateRange ? ParseDate(StartDate!) : null,
+            EndDate = hasDateRange ? ParseDate(EndDate!) : null,
             PageNumber = PageNumber,
             PageSize = PageSize,
             SortProperties = SortProperties
         };
     }
+
+    private static DateTime ParseDate(string value) =>
+        DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
 }

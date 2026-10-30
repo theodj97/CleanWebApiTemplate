@@ -1,15 +1,14 @@
-using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Todo.Create;
 
 public class CreateTodoInputValidator : TodoValidator<CreateTodoInput>
 {
-    public CreateTodoInputValidator(ITodoRepository todoRepository) : base(todoRepository)
+    public CreateTodoInputValidator()
     {
         RuleFor(x => x.Title)
             .Custom(NotNullNotEmpty)
-            .CustomAsync(ValidateTitle);
+            .Custom((title, context) => ValidateTitleLength(title!, context));
 
         RuleFor(x => x.CreatedBy)
             .Custom(NotNullNotEmpty)

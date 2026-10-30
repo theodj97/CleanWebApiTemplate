@@ -1,5 +1,6 @@
-using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.Models.Entities;
+using CleanWebApiTemplate.Domain.ResultModel;
+using CleanWebApiTemplate.Infrastructure.Repositories.Helpers.Todo;
 
 namespace CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 
@@ -15,7 +16,8 @@ public interface ITodoRepository
     /// Reads only the Id/Title columns (projection query for the titles endpoint).
     /// When <paramref name="createdBy"/> is not null the query is restricted to that owner.
     /// </summary>
-    public Task<IReadOnlyList<TodoDto>> GetTitlesAsync(int? pageNumber,
+    /// <returns>Partial entities: only Id and Title are populated.</returns>
+    public Task<IReadOnlyList<TodoEntity>> GetTitlesAsync(int? pageNumber,
                                                 int? pageSize,
                                                 IEnumerable<KeyValuePair<string, bool>>? sortProperties,
                                                 string? createdBy = null,
@@ -23,13 +25,24 @@ public interface ITodoRepository
 
     public Task<IReadOnlyList<TodoEntity>> SearchAsync(TodoFilter filter, CancellationToken cancellationToken = default);
 
-    public Task<TodoEntity> InsertAsync(TodoEntity entity, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Inserts a new Todo entity.
+    /// </summary>
+    /// <returns>
+    /// The stored entity, or a failure with <see cref="ConflictError"/> when the owner already has
+    /// a TODO with the same title (a concurrent writer passed the application pre-check).
+    /// </returns>
+    public Task<Result<TodoEntity>> InsertAsync(TodoEntity entity, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates an existing Todo entity.
     /// </summary>
-    /// <returns>True when a row was updated, false when the id doesn't exist.</returns>
-    public Task<bool> UpdateAsync(TodoEntity entity, CancellationToken cancellationToken = default);
+    /// <returns>
+    /// Success with true when a row was updated and false when the id doesn't exist, or a failure
+    /// with <see cref="ConflictError"/> when the new title is already used by another TODO of the
+    /// same owner (a concurrent writer passed the application pre-check).
+    /// </returns>
+    public Task<Result<bool>> UpdateAsync(TodoEntity entity, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes a Todo entity by id. When <paramref name="createdBy"/> is not null the
@@ -39,8 +52,12 @@ public interface ITodoRepository
     public Task<bool> DeleteAsync(Ulid id, string? createdBy = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Checks if a Todo with the given title exists.
+    /// Checks if a TODO with the given title exists for one owner. Titles are unique per owner,
+    /// not globally.
     /// </summary>
-    /// <returns>True when a Todo with the given title exists (optionally excluding one id).</returns>
-    public Task<bool> TitleExistsAsync(string title, Ulid? excludeId = null, CancellationToken cancellationToken = default);
+    /// <returns>True when the owner already has a TODO with that title (optionally excluding one id).</returns>
+    public Task<bool> TitleExistsAsync(string title,
+                                       string createdBy,
+                                       Ulid? excludeId = null,
+                                       CancellationToken cancellationToken = default);
 }

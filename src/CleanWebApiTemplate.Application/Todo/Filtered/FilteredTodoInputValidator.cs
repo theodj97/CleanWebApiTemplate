@@ -1,22 +1,23 @@
 using CleanWebApiTemplate.Application.Abstractions;
-using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
+using CleanWebApiTemplate.Application.Dtos.Todo;
 using CleanWebApiTemplate.Infrastructure.Constants;
-using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Todo.Filtered;
 
 public class FilteredTodoInputValidator : TodoValidator<FilteredTodoInput>
 {
-    public FilteredTodoInputValidator(ITodoRepository todoRepository) : base(todoRepository)
+    public FilteredTodoInputValidator()
     {
         RuleForEach(x => x.Ids)
             .Custom(ValidateUlid)
             .When(x => x.Ids is not null && x.Ids.Any());
 
         RuleForEach(x => x.Title)
-            .Must(title => title is not null && title.Length < TodoTable.TitleMaxLength)
-            .WithMessage($"Title must be less than {TodoTable.TitleMaxLength} characters")
+            .Must(title => title is not null
+                           && string.IsNullOrWhiteSpace(title) is false
+                           && title.Length <= TodoTable.TitleMaxLength)
+            .WithMessage($"Title must contain text and be at most {TodoTable.TitleMaxLength} characters")
             .When(x => x.Title is not null && x.Title.Any());
 
         RuleForEach(x => x.Status)

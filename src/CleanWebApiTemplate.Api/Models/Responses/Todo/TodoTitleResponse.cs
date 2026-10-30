@@ -1,4 +1,4 @@
-using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
+using CleanWebApiTemplate.Application.Dtos.Todo;
 
 namespace CleanWebApiTemplate.Api.Models.Responses.Todo;
 

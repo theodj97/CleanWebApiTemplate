@@ -1,8 +1,9 @@
 using System.Text;
-using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.Models.Entities;
+using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Constants;
 using CleanWebApiTemplate.Infrastructure.Data;
+using CleanWebApiTemplate.Infrastructure.Repositories.Helpers.Todo;
 using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using Npgsql;
 using NpgsqlTypes;
@@ -22,6 +23,8 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
     // MapTodo relies on this exact order. Built only from compile-time constants.
     private const string TodoColumns =
         "\"Id\", \"Title\", \"Description\", \"CreatedAt\", \"UpdatedAt\", \"Status\", \"CreatedBy\", \"UpdatedBy\"";
+
+    private const string DuplicateTitleMessage = "A TODO with this title already exists for this owner.";
 
     private static readonly string SelectByIdSql =
         $"SELECT {TodoColumns} FROM \"{TodoTable.Name}\" WHERE \"{TodoTable.IdColumn}\" = @id;";
@@ -65,7 +68,7 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
         return await reader.ReadAsync(cancellationToken) ? MapTodo(reader) : null;
     }
 
-    public async Task<IReadOnlyList<TodoDto>> GetTitlesAsync(int? pageNumber,
+    public async Task<IReadOnlyList<TodoEntity>> GetTitlesAsync(int? pageNumber,
                                                              int? pageSize,
                                                              IEnumerable<KeyValuePair<string, bool>>? sortProperties,
                                                              string? createdBy = null,
@@ -86,13 +89,13 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
 
         using var reader = await command.ExecuteReaderAsync(cancellationToken);
 
-        List<TodoDto> titles = [];
+        List<TodoEntity> titles = [];
         while (await reader.ReadAsync(cancellationToken))
         {
-            titles.Add(new TodoDto
+            titles.Add(new TodoEntity
             {
-                Id = reader.IsDBNull(0) ? null : new Ulid(reader.GetFieldValue<byte[]>(0)),
-                Title = reader.IsDBNull(1) ? null : reader.GetString(1)
+                Id = reader.IsDBNull(0) ? Ulid.Empty : new Ulid(reader.GetFieldValue<byte[]>(0)),
+                Title = reader.IsDBNull(1) ? string.Empty : reader.GetString(1)
             });
         }
 
@@ -115,8 +118,7 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
 
         AppendInCondition(where, command, TodoTable.IdColumn, NpgsqlDbType.Bytea,
                           filter.Ids, static id => id.ToByteArray(), ref parameterIndex);
-        AppendInCondition(where, command, TodoTable.TitleColumn, NpgsqlDbType.Text,
-                          filter.Titles, static title => title, ref parameterIndex);
+        AppendTitleContainsCondition(where, command, filter.Titles, ref parameterIndex);
         AppendInCondition(where, command, TodoTable.StatusColumn, NpgsqlDbType.Integer,
                           filter.Statuses, static status => status, ref parameterIndex);
         AppendInCondition(where, command, TodoTable.CreatedByColumn, NpgsqlDbType.Text,
@@ -150,7 +152,7 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
         return todos;
     }
 
-    public async Task<TodoEntity> InsertAsync(TodoEntity entity, CancellationToken cancellationToken = default)
+    public async Task<Result<TodoEntity>> InsertAsync(TodoEntity entity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
@@ -160,11 +162,20 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
         using var command = new NpgsqlCommand(InsertSql, connection);
         AddEntityParameters(command, entity);
 
-        await command.ExecuteNonQueryAsync(cancellationToken);
-        return entity;
+        try
+        {
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+        catch (PostgresException exception) when (IsDuplicateTitle(exception))
+        {
+            // Business outcomes are returned as results, not thrown as controlled exceptions.
+            return Result<TodoEntity>.Failure(new ConflictError(DuplicateTitleMessage));
+        }
+
+        return Result<TodoEntity>.Success(entity);
     }
 
-    public async Task<bool> UpdateAsync(TodoEntity entity, CancellationToken cancellationToken = default)
+    public async Task<Result<bool>> UpdateAsync(TodoEntity entity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
@@ -174,7 +185,14 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
         using var command = new NpgsqlCommand(UpdateSql, connection);
         AddEntityParameters(command, entity);
 
-        return await command.ExecuteNonQueryAsync(cancellationToken) > 0;
+        try
+        {
+            return Result<bool>.Success(await command.ExecuteNonQueryAsync(cancellationToken) > 0);
+        }
+        catch (PostgresException exception) when (IsDuplicateTitle(exception))
+        {
+            return Result<bool>.Failure(new ConflictError(DuplicateTitleMessage));
+        }
     }
 
     public async Task<bool> DeleteAsync(Ulid id, string? createdBy = null, CancellationToken cancellationToken = default)
@@ -189,17 +207,24 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
         return await command.ExecuteNonQueryAsync(cancellationToken) > 0;
     }
 
-    public async Task<bool> TitleExistsAsync(string title, Ulid? excludeId = null, CancellationToken cancellationToken = default)
+    public async Task<bool> TitleExistsAsync(string title,
+                                             string createdBy,
+                                             Ulid? excludeId = null,
+                                             CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
+        ArgumentException.ThrowIfNullOrWhiteSpace(createdBy);
+
         string sql = excludeId is null
-            ? $"SELECT COUNT(1) FROM \"{TodoTable.Name}\" WHERE \"{TodoTable.TitleColumn}\" = @title;"
-            : $"SELECT COUNT(1) FROM \"{TodoTable.Name}\" WHERE \"{TodoTable.TitleColumn}\" = @title AND \"{TodoTable.IdColumn}\" <> @excludeId;";
+            ? $"SELECT COUNT(1) FROM \"{TodoTable.Name}\" WHERE \"{TodoTable.TitleColumn}\" = @title AND \"{TodoTable.CreatedByColumn}\" = @createdBy;"
+            : $"SELECT COUNT(1) FROM \"{TodoTable.Name}\" WHERE \"{TodoTable.TitleColumn}\" = @title AND \"{TodoTable.CreatedByColumn}\" = @createdBy AND \"{TodoTable.IdColumn}\" <> @excludeId;";
 
         using var connection = connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken);
 
         using var command = new NpgsqlCommand(sql, connection);
         command.Parameters.Add("@title", NpgsqlDbType.Text).Value = title;
+        command.Parameters.Add("@createdBy", NpgsqlDbType.Text).Value = createdBy;
         if (excludeId is not null)
             command.Parameters.Add("@excludeId", NpgsqlDbType.Bytea).Value = excludeId.Value.ToByteArray();
 
@@ -285,6 +310,41 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
     }
 
     /// <summary>
+    /// Appends a case-insensitive "title contains any of these fragments" condition. Each
+    /// fragment is a bound parameter; LIKE wildcards in user input are escaped.
+    /// </summary>
+    private static void AppendTitleContainsCondition(StringBuilder where,
+                                                     NpgsqlCommand command,
+                                                     IReadOnlyList<string>? titles,
+                                                     ref int parameterIndex)
+    {
+        if (titles is null || titles.Count is 0)
+            return;
+
+        var fragments = titles.Where(title => string.IsNullOrWhiteSpace(title) is false).ToArray();
+        if (fragments.Length is 0)
+            return;
+
+        AppendAnd(where);
+        where.Append('(');
+        for (int i = 0; i < fragments.Length; i++)
+        {
+            if (i > 0)
+                where.Append(" OR ");
+
+            string parameterName = NextParameterName(ref parameterIndex);
+            where.Append($"\"{TodoTable.TitleColumn}\" ILIKE {parameterName} ESCAPE '\\'");
+            command.Parameters.Add(parameterName, NpgsqlDbType.Text).Value = $"%{EscapeLike(fragments[i])}%";
+        }
+        where.Append(')');
+    }
+
+    private static string EscapeLike(string value) =>
+        value.Replace("\\", "\\\\", StringComparison.Ordinal)
+             .Replace("%", "\\%", StringComparison.Ordinal)
+             .Replace("_", "\\_", StringComparison.Ordinal);
+
+    /// <summary>
     /// Appends the ORDER BY clause resolving property names through the
     /// <see cref="TodoSortColumns"/> whitelist. Direction comes from a boolean,
     /// never from raw input text.
@@ -332,6 +392,10 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
     }
 
     private static string NextParameterName(ref int parameterIndex) => $"@p{parameterIndex++}";
+
+    private static bool IsDuplicateTitle(PostgresException exception) =>
+        exception.SqlState == PostgresErrorCodes.UniqueViolation
+        && exception.ConstraintName == TodoTable.UniqueTitleIndexName;
 
     /// <summary>
     /// PostgreSQL timestamptz values must be UTC. API input deserialized without an

@@ -1,21 +1,11 @@
 using CleanWebApiTemplate.Application.Todo.Update;
-using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
-using NSubstitute;
 
 namespace CleanWebApiTemplate.Api.UnitTests.Todo;
 
 /// <summary>Unit coverage of the UpdateTodo input rules (ULID shape and status enum).</summary>
 public class UpdateTodoInputValidatorTests
 {
-    private readonly ITodoRepository _repository = Substitute.For<ITodoRepository>();
-    private readonly UpdateTodoInputValidator _validator;
-
-    public UpdateTodoInputValidatorTests()
-    {
-        _repository.TitleExistsAsync(Arg.Any<string>(), Arg.Any<Ulid?>(), Arg.Any<CancellationToken>())
-                   .Returns(false);
-        _validator = new UpdateTodoInputValidator(_repository);
-    }
+    private readonly UpdateTodoInputValidator _validator = new();
 
     [Fact]
     public async Task Validate_WithValidIdAndNoChanges_Passes()
@@ -35,6 +25,40 @@ public class UpdateTodoInputValidatorTests
         // Act
         var result = await _validator.ValidateAsync(
             new UpdateTodoInput { Id = "not-a-ulid", UpdatedBy = "user@example.com" },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+    }
+
+    [Fact]
+    public async Task Validate_WithWhitespaceTitle_Fails()
+    {
+        // Act
+        var result = await _validator.ValidateAsync(
+            new UpdateTodoInput
+            {
+                Id = Ulid.NewUlid().ToString(),
+                Title = "   ",
+                UpdatedBy = "user@example.com",
+            },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+    }
+
+    [Fact]
+    public async Task Validate_WithOverlongTitle_Fails()
+    {
+        // Act
+        var result = await _validator.ValidateAsync(
+            new UpdateTodoInput
+            {
+                Id = Ulid.NewUlid().ToString(),
+                Title = new string('a', 256),
+                UpdatedBy = "user@example.com",
+            },
             TestContext.Current.CancellationToken);
 
         // Assert

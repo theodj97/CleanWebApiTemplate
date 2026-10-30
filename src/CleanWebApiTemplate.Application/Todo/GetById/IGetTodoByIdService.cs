@@ -1,4 +1,4 @@
-using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
+using CleanWebApiTemplate.Application.Dtos.Todo;
 using CleanWebApiTemplate.Domain.ResultModel;
 
 namespace CleanWebApiTemplate.Application.Todo.GetById;

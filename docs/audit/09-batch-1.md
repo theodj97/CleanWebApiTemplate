@@ -144,8 +144,8 @@ La cobertura se regeneró con los mismos comandos que el baseline; el detalle es
 
 - **Batch 2**: corregido en [`10-batch-2.md`](10-batch-2.md) (email -> 403, HS256 fijado,
   longitud de `API_KEY`, modos OIDC/simétrico).
-- **Batch 3**: unicidad de título global vs per-owner, índice único, filtro contains, trim,
-  cultura de fechas, concurrencia.
+- **Batch 3**: corregido en [`11-batch-3.md`](11-batch-3.md) (unicidad por owner, índice único,
+  filtro contains, trim, cultura de fechas, conflicto concurrente).
 - **Batch 5**: cobertura de los nuevos caminos (aunque los tests ya cubren los fixes).
 - **Batch 6**: hooks/analyzers/cobertura.
 - **Batch 7**: template/docs/readmes.

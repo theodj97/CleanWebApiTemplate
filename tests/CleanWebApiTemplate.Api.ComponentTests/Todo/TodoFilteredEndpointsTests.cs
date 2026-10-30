@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -42,6 +43,73 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     [Fact]
     [ResetDatabase]
     [AuthenticatedAs(TestUser.TodoUser)]
+    public async Task Filter_WithTitleFragment_ReturnsMatchingTodos()
+    {
+        // Arrange
+        var createdBy = TestUsers.Email(TestUser.TodoUser);
+        var first = await Fixture.Todos.AddAsync(
+            new TodoBuilder().CreatedBy(createdBy).WithTitle(TestData.Unique("alpha")).Build());
+        var second = await Fixture.Todos.AddAsync(
+            new TodoBuilder().CreatedBy(createdBy).WithTitle(TestData.Unique("alpha")).Build());
+        await Fixture.Todos.AddAsync(
+            new TodoBuilder().CreatedBy(createdBy).WithTitle(TestData.Unique("beta")).Build());
+
+        // Act
+        var response = await Client.PostAsJsonAsync(
+            "/api/Todo/filter",
+            new { title = new[] { "alpha" } },
+            CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await ReadTodosAsync(response);
+        Assert.Equal(2, body.Count);
+        Assert.Contains(body, todo => todo.Id == first.Id);
+        Assert.Contains(body, todo => todo.Id == second.Id);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoUser)]
+    public async Task Filter_WithWhitespaceTitle_ReturnsBadRequest()
+    {
+        // Act
+        var response = await Client.PostAsJsonAsync(
+            "/api/Todo/filter",
+            new { title = new[] { "   " } },
+            CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoUser)]
+    public async Task Filter_WithLikeWildcard_TreatsItLiterally()
+    {
+        // Arrange
+        var createdBy = TestUsers.Email(TestUser.TodoUser);
+        var percent = await Fixture.Todos.AddAsync(
+            new TodoBuilder().CreatedBy(createdBy).WithTitle("batch3-100% done").Build());
+        await Fixture.Todos.AddAsync(
+            new TodoBuilder().CreatedBy(createdBy).WithTitle("batch3-100X done").Build());
+
+        // Act
+        var response = await Client.PostAsJsonAsync(
+            "/api/Todo/filter",
+            new { title = new[] { "100%" } },
+            CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var todo = Assert.Single(await ReadTodosAsync(response));
+        Assert.Equal(percent.Id, todo.Id);
+    }
+
+    [Fact]
+    [ResetDatabase]
+    [AuthenticatedAs(TestUser.TodoUser)]
     public async Task Filter_WithEveryCriteria_ReturnsOnlyTheMatchingTodo()
     {
         // Arrange
@@ -58,8 +126,8 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
             title = new[] { matching.Title },
             status = new[] { (int)ETodoStatus.InProgress },
             createdBy = new[] { createdBy },
-            startDate = DateTime.UtcNow.AddHours(-1).ToString("yyyy-MM-dd HH:mm:ss"),
-            endDate = DateTime.UtcNow.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss"),
+            startDate = DateTime.UtcNow.AddHours(-1).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
+            endDate = DateTime.UtcNow.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
         };
 
         // Act
@@ -84,8 +152,8 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
             "/api/Todo/filter",
             new
             {
-                startDate = DateTime.UtcNow.AddDays(-10).ToString("yyyy-MM-dd HH:mm:ss"),
-                endDate = DateTime.UtcNow.AddDays(-5).ToString("yyyy-MM-dd HH:mm:ss"),
+                startDate = DateTime.UtcNow.AddDays(-10).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
+                endDate = DateTime.UtcNow.AddDays(-5).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
             },
             CancellationToken);
 

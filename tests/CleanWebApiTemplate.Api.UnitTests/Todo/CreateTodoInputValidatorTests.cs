@@ -1,21 +1,11 @@
 using CleanWebApiTemplate.Application.Todo.Create;
-using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
-using NSubstitute;
 
 namespace CleanWebApiTemplate.Api.UnitTests.Todo;
 
-/// <summary>Unit coverage of the CreateTodo input rules. The repository is a substitute: no Docker, no Aspire.</summary>
+/// <summary>Unit coverage of the CreateTodo input rules. Uniqueness is checked by the service, not the validator.</summary>
 public class CreateTodoInputValidatorTests
 {
-    private readonly ITodoRepository _repository = Substitute.For<ITodoRepository>();
-    private readonly CreateTodoInputValidator _validator;
-
-    public CreateTodoInputValidatorTests()
-    {
-        _repository.TitleExistsAsync(Arg.Any<string>(), Arg.Any<Ulid?>(), Arg.Any<CancellationToken>())
-                   .Returns(false);
-        _validator = new CreateTodoInputValidator(_repository);
-    }
+    private readonly CreateTodoInputValidator _validator = new();
 
     [Fact]
     public async Task Validate_WithValidInput_Passes()
@@ -42,6 +32,18 @@ public class CreateTodoInputValidatorTests
     }
 
     [Fact]
+    public async Task Validate_WithWhitespaceTitle_Fails()
+    {
+        // Act
+        var result = await _validator.ValidateAsync(
+            new CreateTodoInput { Title = "   ", CreatedBy = "user@example.com" },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(result.IsValid);
+    }
+
+    [Fact]
     public async Task Validate_WithNullTitle_FailsWithoutThrowing()
     {
         // Act
@@ -54,11 +56,11 @@ public class CreateTodoInputValidatorTests
     }
 
     [Fact]
-    public async Task Validate_WithInvalidEmail_Fails()
+    public async Task Validate_WithOverlongTitle_Fails()
     {
         // Act
         var result = await _validator.ValidateAsync(
-            new CreateTodoInput { Title = "Valid title", CreatedBy = "not-an-email" },
+            new CreateTodoInput { Title = new string('a', 256), CreatedBy = "user@example.com" },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -66,15 +68,11 @@ public class CreateTodoInputValidatorTests
     }
 
     [Fact]
-    public async Task Validate_WithDuplicateTitle_Fails()
+    public async Task Validate_WithInvalidEmail_Fails()
     {
-        // Arrange
-        _repository.TitleExistsAsync("Taken", Arg.Any<Ulid?>(), Arg.Any<CancellationToken>())
-                   .Returns(true);
-
         // Act
         var result = await _validator.ValidateAsync(
-            new CreateTodoInput { Title = "Taken", CreatedBy = "user@example.com" },
+            new CreateTodoInput { Title = "Valid title", CreatedBy = "not-an-email" },
             TestContext.Current.CancellationToken);
 
         // Assert

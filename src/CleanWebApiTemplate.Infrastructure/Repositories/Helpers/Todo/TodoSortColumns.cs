@@ -1,7 +1,7 @@
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Infrastructure.Constants;
 
-namespace CleanWebApiTemplate.Infrastructure.Repositories;
+namespace CleanWebApiTemplate.Infrastructure.Repositories.Helpers.Todo;
 
 /// <summary>
 /// Explicit (reflection-free, Native AOT friendly) whitelist of the properties that can

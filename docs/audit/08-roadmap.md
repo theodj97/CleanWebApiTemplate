@@ -61,7 +61,10 @@ OpenAPI refleja los códigos reales.
 **Criterio de aceptación:** matriz de tokens ampliada; no hay 500 por claims; la configuración
 inválida falla al arrancar con un mensaje claro.
 
-### Batch 3 — Integridad de datos y reglas de negocio
+### Batch 3 — Integridad de datos y reglas de negocio — ✅ implementado
+
+**Estado:** implementado y verificado el 2026-10-30. Detalle en
+[`11-batch-3.md`](11-batch-3.md).
 
 - BUG-003: decidir unicidad global vs per-owner.
 - BUG-004: índice único y manejo de conflicto.
@@ -201,10 +204,10 @@ dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj \
 |---|---:|---:|
 | Build warnings | 0 | 0 |
 | AOT publish warnings | 0 | 0 |
-| Tests | 242 (211 auditoría + 16 B1 + 15 B2) | ≥ 240 |
-| Cobertura `src/` líneas | 82,7% (84,0% tras B1+B2) | ≥ 90% |
-| Cobertura `src/` ramas | 79,7% (81,3% tras B1+B2) | ≥ 80% |
-| Api ramas | 56,9% (65,3% tras B1+B2) | ≥ 75% |
+| Tests | 252 (211 auditoría + 16 B1 + 15 B2 + 10 B3) | ≥ 240 |
+| Cobertura `src/` líneas | 82,7% (83,8% tras B1–B3) | ≥ 90% |
+| Cobertura `src/` ramas | 79,7% (81,2% tras B1–B3) | ≥ 80% |
+| Api ramas | 56,9% (65,3% tras B1–B3) | ≥ 75% |
 | Mutation score Application/Domain | No medido | ≥ 70% |
 | Paquetes vulnerables | 0 | 0 |
 | Secretos en historial | 0 | 0 |

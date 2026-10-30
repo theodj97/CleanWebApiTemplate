@@ -158,8 +158,8 @@ No se necesita `API_KEY` en OIDC. Si está presente, se ignora.
 
 ## Pendiente
 
-- **Batch 3**: unicidad de título, índice único, filtro contains, trim, cultura de fechas,
-  concurrencia.
+- **Batch 3**: corregido en [`11-batch-3.md`](11-batch-3.md) (unicidad por owner, índice único,
+  filtro contains, trim, cultura de fechas, conflicto concurrente).
 - **Batch 4**: arquitectura (Application -> Infrastructure, Domain -> ASP.NET, Result).
 - **Batch 5/6/7**: cobertura de OpenAPI, mutation/hooks y template/readmes.
 

@@ -1,55 +1,27 @@
 using CleanWebApiTemplate.Application.Abstractions;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Infrastructure.Constants;
-using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Todo;
 
-public class TodoValidator<TRequest>(ITodoRepository todoRepository) : BaseAbstractValidator<TRequest> where TRequest : class
+/// <summary>
+/// Shared input rules for the Todo validators. Uniqueness is deliberately not checked here:
+/// it is a business rule owned by the application services, which can report it as a conflict.
+/// </summary>
+public class TodoValidator<TRequest> : BaseAbstractValidator<TRequest> where TRequest : class
 {
-    private readonly ITodoRepository todoRepository = todoRepository;
-
-    protected async Task ValidateTitle(string title,
-                                       ValidationContext<TRequest> context,
-                                       CancellationToken cancellationToken)
+    protected void ValidateTitleLength(string title, ValidationContext<TRequest> context)
     {
-        // NotNullNotEmpty already reports the missing value. Do not dereference it here: a JSON
-        // body can contain "title": null even when the property is non-nullable.
-        if (string.IsNullOrEmpty(title))
-            return;
-
-        if (title.Length > TodoTable.TitleMaxLength)
-            AddFailure(context,
-                       $"Property '{context.DisplayName}' max length is {TodoTable.TitleMaxLength}.");
-
-        if (await TitleIsUnique(title, cancellationToken: cancellationToken) is false)
-            AddFailure(context,
-                       $"Property '{context.DisplayName}' is already in use!");
-    }
-
-    protected async Task ValidateTitle(IdAndTitle idAndTitle,
-                                       ValidationContext<TRequest> context,
-                                       CancellationToken cancellationToken)
-    {
-        var id = idAndTitle.Id;
-        if (id is null) AddFailure(context, $"Property '{context.DisplayName}' must be provided.", nameof(IdAndTitle.Id));
-        var title = idAndTitle.Title;
-        if (title is null)
+        if (string.IsNullOrWhiteSpace(title))
         {
-            AddFailure(context, $"Property '{context.DisplayName}' must be provided.", nameof(IdAndTitle.Title));
+            AddFailure(context, $"Property '{context.DisplayName}' can't be null or empty!");
             return;
         }
 
-        if (title.Length > TodoTable.TitleMaxLength)
-            AddFailure(context,
-                       $"Property '{nameof(title)}' max length is {TodoTable.TitleMaxLength}.",
-                       nameof(title));
-
-        if (await TitleIsUnique(title, id, cancellationToken) is false)
-            AddFailure(context,
-                       $"Property '{nameof(title)}' is already in use!",
-                       nameof(title));
+        string trimmed = title.Trim();
+        if (trimmed.Length > TodoTable.TitleMaxLength)
+            AddFailure(context, $"Property '{context.DisplayName}' max length is {TodoTable.TitleMaxLength}.");
     }
 
     protected void ValidateDescription(string description,
@@ -75,21 +47,4 @@ public class TodoValidator<TRequest>(ITodoRepository todoRepository) : BaseAbstr
         if (Enum.IsDefined(typeof(ETodoStatus), status) is false)
             AddFailure(context, $"Property '{context.DisplayName}' wasn't a registered {nameof(ETodoStatus)}.");
     }
-
-    private async Task<bool> TitleIsUnique(string title,
-                                           string? todoId = null,
-                                           CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(title))
-            return true;
-
-        Ulid? excludeId = todoId is null ? null : Ulid.Parse(todoId);
-        return await todoRepository.TitleExistsAsync(title, excludeId, cancellationToken) is false;
-    }
 }
-
-/// <summary>
-/// Strongly-typed input for Id/Title cross-property validation.
-/// Replaces the previous anonymous type + dynamic parameter (not Native AOT compatible).
-/// </summary>
-public sealed record IdAndTitle(string? Id, string? Title);

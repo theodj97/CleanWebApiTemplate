@@ -1,5 +1,5 @@
+using CleanWebApiTemplate.Application.Dtos.Todo;
 using CleanWebApiTemplate.Application.Validation;
-using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
@@ -21,7 +21,20 @@ public sealed class CreateTodoService(ITodoRepository todoRepository,
             todoEntity.UpdatedAt = actualUtcMoment;
             todoEntity.Status = (int)ETodoStatus.Pending;
 
-            var createdTodo = await todoRepository.InsertAsync(todoEntity, cancellationToken);
-            return Result<TodoDto?>.Created(createdTodo.ToDto());
+            // Uniqueness is a business rule, not input validation, so the service owns it and
+            // reports a conflict. The unique index still protects the race below.
+            if (await todoRepository.TitleExistsAsync(todoEntity.Title,
+                                                     todoEntity.CreatedBy,
+                                                     cancellationToken: cancellationToken))
+            {
+                return Result<TodoDto?>.Failure(
+                    new ConflictError("A TODO with this title already exists for this owner."));
+            }
+
+            var insertion = await todoRepository.InsertAsync(todoEntity, cancellationToken);
+
+            return insertion.IsFailure
+                ? Result<TodoDto?>.Failure(insertion.Error!)
+                : Result<TodoDto?>.Created(insertion.Value!.ToDto());
         }, cancellationToken);
 }

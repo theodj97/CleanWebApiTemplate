@@ -18,6 +18,9 @@ public static class TodoTable
     public const string CreatedByColumn = "CreatedBy";
     public const string UpdatedByColumn = "UpdatedBy";
 
+    /// <summary>Unique index that makes the title unique per owner at the database level.</summary>
+    public const string UniqueTitleIndexName = "UX_Todo_CreatedBy_Title";
+
     public static byte TitleMaxLength => 255;
     public static int DescriptionMaxLength => 1000;
     public static byte CreatedByMaxLength => 255;

@@ -18,7 +18,11 @@ CREATE TABLE IF NOT EXISTS "Todo" (
     CONSTRAINT "PK_Todo" PRIMARY KEY ("Id")
 );
 
--- TitleExistsAsync filters by title.
+-- TitleExistsAsync filters by title and owner. The unique index closes the race between
+-- validation and insert; the API also checks it for a friendly 400.
+CREATE UNIQUE INDEX IF NOT EXISTS "UX_Todo_CreatedBy_Title" ON "Todo" ("CreatedBy", "Title");
+
+-- Title fragments are filtered with ILIKE; this index helps exact-title lookups.
 CREATE INDEX IF NOT EXISTS "IX_Todo_Title" ON "Todo" ("Title");
 
 -- SearchAsync filters by status, creator and creation date range.

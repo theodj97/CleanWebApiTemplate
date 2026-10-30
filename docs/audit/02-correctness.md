@@ -5,8 +5,10 @@
 Se revisaron los servicios de aplicación, validadores, repositorio ADO.NET, mapeo DTO/respuesta,
 contrato HTTP y OpenAPI. Los hallazgos se confirmaron con pruebas dinámicas cuando fue posible.
 
-> **Estado:** BUG-001, BUG-002, BUG-006, BUG-007 y BUG-012 están corregidos en el Batch 1
-> (ver [`09-batch-1.md`](09-batch-1.md)). El resto sigue pendiente.
+> **Estado:** Batch 1 corrigió BUG-001, BUG-002, BUG-006, BUG-007 y BUG-012. Batch 3 corrigió
+> BUG-003, BUG-004, BUG-005, BUG-009, BUG-010, BUG-011 y BUG-014; BUG-015 queda mitigado (ver
+> [`09-batch-1.md`](09-batch-1.md) y [`11-batch-3.md`](11-batch-3.md)). El resto sigue
+> pendiente.
 
 ## Hallazgos
 
@@ -155,21 +157,18 @@ documentar HS256-only.
 | `DELETE /api/Todo/{id}` | 200 bool | 200 bool | ✅ |
 | `GET /nope` | ProblemDetails | 404 ProblemDetails | ✅ Batch 1 |
 | `GET /api/Todo` | 405 ProblemDetails | 405 ProblemDetails | ✅ Batch 1 |
-| `TodoResponse` | incluye `updatedAt` en OpenAPI | no lo incluye | ❌ BUG-008 |
-| `CreateTodoRequest.title` | required, trimmed, unique per owner | required, no trimmed, global unique | ❌ BUG-003/010 |
-| `FilteredTodoRequest.title` | contains | exact match | ❌ BUG-005 |
+| `TodoResponse` | incluye `updatedAt` en OpenAPI | no lo incluye | ❌ BUG-008 (Batch 9) |
+| `CreateTodoRequest.title` | required, trimmed, unique per owner | required, trimmed, unique per owner | ✅ Batch 3 |
+| `FilteredTodoRequest.title` | contains | contains (ILIKE, comodines escapados) | ✅ Batch 3 |
 
-## Decisiones pendientes
+## Decisiones
 
-1. **Unicidad de título:** ¿global o por owner? La respuesta cambia el índice, la query y los
-   tests.
-2. **`UpdatedAt`:** ¿se expone en `TodoResponse`? Si no, eliminar la descripción de OpenAPI y
-   el campo de `TodoDto`.
-3. **`Status = 0`:** ¿es “no cambiar” o inválido? Si es “no cambiar”, no aplicar en
-   `PatchFields`; si es inválido, validar siempre.
-4. **204 en listas:** ¿se quiere 204 o 200 `[]`? La documentación y el test unitario apuntan a
-   204; el test de componente actual afirma 200.
-5. **RS256:** ¿se completa o se elimina?
+1. **Unicidad de título:** decidido **por owner** e implementado con índice único (Batch 3).
+2. **`UpdatedAt`:** pendiente; decidir si se expone en `TodoResponse` o se elimina del schema
+   OpenAPI y de `TodoDto` (Batch 9).
+3. **`Status = 0`:** decidido inválido; se valida siempre (Batch 1).
+4. **204 en listas:** decidido 204 para colecciones vacías (Batch 1).
+5. **RS256 local:** eliminado; OIDC es el camino asimétrico en despliegue (Batch 2).
 
 ## Tests de regresión propuestos
 

@@ -7,6 +7,7 @@ using CleanWebApiTemplate.Api.Routes.Todo.Create;
 using CleanWebApiTemplate.Api.Routes.Todo.Filter;
 using CleanWebApiTemplate.Api.Routes.Todo.Get;
 using CleanWebApiTemplate.Api.Routes.Todo.Update;
+using CleanWebApiTemplate.Application.Dtos.Todo;
 using CleanWebApiTemplate.Application.Todo.Create;
 using CleanWebApiTemplate.Application.Todo.Delete;
 using CleanWebApiTemplate.Application.Todo.Filtered;
@@ -14,7 +15,6 @@ using CleanWebApiTemplate.Application.Todo.GetById;
 using CleanWebApiTemplate.Application.Todo.GetTitles;
 using CleanWebApiTemplate.Application.Todo.Update;
 using CleanWebApiTemplate.Domain.Configuration;
-using CleanWebApiTemplate.Domain.Models.Dtos.Todo;
 using CleanWebApiTemplate.Domain.ResultModel;
 using Microsoft.OpenApi;
 
@@ -94,8 +94,9 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
         .WithDescription(
             "Creates a TODO owned by the authenticated user and returns `201 Created` with the stored "
             + "resource. Titles are unique per owner; a duplicate title is rejected with "
-            + "`400 Bad Request`.")
-        .Produces<TodoResponse>((int)HttpStatusCode.Created);
+            + "`409 Conflict`.")
+        .Produces<TodoResponse>((int)HttpStatusCode.Created)
+        .ProducesProblem((int)HttpStatusCode.Conflict);
 
         userGroup.MapPut("/{id}", async (string id,
                                          UpdateTodoRequest request,
@@ -110,10 +111,12 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
         .WithSummary("Update a TODO")
         .WithDescription(
             "Updates the supplied fields of a TODO. Admins can update any TODO; other roles only their "
-            + "own. Returns `404 Not Found` when the id does not exist or is not visible, and "
-            + "`400 Bad Request` for invalid fields or an unknown status.")
+            + "own. Returns `404 Not Found` when the id does not exist or is not visible, "
+            + "`400 Bad Request` for invalid fields or an unknown status, and `409 Conflict` when the "
+            + "new title is already used by another TODO of the same owner.")
         .Produces<TodoResponse>((int)HttpStatusCode.OK)
-        .ProducesProblem((int)HttpStatusCode.NotFound);
+        .ProducesProblem((int)HttpStatusCode.NotFound)
+        .ProducesProblem((int)HttpStatusCode.Conflict);
 
         operatorGroup.MapDelete("/{id}", async (string id,
                                                 IDeleteTodoService service,

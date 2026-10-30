@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Mail;
 using System.Text;
 using FluentValidation;
@@ -18,7 +19,7 @@ public class BaseAbstractValidator<TRequest> : AbstractValidator<TRequest> where
     /// <param name="context"></param>
     protected void NotNullNotEmpty(string property, ValidationContext<TRequest> context)
     {
-        if (string.IsNullOrEmpty(property))
+        if (string.IsNullOrWhiteSpace(property))
             AddFailure(context, $"Property '{context.DisplayName}' can't be null or empty!");
     }
 
@@ -49,8 +50,13 @@ public class BaseAbstractValidator<TRequest> : AbstractValidator<TRequest> where
     /// <param name="context"></param>
     protected void ValidateDateTime(string dateTime, ValidationContext<TRequest> context)
     {
-        if (DateTime.TryParse(dateTime, out _) is false)
+        if (DateTime.TryParse(dateTime,
+                              CultureInfo.InvariantCulture,
+                              DateTimeStyles.RoundtripKind,
+                              out _) is false)
+        {
             AddFailure(context, $"Property '{context.DisplayName}' must be a valid date time");
+        }
     }
 
     /// <summary>
@@ -68,8 +74,14 @@ public class BaseAbstractValidator<TRequest> : AbstractValidator<TRequest> where
         && string.IsNullOrEmpty(dateRange.StartDate) is false)
             AddFailure(context, $"{nameof(DateRange.EndDate)} can't be null or empty when {nameof(DateRange.StartDate)} has value");
 
-        bool isStartDateValid = DateTime.TryParse(dateRange.StartDate, out DateTime startDate);
-        bool isEndDateValid = DateTime.TryParse(dateRange.EndDate, out DateTime endDate);
+        bool isStartDateValid = DateTime.TryParse(dateRange.StartDate,
+                                                  CultureInfo.InvariantCulture,
+                                                  DateTimeStyles.RoundtripKind,
+                                                  out DateTime startDate);
+        bool isEndDateValid = DateTime.TryParse(dateRange.EndDate,
+                                                CultureInfo.InvariantCulture,
+                                                DateTimeStyles.RoundtripKind,
+                                                out DateTime endDate);
 
         if (isStartDateValid && isEndDateValid)
             if (startDate > endDate)
