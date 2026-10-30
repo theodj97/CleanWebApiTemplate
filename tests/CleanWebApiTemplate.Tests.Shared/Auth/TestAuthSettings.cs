@@ -15,7 +15,7 @@ public static class TestAuthSettings
 {
     public const string Issuer = "urn:CleanWebApiTemplate:tests";
 
-    /// <summary>The API only accepts a symmetric key through configuration (<c>API_KEY</c>), so HS256.</summary>
+    /// <summary>Local tests use the symmetric HS256 mode; deployed environments can use OIDC.</summary>
     public const string Algorithm = "HS256";
 
     /// <summary>Far longer than any test session, so a token never expires mid-run.</summary>

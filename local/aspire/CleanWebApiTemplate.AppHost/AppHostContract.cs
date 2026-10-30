@@ -125,9 +125,6 @@ static class AppHostContract
         /// <summary>HS256 secret (text). The AppHost passes it as a secret parameter.</summary>
         public const string SigningKeyParameter = "local-jwt-signing-key";
 
-        /// <summary>RS256 public key (PEM). The private key never reaches the AppHost or the applications.</summary>
-        public const string PublicKeyParameter = "local-jwt-public-key";
-
         public static string AudienceKey(string resourceName) => $"LocalAuth:Apis:{resourceName}:Audience";
 
         public static string RoleClaimKey(string resourceName) => $"LocalAuth:Apis:{resourceName}:RoleClaim";
@@ -144,8 +141,6 @@ static class AppHostContract
         SigningKeyText,
         /// <summary>HS256 key bytes in base64.</summary>
         SigningKeyBase64,
-        /// <summary>RS256 public key (PEM), for apps that read a public key from configuration.</summary>
-        PublicKeyPem,
         /// <summary>Empty string: clears a production value such as Authority so no metadata is downloaded.</summary>
         Empty,
     }

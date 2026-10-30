@@ -15,7 +15,26 @@ public class AppSettingsValidator : IValidateOptions<AppSettings>
             failures.Add("ConnectionStrings.Postgres is required.");
 
         if (options.ValidIssuers is null || options.ValidIssuers.Length == 0)
+        {
             failures.Add("ValidIssuers must contain at least one entry.");
+        }
+        else
+        {
+            foreach (string issuer in options.ValidIssuers)
+            {
+                if (string.IsNullOrWhiteSpace(issuer))
+                {
+                    failures.Add("ValidIssuers cannot contain empty entries.");
+                    continue;
+                }
+
+                if (Uri.TryCreate(issuer, UriKind.Absolute, out Uri? uri) is false ||
+                    (uri.Scheme != Uri.UriSchemeHttps && uri.Scheme != "urn"))
+                {
+                    failures.Add($"ValidIssuer '{issuer}' must be an absolute HTTPS or URN URI.");
+                }
+            }
+        }
 
         if (string.IsNullOrWhiteSpace(options.Audience))
             failures.Add("Audience is required.");

@@ -4,6 +4,7 @@ public static class Constants
 {
     // Configuration keys
     public const string API_KEY = "API_KEY";
+    public const string AUTHENTICATION_MODE = "Authentication:Mode";
     public const string AUTHORITY = "Authentication:Authority";
     public const string AUDIENCE = "Audience";
     public const string CORS_ALLOWED_ORIGINS = "Cors:AllowedOrigins";

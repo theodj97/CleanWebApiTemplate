@@ -44,6 +44,7 @@ public class AuthenticationTests(ComponentTestFixture fixture) : ComponentTestBa
     [InlineData(InvalidToken.WrongIssuer)]
     [InlineData(InvalidToken.WrongAudience)]
     [InlineData(InvalidToken.SignedWithUnknownKey)]
+    [InlineData(InvalidToken.WrongAlgorithm)]
     [InlineData(InvalidToken.Unsigned)]
     public async Task CreateTodo_WithInvalidToken_ReturnsUnauthorized(InvalidToken kind)
     {
@@ -65,6 +66,18 @@ public class AuthenticationTests(ComponentTestFixture fixture) : ComponentTestBa
         // Act
         var response = await Client.PostAsJsonAsync(
             "/api/Todo/", new { title = TestData.Unique("auth-norole") }, CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    [AuthenticatedAs(TestUser.AuthenticatedWithoutEmail)]
+    public async Task CreateTodo_AuthenticatedWithoutEmail_ReturnsForbidden()
+    {
+        // Act
+        var response = await Client.PostAsJsonAsync(
+            "/api/Todo/", new { title = TestData.Unique("auth-noemail") }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);

@@ -21,4 +21,7 @@ public enum TestUser
 
     /// <summary>Authenticated, no role: must receive 403 on every protected endpoint.</summary>
     AuthenticatedWithoutRoles,
+
+    /// <summary>Role <c>User</c> but no email claim: must receive 403 before the handler runs.</summary>
+    AuthenticatedWithoutEmail,
 }

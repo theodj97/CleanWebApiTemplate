@@ -9,8 +9,9 @@ el AppHost local (`aspire start`), tokens HS256 firmados localmente y `curl`.
 No se ejecutaron ZAP, gitleaks, semgrep ni trivy porque no están instalados (decisión del
 usuario). Se indican los comandos exactos en `06-tooling.md` y en el roadmap.
 
-> **Estado:** SEC-002 y SEC-012 están corregidos en el Batch 1 (ver
-> [`09-batch-1.md`](09-batch-1.md)). El resto sigue pendiente.
+> **Estado:** Batch 1 corrigió SEC-002 y SEC-012. Batch 2 corrigió SEC-001, SEC-003, SEC-007
+> y SEC-008 (ver [`09-batch-1.md`](09-batch-1.md) y [`10-batch-2.md`](10-batch-2.md)). El
+> resto sigue pendiente.
 
 ## Threat model (STRIDE)
 
@@ -46,12 +47,12 @@ Test harness ──► AppHost/contenedores (solo test)
 
 | Amenaza | Superficie | Estado |
 |---|---|---|
-| **Spoofing** | JWT: issuer, audience, lifetime, firma, algoritmo | Mayormente cubierto; algoritmo no fijado y clave sin longitud mínima (SEC-001, SEC-007). |
+| **Spoofing** | JWT: issuer, audience, lifetime, firma, algoritmo | HS256 fijado, clave >= 32 bytes y modos Symmetric/Oidc separados (Batch 2). |
 | **Tampering** | SQL, ordenación, mass assignment, JSON | Sin inyección SQL; parámetros y whitelist correctos (SEC-014). Sin mass assignment. |
 | **Repudiation** | Escrituras de TODO | `CreatedBy`/`UpdatedBy` presentes; no hay audit log ni correlation ID. Aceptable para template. |
 | **Information disclosure** | Health, OpenAPI, errores, logs, OpenBao HTTP | Health sin auth, OpenAPI en Staging, logs Trace/Debug y OpenBao HTTP (SEC-004, SEC-006, SEC-009, SEC-013). |
 | **Denial of service** | Rate limiting, body size, colecciones, errores 500 | Sin rate limiting; body 30 MB; errores de entrada generan 500/logs (SEC-002, SEC-005, SEC-016). |
-| **Elevation of privilege** | Políticas, ownership, claims | Sin bypass encontrado; IDOR/BOLA cubierto por tests. Claim ausente produce 500, no EoP (SEC-003). |
+| **Elevation of privilege** | Políticas, ownership, claims | Sin bypass encontrado; IDOR/BOLA cubierto por tests. Claim `email` ausente -> 403 (Batch 2). |
 
 ## Hallazgos
 
@@ -119,11 +120,11 @@ No se registran tokens ni secretos en la evidencia.
 | Área | Estado | Comentario |
 |---|---|---|
 | V1 Arquitectura | Parcial | No hay threat model ni architecture tests en el repo. |
-| V2 Autenticación | Parcial | JWT bien validado; falta pin de algoritmo y longitud de clave. |
+| V2 Autenticación | Bien | JWT validado; HS256 fijado, clave >= 32 bytes y OIDC separado (Batch 2). |
 | V3 Sesión | N/A | Stateless JWT; la revocación depende del IdP. |
 | V4 Control de acceso | Bien | Políticas y ownership; falta manejo de claims ausentes. |
 | V5 Validación | Parcial | FluentValidation; errores de binding 500 y límites de colecciones. |
-| V6 Criptografía | Parcial | HS256; longitud de clave no validada; OpenBao HTTP. |
+| V6 Criptografía | Parcial | HS256 con longitud mínima validada (Batch 2); OpenBao HTTP sigue pendiente. |
 | V7 Errores/logs | Parcial | 500 genérico; 4xx como 500; sin traceId; Trace/Debug. |
 | V8 Protección de datos | Parcial | Emails en respuestas; sin cifrado en reposo (DB); TLS. |
 | V9 Comunicación | Parcial | HTTPS; sin HSTS/forwarded headers; OpenBao HTTP. |

@@ -142,8 +142,8 @@ La cobertura se regeneró con los mismos comandos que el baseline; el detalle es
 
 ## Pendiente (fuera de Batch 1)
 
-- **Batch 2**: token sin claim `email` sigue devolviendo 500; JWT sin `ValidAlgorithms`;
-  longitud de `API_KEY`; modos OIDC/simétrico.
+- **Batch 2**: corregido en [`10-batch-2.md`](10-batch-2.md) (email -> 403, HS256 fijado,
+  longitud de `API_KEY`, modos OIDC/simétrico).
 - **Batch 3**: unicidad de título global vs per-owner, índice único, filtro contains, trim,
   cultura de fechas, concurrencia.
 - **Batch 5**: cobertura de los nuevos caminos (aunque los tests ya cubren los fixes).

@@ -28,6 +28,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="CleanWebApiTemplate.Api.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference
       Include="..\CleanWebApiTemplate.ServiceDefaults\CleanWebApiTemplate.ServiceDefaults.csproj" />
     <ProjectReference

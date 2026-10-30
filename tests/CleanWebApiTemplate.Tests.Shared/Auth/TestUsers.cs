@@ -32,6 +32,9 @@ public static class TestUsers
         [TestUser.AuthenticatedWithoutRoles] = new(
             "7d9f3c1e-0000-4000-8000-000000000005", "Test No Roles", [], [],
             Claims("test.todo.norole@example.com")),
+        [TestUser.AuthenticatedWithoutEmail] = new(
+            "7d9f3c1e-0000-4000-8000-000000000006", "Test No Email", ["User"], [],
+            new Dictionary<string, object>()),
     };
 
     public static TestUserDefinition Get(TestUser user) =>

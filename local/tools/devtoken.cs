@@ -17,8 +17,6 @@ using System.Text.Json.Nodes;
 using System.Xml.Linq;
 
 const string SigningKeyParameter = "Parameters:local-jwt-signing-key"; // HS256 secret (text)
-const string PublicKeyParameter = "Parameters:local-jwt-public-key";   // RS256 public key (PEM), read by the AppHost
-const string PrivateKeySecret = "LocalAuth:PrivateKeyPem";             // RS256 private key (PEM), read only by devtoken
 
 try
 {
@@ -47,29 +45,19 @@ static int Init(bool rotate)
 {
     var settings = Settings.Load();
     var secrets = UserSecrets.Load(settings.UserSecretsPath);
-    var existing = settings.Algorithm == "HS256" ? SigningKeyParameter : PrivateKeySecret;
 
-    if (secrets[existing] is not null && !rotate)
+    if (secrets[SigningKeyParameter] is not null && !rotate)
     {
-        Console.Error.WriteLine($"Local {settings.Algorithm} key already present in {settings.UserSecretsPath}. Use --rotate to replace it.");
+        Console.Error.WriteLine($"Local HS256 key already present in {settings.UserSecretsPath}. Use --rotate to replace it.");
         return 0;
     }
 
-    if (settings.Algorithm == "HS256")
-    {
-        // 512 random bits as text: apps that read the key as UTF-8 text (Jwt:Key) and the AppHost (base64 of those
-        // bytes for config-bound JwtBearer) derive the same key bytes from it.
-        secrets[SigningKeyParameter] = Base64Url(RandomNumberGenerator.GetBytes(64));
-    }
-    else
-    {
-        using var rsa = RSA.Create(2048);
-        secrets[PrivateKeySecret] = rsa.ExportPkcs8PrivateKeyPem();
-        secrets[PublicKeyParameter] = rsa.ExportSubjectPublicKeyInfoPem();
-    }
+    // 512 random bits as text: apps that read the key as UTF-8 text (API_KEY) derive the same
+    // key bytes from it.
+    secrets[SigningKeyParameter] = Base64Url(RandomNumberGenerator.GetBytes(64));
 
     UserSecrets.Save(settings.UserSecretsPath, secrets);
-    Console.Error.WriteLine($"Local {settings.Algorithm} key {(rotate ? "rotated" : "created")} in {settings.UserSecretsPath}. Restart the AppHost to use it.");
+    Console.Error.WriteLine($"Local HS256 key {(rotate ? "rotated" : "created")} in {settings.UserSecretsPath}. Restart the AppHost to use it.");
     return 0;
 }
 
@@ -180,20 +168,13 @@ static (string Token, DateTimeOffset Expires, string Audience) CreateToken(
     }
 
     var secrets = UserSecrets.Load(settings.UserSecretsPath);
-    var header = new JsonObject { ["alg"] = settings.Algorithm, ["typ"] = "JWT" };
+    var header = new JsonObject { ["alg"] = "HS256", ["typ"] = "JWT" };
     var signingInput = $"{Base64Url(Encoding.UTF8.GetBytes(header.ToJsonString()))}.{Base64Url(Encoding.UTF8.GetBytes(payload.ToJsonString()))}";
-    var signature = settings.Algorithm == "HS256"
-        ? HMACSHA256.HashData(Encoding.UTF8.GetBytes(RequiredSecret(secrets, SigningKeyParameter)), Encoding.UTF8.GetBytes(signingInput))
-        : SignRsa(RequiredSecret(secrets, PrivateKeySecret), signingInput);
+    var signature = HMACSHA256.HashData(
+        Encoding.UTF8.GetBytes(RequiredSecret(secrets, SigningKeyParameter)),
+        Encoding.UTF8.GetBytes(signingInput));
 
     return ($"{signingInput}.{Base64Url(signature)}", now.AddMinutes(lifetime), api.Audience);
-}
-
-static byte[] SignRsa(string privateKeyPem, string signingInput)
-{
-    using var rsa = RSA.Create();
-    rsa.ImportFromPem(privateKeyPem);
-    return rsa.SignData(Encoding.UTF8.GetBytes(signingInput), HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 }
 
 static string RequiredSecret(JsonObject secrets, string key) =>
@@ -238,7 +219,7 @@ internal sealed record ProfileSettings(
     IReadOnlyDictionary<string, string> Claims);
 
 internal sealed record Settings(
-    string Algorithm, string Issuer, int DefaultLifetimeMinutes, string UserSecretsPath,
+    string Issuer, int DefaultLifetimeMinutes, string UserSecretsPath,
     IReadOnlyDictionary<string, ApiSettings> Apis, IReadOnlyDictionary<string, ProfileSettings> Profiles)
 {
     public static Settings Load()
@@ -249,9 +230,9 @@ internal sealed record Settings(
             ?? throw new DevTokenException($"{path} is missing or has no LocalAuth section.");
 
         var algorithm = Text(root, "Algorithm") ?? "HS256";
-        if (algorithm is not ("HS256" or "RS256"))
+        if (algorithm is not "HS256")
         {
-            throw new DevTokenException($"Unsupported Algorithm '{algorithm}' (HS256 or RS256).");
+            throw new DevTokenException($"Unsupported Algorithm '{algorithm}'. Local development uses HS256; production uses OIDC.");
         }
 
         var appHostProject = Path.GetFullPath(Path.Combine(directory, Text(root, "AppHostProject") ?? throw new DevTokenException("Missing AppHostProject.")));
@@ -277,7 +258,6 @@ internal sealed record Settings(
                 (profile.Value?["Claims"] as JsonObject ?? []).ToDictionary(c => c.Key, c => c.Value?.GetValue<string>() ?? string.Empty)));
 
         return new(
-            algorithm,
             Text(root, "Issuer") ?? throw new DevTokenException("Missing Issuer."),
             root["DefaultLifetimeMinutes"]?.GetValue<int>() ?? 60,
             UserSecrets.PathFor(userSecretsId ?? throw new DevTokenException($"{appHostProject} has no <UserSecretsId>.")),

@@ -95,8 +95,8 @@ changes, update the ids in `examples.json` and `responses/`.
 - Selecting a profile in the header mints the same HS256 token as `devtoken get`: same issuer, audience, role claim,
   `sub`, `name`, `role` array, `email` and 60-minute lifetime.
 - The sidecar receives the signing key (the same text seeded into OpenBao as `API_KEY`) and the issuer/audience/role
-  claim from the AppHost. It is HS256-only; the AppHost only has the RS256 public key, so RS256 is not supported for
-  this endpoint.
+  claim from the AppHost. It is HS256-only; local development uses HS256. Deployed environments use OIDC
+  (`Authentication:Mode=Oidc`) for asymmetric algorithms.
 - The token lives in the page, not in localStorage: no `persistAuthorization`. After a refresh, select the profile
   again; "New token" mints a new one. The `devtoken` CLI remains for scripts and `curl`.
 - The UI follows the system colour scheme, keeps a light/dark preference in `localStorage` and never persists the

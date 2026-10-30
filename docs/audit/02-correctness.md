@@ -147,14 +147,14 @@ documentar HS256-only.
 
 | Operación | Documentado | Real | Estado |
 |---|---|---|---|
-| `POST /api/Todo` | 201 con recurso | 201 sin `Location` | ⚠️ BUG-007 |
+| `POST /api/Todo` | 201 con recurso | 201 con `Location` | ✅ Batch 1 |
 | `GET /api/Todo/{id}` | 200 o 204 | 200 o 204 | ✅ |
-| `POST /api/Todo/filter` | 200 o 204 si vacío | 200 `[]` si vacío | ❌ BUG-006 |
-| `POST /api/Todo/titles` | 200 o 204 si vacío | 200 `[]` si vacío | ❌ BUG-006 |
-| `PUT /api/Todo/{id}` | 200 / 404 / 400 | 200 / 404 / 400; `status=0` aceptado | ❌ BUG-002 |
+| `POST /api/Todo/filter` | 200 o 204 si vacío | 204 si vacío | ✅ Batch 1 |
+| `POST /api/Todo/titles` | 200 o 204 si vacío | 204 si vacío | ✅ Batch 1 |
+| `PUT /api/Todo/{id}` | 200 / 404 / 400 | 200 / 404 / 400; `status=0` -> 400 | ✅ Batch 1 |
 | `DELETE /api/Todo/{id}` | 200 bool | 200 bool | ✅ |
-| `GET /nope` | ProblemDetails | 404 vacío | ❌ BUG-012 |
-| `GET /api/Todo` | 405 ProblemDetails | 405 vacío | ❌ BUG-012 |
+| `GET /nope` | ProblemDetails | 404 ProblemDetails | ✅ Batch 1 |
+| `GET /api/Todo` | 405 ProblemDetails | 405 ProblemDetails | ✅ Batch 1 |
 | `TodoResponse` | incluye `updatedAt` en OpenAPI | no lo incluye | ❌ BUG-008 |
 | `CreateTodoRequest.title` | required, trimmed, unique per owner | required, no trimmed, global unique | ❌ BUG-003/010 |
 | `FilteredTodoRequest.title` | contains | exact match | ❌ BUG-005 |

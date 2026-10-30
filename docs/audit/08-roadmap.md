@@ -47,7 +47,10 @@ sea coherente.
 **Criterio de aceptación:** ningún body inválido devuelve 500; los tests anteriores pasan;
 OpenAPI refleja los códigos reales.
 
-### Batch 2 — Autenticación y claims
+### Batch 2 — Autenticación y claims — ✅ implementado
+
+**Estado:** implementado y verificado el 2026-10-30. Detalle en
+[`10-batch-2.md`](10-batch-2.md).
 
 - SEC-001: `ValidAlgorithms` (HS256 en modo simétrico).
 - SEC-007: validar longitud de `API_KEY` (>= 32 bytes) y coherencia issuer/audience.
@@ -198,10 +201,10 @@ dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj \
 |---|---:|---:|
 | Build warnings | 0 | 0 |
 | AOT publish warnings | 0 | 0 |
-| Tests | 227 (211 en auditoría + 16 de Batch 1) | ≥ 240 |
-| Cobertura `src/` líneas | 82,7% (83,0% tras B1) | ≥ 90% |
-| Cobertura `src/` ramas | 79,7% (80,0% tras B1) | ≥ 80% |
-| Api ramas | 56,9% (60,4% tras B1) | ≥ 75% |
+| Tests | 242 (211 auditoría + 16 B1 + 15 B2) | ≥ 240 |
+| Cobertura `src/` líneas | 82,7% (84,0% tras B1+B2) | ≥ 90% |
+| Cobertura `src/` ramas | 79,7% (81,3% tras B1+B2) | ≥ 80% |
+| Api ramas | 56,9% (65,3% tras B1+B2) | ≥ 75% |
 | Mutation score Application/Domain | No medido | ≥ 70% |
 | Paquetes vulnerables | 0 | 0 |
 | Secretos en historial | 0 | 0 |

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using CleanWebApiTemplate.Api.Configuration;
 using CleanWebApiTemplate.Api.Extensions;
@@ -13,6 +14,7 @@ using CleanWebApiTemplate.Infrastructure.Repositories;
 using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
@@ -139,47 +141,58 @@ public static class ConfigureServices
                                                     AppSettings appSettings,
                                                     IConfiguration configuration)
     {
+        AuthenticationSettings authentication = AuthenticationSettings.Load(configuration, appSettings);
+
         services.AddAuthorizationBuilder()
-            .AddPolicy(Constants.ADMIN_POLICY, policy => policy.RequireRole(Constants.ADMIN_POLICY))
-            .AddPolicy(Constants.OPERATOR_POLICY, policy => policy.RequireRole(Constants.OPERATOR_POLICY,
-                                                                               Constants.ADMIN_POLICY))
-            .AddPolicy(Constants.USER_POLICY, policy => policy.RequireRole(Constants.USER_POLICY,
-                                                                           Constants.ADMIN_POLICY,
-                                                                           Constants.OPERATOR_POLICY))
-            .AddPolicy(Constants.EXTERNAL_POLICY, policy => policy.RequireRole(Constants.EXTERNAL_POLICY,
-                                                                                Constants.ADMIN_POLICY,
-                                                                                Constants.OPERATOR_POLICY));
+            .AddPolicy(Constants.ADMIN_POLICY, policy => policy
+                .RequireRole(Constants.ADMIN_POLICY)
+                .RequireAssertion(HasEmailClaim))
+            .AddPolicy(Constants.OPERATOR_POLICY, policy => policy
+                .RequireRole(Constants.OPERATOR_POLICY, Constants.ADMIN_POLICY)
+                .RequireAssertion(HasEmailClaim))
+            .AddPolicy(Constants.USER_POLICY, policy => policy
+                .RequireRole(Constants.USER_POLICY, Constants.ADMIN_POLICY, Constants.OPERATOR_POLICY)
+                .RequireAssertion(HasEmailClaim))
+            .AddPolicy(Constants.EXTERNAL_POLICY, policy => policy
+                .RequireRole(Constants.EXTERNAL_POLICY, Constants.ADMIN_POLICY, Constants.OPERATOR_POLICY)
+                .RequireAssertion(HasEmailClaim));
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
-                // No default authority: an empty value is the explicit "no identity provider" mode used
-                // locally and by the tests, where tokens are validated with the signing key only.
-                // RequireHttpsMetadata keeps its secure default (true): metadata over plain HTTP is never allowed.
-                var authority = configuration[Constants.AUTHORITY];
-                if (string.IsNullOrWhiteSpace(authority) is false)
-                {
-                    if (Uri.TryCreate(authority, UriKind.Absolute, out _) is false)
-                        throw new InvalidOperationException($"'{Constants.AUTHORITY}' must be an absolute URI.");
+                // Metadata over plain HTTP is never allowed, even if a misconfigured authority
+                // points to http://.
+                options.RequireHttpsMetadata = true;
+                options.Audience = authentication.Audience;
+                options.MapInboundClaims = true;
 
-                    options.Authority = authority;
-                }
+                if (authentication.Mode is AuthenticationMode.Oidc)
+                    options.Authority = authentication.Authority;
 
-                options.Audience = appSettings.Audience;
-
-                options.TokenValidationParameters = new TokenValidationParameters
+                TokenValidationParameters validation = new()
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
-                    ValidIssuers = appSettings.ValidIssuers,
+                    ValidIssuers = authentication.ValidIssuers,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                        configuration[Constants.API_KEY]
-                        ?? throw new InvalidOperationException($"'{Constants.API_KEY}' is required.")))
                 };
+
+                if (authentication.Mode is AuthenticationMode.Symmetric)
+                {
+                    validation.IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(authentication.ApiKey!));
+                    // Pin the algorithm: the local key must only be accepted as HS256.
+                    validation.ValidAlgorithms = [SecurityAlgorithms.HmacSha256];
+                }
+
+                options.TokenValidationParameters = validation;
             });
 
         return services;
     }
+
+    private static bool HasEmailClaim(AuthorizationHandlerContext context) =>
+        context.User.FindFirst(ClaimTypes.Email) is not null
+        || context.User.FindFirst("email") is not null;
 }

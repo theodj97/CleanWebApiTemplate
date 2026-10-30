@@ -29,6 +29,9 @@ Generada con `dotnet-coverage` global, fusionando unit + component + functional 
 | ServiceDefaults | 95,7% | 100% |
 | **Total** | **82,7%** | **79,7%** |
 
+> **Tras Batches 1 y 2:** `src/` 84,0% líneas / 81,3% ramas; Api 72,0% / 65,3%. Evidencia:
+> `evidence/coverage-summary-batch2.txt`.
+
 ### Clases con peor cobertura
 
 | Clase | Líneas | Ramas | Comentario |

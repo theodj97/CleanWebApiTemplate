@@ -8,7 +8,9 @@ public abstract class BaseApiRouter : IGroupMap
 {
     private readonly IHttpContextAccessor contextAccessor;
     public string UserName => contextAccessor.HttpContext!.User.Claims.First(x => x.Type == ClaimTypes.Name).Value;
-    public string UserEmail => contextAccessor.HttpContext!.User.Claims.First(x => x.Type == ClaimTypes.Email).Value;
+    public string UserEmail => contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Email)?.Value
+        ?? contextAccessor.HttpContext?.User.FindFirst("email")?.Value
+        ?? throw new InvalidOperationException("The authenticated principal has no email claim.");
     public string Role => contextAccessor.HttpContext!.User.Claims.First(x => x.Type == ClaimTypes.Role).Value;
     public bool IsAdmin => contextAccessor.HttpContext!.User.IsInRole(Constants.ADMIN_POLICY);
 

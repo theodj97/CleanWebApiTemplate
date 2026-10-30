@@ -82,9 +82,7 @@ if (mode != Modes.Component)
                 Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "../../openapi")))
             // The sidecar mints the same HS256 token as devtoken. It receives the signing key text
             // (the value openbao-init writes as API_KEY) and the issuer/audience/role claim the API validates.
-            .WithEnvironment(LocalLogin.SigningKey, localJwt.SigningKey
-                ?? throw new InvalidOperationException(
-                    $"The local login requires the HS256 signing key; LocalAuth:Algorithm is '{localJwt.Algorithm}'."))
+            .WithEnvironment(LocalLogin.SigningKey, localJwt.SigningKey)
             .WithEnvironment(LocalLogin.Issuer, localJwt.Issuer)
             .WithEnvironment(LocalLogin.Audience, localJwt.AudienceFor(Resources.Api))
             .WithEnvironment(LocalLogin.RoleClaim,
@@ -126,33 +124,29 @@ IResourceBuilder<ProjectResource> AddApplication<TProject>(string name) where TP
 internal sealed record LocalJwt(
     string Algorithm,
     string Issuer,
-    IResourceBuilder<ParameterResource>? SigningKey,
-    IResourceBuilder<ParameterResource>? PublicKey,
+    IResourceBuilder<ParameterResource> SigningKey,
     IConfiguration Configuration)
 {
     public static LocalJwt Create(IDistributedApplicationBuilder builder, bool requireKeys)
     {
         var configuration = builder.Configuration;
         var algorithm = configuration[LocalAuth.AlgorithmKey] ?? "HS256";
+        if (algorithm is not "HS256")
+        {
+            throw new InvalidOperationException(
+                $"Local development supports HS256 only; found '{algorithm}'. Use OIDC (Authentication:Mode=Oidc) for RS256.");
+        }
+
         var issuer = configuration[LocalAuth.IssuerKey]
             ?? throw new InvalidOperationException($"Missing '{LocalAuth.IssuerKey}'.");
 
-        var parameter = algorithm switch
-        {
-            "HS256" => LocalAuth.SigningKeyParameter,
-            "RS256" => LocalAuth.PublicKeyParameter,
-            _ => throw new InvalidOperationException($"Unsupported local JWT algorithm '{algorithm}'."),
-        };
-
-        if (requireKeys && string.IsNullOrWhiteSpace(configuration[LocalAuth.ParameterKey(parameter)]))
+        if (requireKeys && string.IsNullOrWhiteSpace(configuration[LocalAuth.ParameterKey(LocalAuth.SigningKeyParameter)]))
         {
             throw new InvalidOperationException(
                 "The local JWT signing key is missing. Run `dotnet local/tools/devtoken.cs init` from the repository root, then start the AppHost again.");
         }
 
-        return algorithm == "HS256"
-            ? new(algorithm, issuer, builder.AddParameter(parameter, secret: true), null, configuration)
-            : new(algorithm, issuer, null, builder.AddParameter(parameter), configuration);
+        return new(algorithm, issuer, builder.AddParameter(LocalAuth.SigningKeyParameter, secret: true), configuration);
     }
 
     public string AudienceFor(string resourceName) =>
@@ -178,18 +172,14 @@ internal static class LocalJwtResourceExtensions
                     application.WithEnvironment(name, localJwt.AudienceFor(resourceName));
                     break;
                 case TrustValue.SigningKeyText:
-                    application.WithEnvironment(name, Required(localJwt.SigningKey, value));
+                    application.WithEnvironment(name, localJwt.SigningKey);
                     break;
                 case TrustValue.SigningKeyBase64:
-                    var signingKey = Required(localJwt.SigningKey, value);
                     application.WithEnvironment(async context =>
                     {
-                        var text = await signingKey.Resource.GetValueAsync(context.CancellationToken) ?? string.Empty;
+                        var text = await localJwt.SigningKey.Resource.GetValueAsync(context.CancellationToken) ?? string.Empty;
                         context.EnvironmentVariables[name] = Convert.ToBase64String(Encoding.UTF8.GetBytes(text));
                     });
-                    break;
-                case TrustValue.PublicKeyPem:
-                    application.WithEnvironment(name, Required(localJwt.PublicKey, value));
                     break;
                 case TrustValue.Empty:
                     application.WithEnvironment(name, string.Empty);
@@ -199,7 +189,4 @@ internal static class LocalJwtResourceExtensions
 
         return application;
     }
-
-    private static IResourceBuilder<ParameterResource> Required(IResourceBuilder<ParameterResource>? parameter, TrustValue value) =>
-        parameter ?? throw new InvalidOperationException($"{value} needs a different LocalAuth:Algorithm.");
 }

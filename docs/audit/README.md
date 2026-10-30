@@ -5,8 +5,9 @@ Rama auditada: `features/code-audit`
 Commit: `fbca5cae986bd08950292910fd6d15ea2c434930`
 
 Esta carpeta contiene la auditoría completa por fases. La auditoría original **no modificó
-código, configuración ni manifiestos**. Después se implementó el **Batch 1** de remediación
-(ver [`09-batch-1.md`](09-batch-1.md)); el resto de batches siguen pendientes.
+código, configuración ni manifiestos**. Después se implementaron los **Batches 1 y 2** de
+remediación (ver [`09-batch-1.md`](09-batch-1.md) y [`10-batch-2.md`](10-batch-2.md)); el resto
+de batches siguen pendientes.
 
 ## Índice
 
@@ -22,6 +23,7 @@ código, configuración ni manifiestos**. Después se implementó el **Batch 1**
 | [`07-template-docs.md`](07-template-docs.md) | `template.json`, empaquetado, GUIDs, post-actions y matriz README vs realidad. |
 | [`08-roadmap.md`](08-roadmap.md) | Priorización P0/P1/P2/P3, batches de remediación y guardarraíles. |
 | [`09-batch-1.md`](09-batch-1.md) | Remediación del Batch 1: errores de entrada, 201/204/404/405 y traceId. |
+| [`10-batch-2.md`](10-batch-2.md) | Remediación del Batch 2: modos de autenticación, HS256, claims y OIDC. |
 | [`findings.csv`](findings.csv) | Registro completo de hallazgos, filtrable. |
 
 ## Resumen ejecutivo
@@ -30,15 +32,16 @@ código, configuración ni manifiestos**. Después se implementó el **Batch 1**
   IDOR/BOLA ni inyección SQL en las rutas revisadas). La parametrización SQL y el filtro de
   ordenación son correctos.
 - **La calidad del baseline es buena**: build 0 warnings, AOT publish correcto, 211 tests
-  verdes en la auditoría (227 tras Batch 1), sin paquetes vulnerables ni deprecados y sin
-  claves privadas en el historial.
+  verdes en la auditoría (242 tras Batches 1 y 2), sin paquetes vulnerables ni deprecados y
+  sin claves privadas en el historial.
 - **Los mayores riesgos están en los bordes**: errores de entrada que devuelven 500, validación
   de `Status = 0`, contrato de unicidad de títulos, claims ausentes que provocan 500, falta de
   rate limiting/security headers/forwarded headers y ausencia de tests de esos caminos.
 - **La cobertura real de `src/` es 82,7% de líneas y 79,7% de ramas** en la auditoría
-  (83,0%/80,0% tras Batch 1), no el 89,9%/72,5% del informe antiguo: ese informe incluía
-  `Tests.Shared` y `AppHost`. La zona más débil es `Api` (68,6% líneas tras Batch 1), sobre
-  todo `OpenApiConfiguration` (1,7%/2,8%) y `TodoRoutes` (91,3% líneas / 14,2% ramas).
+  (84,0%/81,3% tras Batches 1 y 2), no el 89,9%/72,5% del informe antiguo: ese informe incluía
+  `Tests.Shared` y `AppHost`. La zona más débil es `Api` (72,0% líneas / 65,3% ramas tras
+  Batch 2), sobre todo `OpenApiConfiguration` (1,7%/2,8%) y `TodoRoutes`
+  (91,3% líneas / 14,2% ramas).
 - **La arquitectura no respeta la regla de dependencias**: `Application` referencia
   `Infrastructure` y `Domain` arrastra paquetes legacy de ASP.NET Core que no usa.
 - **El template todavía no está listo para `dotnet new`**: `template.json` tiene `name` y
@@ -61,9 +64,9 @@ código, configuración ni manifiestos**. Después se implementó el **Batch 1**
 La severidad es relativa a “template listo para producción”: un P1 de tooling/template puede
 no ser un riesgo de runtime, pero sí un bloqueante para publicar el template.
 
-**Estado tras Batch 1:** SEC-002, BUG-001, BUG-002, BUG-006, BUG-007, BUG-012 y SEC-012
-corregidos y verificados. El registro se mantiene como foto de la auditoría; el detalle de la
-remediación está en `09-batch-1.md`.
+**Estado tras Batches 1 y 2:** corregidos SEC-002, SEC-012, BUG-001, BUG-002, BUG-006,
+BUG-007, BUG-012 (Batch 1) y SEC-001, SEC-003, SEC-007, SEC-008 (Batch 2). El registro se
+mantiene como foto de la auditoría; el detalle está en `09-batch-1.md` y `10-batch-2.md`.
 
 ## Alcance
 

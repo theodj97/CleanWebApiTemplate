@@ -65,6 +65,38 @@ public class AppSettingsValidatorTests
         Assert.Contains("ValidIssuers must contain at least one entry.", result.Failures!);
     }
 
+    [Fact]
+    public void Validate_WithHttpIssuer_Fails()
+    {
+        // Act
+        var result = _validator.Validate(null, Settings(issuers: ["http://localhost"]));
+
+        // Assert
+        Assert.False(result.Succeeded);
+        Assert.Contains(result.Failures!, failure => failure.Contains("absolute HTTPS or URN URI"));
+    }
+
+    [Fact]
+    public void Validate_WithUrnIssuer_Succeeds()
+    {
+        // Act
+        var result = _validator.Validate(null, Settings(issuers: ["urn:CleanWebApiTemplate:tests"]));
+
+        // Assert
+        Assert.True(result.Succeeded);
+    }
+
+    [Fact]
+    public void Validate_WithEmptyIssuer_Fails()
+    {
+        // Act
+        var result = _validator.Validate(null, Settings(issuers: [""]));
+
+        // Assert
+        Assert.False(result.Succeeded);
+        Assert.Contains("ValidIssuers cannot contain empty entries.", result.Failures!);
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("   ")]

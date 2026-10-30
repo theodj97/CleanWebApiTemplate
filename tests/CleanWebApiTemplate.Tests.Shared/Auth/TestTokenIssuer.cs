@@ -15,41 +15,31 @@ public enum InvalidToken
     WrongIssuer,
     WrongAudience,
     SignedWithUnknownKey,
+    WrongAlgorithm,
     Unsigned,
 }
 
 /// <summary>
-/// Issues locally signed JWTs for <see cref="TestUser"/> identities. A new key is created for every test run and never
-/// leaves the process: nothing is written to disk, nothing is committed, no identity provider is called.
+/// Issues locally signed HS256 JWTs for <see cref="TestUser"/> identities. A new key is created for every test run and
+/// never leaves the process: nothing is written to disk, nothing is committed, no identity provider is called.
 /// The applications receive only the validation material, through the configuration keys they already read
 /// (AppHostContract.JwtTrust): AppHost arguments in functional mode, in-process settings in component mode.
 /// </summary>
 public sealed class TestTokenIssuer : IDisposable
 {
-    private readonly RSA? _rsa;
     private readonly JsonWebTokenHandler _handler = new();
 
     public TestTokenIssuer(string issuer, string algorithm)
     {
+        if (algorithm != SecurityAlgorithms.HmacSha256)
+            throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, "Local tests use HS256 only.");
+
         Issuer = issuer;
         Algorithm = algorithm;
 
-        if (algorithm == SecurityAlgorithms.HmacSha256)
-        {
-            // Text, because the API reads the key as UTF-8 text (API_KEY); its bytes are the HMAC key.
-            SigningKeyText = Base64Url(RandomNumberGenerator.GetBytes(64));
-            SigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKeyText));
-        }
-        else if (algorithm == SecurityAlgorithms.RsaSha256)
-        {
-            _rsa = RSA.Create(2048);
-            SigningKey = new RsaSecurityKey(_rsa) { KeyId = Convert.ToHexString(RandomNumberGenerator.GetBytes(8)) };
-            PublicKeyPem = _rsa.ExportSubjectPublicKeyInfoPem();
-        }
-        else
-        {
-            throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, "Use HS256 or RS256.");
-        }
+        // Text, because the API reads the key as UTF-8 text (API_KEY); its bytes are the HMAC key.
+        SigningKeyText = Base64Url(RandomNumberGenerator.GetBytes(64));
+        SigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKeyText));
     }
 
     public string Issuer { get; }
@@ -58,21 +48,16 @@ public sealed class TestTokenIssuer : IDisposable
 
     public SecurityKey SigningKey { get; }
 
-    /// <summary>HS256 only: the key as the API reads it.</summary>
-    public string? SigningKeyText { get; }
-
-    /// <summary>RS256 only: the public key (PEM) for applications that read one from configuration.</summary>
-    public string? PublicKeyPem { get; }
+    /// <summary>The key as the API reads it.</summary>
+    public string SigningKeyText { get; }
 
     /// <summary>Value of one entry of AppHostContract.JwtTrust for this run (component settings).</summary>
     public string Resolve(TrustValue value, string resourceName) => value switch
     {
         TrustValue.Issuer => Issuer,
         TrustValue.Audience => TestAuthSettings.For(resourceName).Audience,
-        TrustValue.SigningKeyText => SigningKeyText ?? throw new InvalidOperationException("SigningKeyText needs HS256."),
-        TrustValue.SigningKeyBase64 => Convert.ToBase64String(Encoding.UTF8.GetBytes(
-            SigningKeyText ?? throw new InvalidOperationException("SigningKeyBase64 needs HS256."))),
-        TrustValue.PublicKeyPem => PublicKeyPem ?? throw new InvalidOperationException("PublicKeyPem needs RS256."),
+        TrustValue.SigningKeyText => SigningKeyText,
+        TrustValue.SigningKeyBase64 => Convert.ToBase64String(Encoding.UTF8.GetBytes(SigningKeyText)),
         TrustValue.Empty => string.Empty,
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
     };
@@ -94,9 +79,7 @@ public sealed class TestTokenIssuer : IDisposable
             yield return $"--{LocalAuth.AudienceKey(application)}={TestAuthSettings.For(application).Audience}";
         }
 
-        yield return Algorithm == SecurityAlgorithms.HmacSha256
-            ? $"--{LocalAuth.ParameterKey(LocalAuth.SigningKeyParameter)}={SigningKeyText}"
-            : $"--{LocalAuth.ParameterKey(LocalAuth.PublicKeyParameter)}={PublicKeyPem}";
+        yield return $"--{LocalAuth.ParameterKey(LocalAuth.SigningKeyParameter)}={SigningKeyText}";
     }
 
     /// <summary>A valid token for <paramref name="user"/>, shaped for the application <paramref name="resourceName"/>.</summary>
@@ -123,24 +106,35 @@ public sealed class TestTokenIssuer : IDisposable
             InvalidToken.WrongIssuer => CreateToken(definition, api, "urn:untrusted-issuer", now, now, now.Add(lifetime), SigningKey),
             InvalidToken.WrongAudience => CreateToken(definition, api with { Audience = "urn:untrusted-audience" }, Issuer, now, now, now.Add(lifetime), SigningKey),
             InvalidToken.SignedWithUnknownKey => CreateWithUnknownKey(definition, api, now),
+            InvalidToken.WrongAlgorithm => CreateToken(definition, api, Issuer, now, now, now.Add(lifetime), SigningKey, SecurityAlgorithms.HmacSha512),
             InvalidToken.Unsigned => CreateToken(definition, api, Issuer, now, now, now.Add(lifetime), signingKey: null),
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
         };
     }
 
-    public void Dispose() => _rsa?.Dispose();
-
-    private string CreateWithUnknownKey(TestUserDefinition definition, TestApi api, DateTime now)
+    public void Dispose()
     {
-        using var otherRsa = _rsa is null ? null : RSA.Create(2048);
-        SecurityKey unknownKey = otherRsa is null
-            ? new SymmetricSecurityKey(RandomNumberGenerator.GetBytes(64))
-            : new RsaSecurityKey(otherRsa) { KeyId = SigningKey.KeyId };
-        return CreateToken(definition, api, Issuer, now, now, now.Add(TestAuthSettings.TokenLifetime), unknownKey);
+        // The symmetric key is managed memory; nothing unmanaged to release.
     }
 
+    private string CreateWithUnknownKey(TestUserDefinition definition, TestApi api, DateTime now) =>
+        CreateToken(definition,
+                    api,
+                    Issuer,
+                    now,
+                    now,
+                    now.Add(TestAuthSettings.TokenLifetime),
+                    new SymmetricSecurityKey(RandomNumberGenerator.GetBytes(64)));
+
     private string CreateToken(
-        TestUserDefinition user, TestApi api, string issuer, DateTime issuedAt, DateTime notBefore, DateTime expires, SecurityKey? signingKey)
+        TestUserDefinition user,
+        TestApi api,
+        string issuer,
+        DateTime issuedAt,
+        DateTime notBefore,
+        DateTime expires,
+        SecurityKey? signingKey,
+        string? algorithm = null)
     {
         var claims = new Dictionary<string, object>
         {
@@ -173,7 +167,9 @@ public sealed class TestTokenIssuer : IDisposable
             NotBefore = notBefore,
             Expires = expires,
             // No credentials produces an unsigned token ("alg": "none"), which the applications must reject.
-            SigningCredentials = signingKey is null ? null : new SigningCredentials(signingKey, Algorithm),
+            SigningCredentials = signingKey is null
+                ? null
+                : new SigningCredentials(signingKey, algorithm ?? Algorithm),
         });
     }
 

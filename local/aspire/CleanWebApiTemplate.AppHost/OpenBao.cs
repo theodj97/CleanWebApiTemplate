@@ -33,16 +33,12 @@ internal static class OpenBaoResources
         string secretPath,
         LocalJwt localJwt)
     {
-        var signingKey = localJwt.SigningKey
-                         ?? throw new InvalidOperationException(
-                             $"Seeding OpenBao needs the HS256 signing key; LocalAuth:Algorithm is '{localJwt.Algorithm}'.");
-
         return builder.AddProject<Projects.CleanWebApiTemplate_OpenBaoInitializer>(Resources.OpenBaoInitializer)
                       .WithEnvironment(ToEnvironmentVariable(OpenBao.AddressKey), openBao.GetEndpoint("http"))
                       .WithEnvironment(ToEnvironmentVariable(OpenBao.TokenKey), rootToken)
                       .WithEnvironment(ToEnvironmentVariable(OpenBao.MountKey), OpenBao.Mount)
                       .WithEnvironment(ToEnvironmentVariable(OpenBao.PathKey), secretPath)
-                      .WithEnvironment(AppSettings.ApiKey, signingKey)
+                      .WithEnvironment(AppSettings.ApiKey, localJwt.SigningKey)
                       .WaitFor(openBao);
     }
 
