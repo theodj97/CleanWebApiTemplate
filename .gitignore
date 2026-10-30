@@ -484,6 +484,9 @@ $RECYCLE.BIN/
 # Code coverage report
 coverage-report/
 
+# Herramientas locales descargadas por scripts/install-gitleaks.sh
+.tools/
+
 # Opencode
 .agents/
 skills-lock.json

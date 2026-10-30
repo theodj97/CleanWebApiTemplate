@@ -11,7 +11,7 @@ namespace CleanWebApiTemplate.Infrastructure.Secrets;
 [JsonSerializable(typeof(OpenBaoReadResponse))]
 [JsonSerializable(typeof(OpenBaoWriteRequest))]
 [JsonSerializable(typeof(OpenBaoErrorResponse))]
-internal partial class OpenBaoJsonSerializerContext : JsonSerializerContext;
+internal sealed partial class OpenBaoJsonSerializerContext : JsonSerializerContext;
 
 internal sealed class OpenBaoReadResponse
 {

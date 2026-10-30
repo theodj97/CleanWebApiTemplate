@@ -6,7 +6,7 @@ namespace CleanWebApiTemplate.Api.UnitTests.Api.Configuration;
 /// <summary>The two authentication modes are explicit and cannot be mixed.</summary>
 public class AuthenticationSettingsTests
 {
-    private const string ValidKey = "0123456789abcdef0123456789abcdef";
+    private const string ValidKey = "0123456789abcdef0123456789abcdef"; // gitleaks:allow (clave de test)
 
     [Fact]
     public void Load_WithoutAuthorityAndMode_UsesSymmetric()

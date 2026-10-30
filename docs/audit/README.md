@@ -5,11 +5,11 @@ Rama auditada: `features/code-audit`
 Commit: `fbca5cae986bd08950292910fd6d15ea2c434930`
 
 Esta carpeta contiene la auditoría completa por fases. La auditoría original **no modificó
-código, configuración ni manifiestos**. Después se implementaron los **Batches 1, 2, 3, 4a, 4b
-y 5** de remediación (ver [`09-batch-1.md`](09-batch-1.md), [`10-batch-2.md`](10-batch-2.md),
+código, configuración ni manifiestos**. Después se implementaron los **Batches 1, 2, 3, 4a, 4b,
+5 y 6** de remediación (ver [`09-batch-1.md`](09-batch-1.md), [`10-batch-2.md`](10-batch-2.md),
 [`11-batch-3.md`](11-batch-3.md), [`12-batch-4-structure.md`](12-batch-4-structure.md),
-[`13-batch-4b.md`](13-batch-4b.md) y [`14-batch-5.md`](14-batch-5.md)); el resto de batches
-siguen pendientes.
+[`13-batch-4b.md`](13-batch-4b.md), [`14-batch-5.md`](14-batch-5.md) y
+[`15-batch-6.md`](15-batch-6.md)); el resto de batches siguen pendientes.
 
 ## Índice
 
@@ -30,6 +30,7 @@ siguen pendientes.
 | [`12-batch-4-structure.md`](12-batch-4-structure.md) | Batch 4a: estructura repository-centric, Domain limpio y Result sin HTTP. |
 | [`13-batch-4b.md`](13-batch-4b.md) | Batch 4b: architecture tests, banned APIs, configuración, ICurrentUser y OpenAPI. |
 | [`14-batch-5.md`](14-batch-5.md) | Batch 5: cobertura de caminos críticos, routing, validación y umbrales. |
+| [`15-batch-6.md`](15-batch-6.md) | Batch 6: hooks (pre-commit, commit-msg, pre-push), gitleaks, analyzers y guardarraíles. |
 | [`findings.csv`](findings.csv) | Registro completo de hallazgos, filtrable. |
 
 ## Resumen ejecutivo
@@ -37,9 +38,9 @@ siguen pendientes.
 - **No se ha encontrado una vulnerabilidad crítica explotable** (sin bypass de autenticación,
   IDOR/BOLA ni inyección SQL en las rutas revisadas). La parametrización SQL y el filtro de
   ordenación son correctos.
-- **La calidad del baseline es buena**: build 0 warnings, AOT publish correcto, 211 tests
-  verdes en la auditoría (313 tras Batches 1–5), sin paquetes vulnerables ni deprecados y sin
-  claves privadas en el historial.
+- **La calidad del baseline es buena**: build 0 warnings, AOT publish correcto, 313 tests
+  verdes tras Batches 1–6, sin paquetes vulnerables ni deprecados y sin claves privadas en el
+  historial.
 - **Los mayores riesgos estaban en los bordes**: errores de entrada que devolvían 500,
   validación de `Status = 0`, contrato de unicidad de títulos, claims ausentes que provocaban
   500, falta de rate limiting/security headers/forwarded headers y ausencia de tests de esos
@@ -55,9 +56,11 @@ siguen pendientes.
   `ICurrentUser` y el split de OpenAPI.
 - **El template todavía no está listo para `dotnet new`**: `template.json` tiene `name` y
   `description` vacíos, GUIDs fijos de `UserSecretsId`, excluye `.gitignore`/`README.md` e
-  incluiría `coverage-report/` y `.agents/` (≈8 MB de artefactos locales).
-- **Husky está bien instalado pero infrautilizado**: solo `pre-commit` y solo `.cs`; no hay
-  `pre-push`, `commit-msg`, build, tests, analyzers ni auditoría de paquetes.
+  incluiría `coverage-report/`, `.agents/` y `.tools/` (artefactos locales).
+- **Los hooks ya son un guardarraíl real**: `pre-commit` formatea y escanea secretos con
+  gitleaks, `commit-msg` valida la convención y `pre-push` ejecuta build, formato, analyzers,
+  todos los tests y la auditoría de paquetes. Batch 6 los dejó cableados; quedan las
+  herramientas externas (semgrep/trivy/ZAP/Stryker) como pasos manuales.
 
 ### Hallazgos por severidad
 
@@ -73,13 +76,16 @@ siguen pendientes.
 La severidad es relativa a “template listo para producción”: un P1 de tooling/template puede
 no ser un riesgo de runtime, pero sí un bloqueante para publicar el template.
 
-**Estado tras Batches 1, 2, 3, 4a, 4b y 5:** corregidos SEC-002, SEC-012, BUG-001, BUG-002,
+**Estado tras Batches 1, 2, 3, 4a, 4b, 5 y 6:** corregidos SEC-002, SEC-012, BUG-001, BUG-002,
 BUG-006, BUG-007, BUG-012 (Batch 1); SEC-001, SEC-003, SEC-007, SEC-008 (Batch 2); BUG-003,
 BUG-004, BUG-005, BUG-009, BUG-010, BUG-011, BUG-014 (Batch 3; BUG-015 queda mitigado);
 ARCH-001, ARCH-002, ARCH-003, ARCH-004 y ARCH-010 (Batch 4a); ARCH-005, ARCH-006, ARCH-007
-y ARCH-008 (Batch 4b); y TEST-001, TEST-002, TEST-003, TEST-004, TEST-005, TEST-006, TEST-008
-y TEST-012 (Batch 5). El registro se mantiene como foto de la auditoría; el detalle está en
-`09`–`14`.
+y ARCH-008 (Batch 4b); TEST-001, TEST-002, TEST-003, TEST-004, TEST-005, TEST-006, TEST-008
+y TEST-012 (Batch 5); y TOOL-001, TOOL-002, TOOL-003/004, TOOL-005, TOOL-007, TOOL-008/009/
+010/011, TOOL-013, TOOL-021, TOOL-023, TOOL-025 y TOOL-026 (Batch 6; TOOL-024 queda como
+mejora opcional). También se automatizó en local la comprobación de supply chain de SEC-015
+(Info); CI sigue fuera de alcance. El registro se mantiene como foto de la auditoría; el
+detalle está en `09`–`15`.
 
 ## Alcance
 
@@ -135,6 +141,12 @@ dotnet format whitespace CleanWebApiTemplate.slnx --verify-no-changes
 dotnet format style CleanWebApiTemplate.slnx --verify-no-changes
 dotnet format analyzers CleanWebApiTemplate.slnx --verify-no-changes \
   --exclude-diagnostics IL2026 IL3050
+
+# Guardarraíles (hooks)
+npm run hooks:install
+npm run verify            # = bash scripts/pre-push.sh
+npm run coverage          # = bash scripts/coverage.sh
+bash scripts/gitleaks-staged.sh
 
 # Paquetes
 dotnet list CleanWebApiTemplate.slnx package --vulnerable --include-transitive

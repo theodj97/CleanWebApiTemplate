@@ -5,159 +5,100 @@
 | Herramienta | Estado | Comentario |
 |---|---|---|
 | .NET SDK | 10.0.113 | `global.json` pide 10.0.100 con `latestFeature`. |
-| Husky.Net | 0.9.1 local | Última versión; solo `pre-commit`. |
-| `dotnet format` | Integrado | `whitespace` y `style` pasan; `analyzers` falla por IL2026/IL3050. |
-| Node / npm | 24.22 / 11.19 | `package.json` sin dependencias reales. |
-| Docker | 29.1.3 | Component/functional tests funcionan. |
+| Husky.Net | 0.9.1 local | `pre-commit`, `commit-msg` y `pre-push`. |
+| `dotnet format` | Integrado | `whitespace`, `style` y `analyzers` pasan (estos últimos excluyendo IL2026/IL3050). |
+| Node / npm | 24.22 / 11.19 | `package.json` solo con scripts; sin dependencias. |
+| Docker | 29.1.3 | Component/functional tests funcionan; `pre-push` los ejecuta. |
 | ReportGenerator | 5.5.11 local | Fijado en `.config/dotnet-tools.json` y usado por `scripts/coverage.sh`. |
 | dotnet-coverage | 18.12.0 local | Fijado en `.config/dotnet-tools.json` y usado por `scripts/coverage.sh`. |
-| gitleaks / semgrep / trivy / ZAP / Stryker | No instalados | Se proponen comandos; no se ejecutaron. |
+| gitleaks | 8.30.1 fijado | `scripts/install-gitleaks.sh` (SHA-256) y `.husky` pre-commit. |
+| semgrep / trivy / ZAP / Stryker | No instalados | Se proponen comandos; no se ejecutaron. |
 
-## Husky: lo que hay
+## Husky: estado tras Batch 6
 
 ```text
 .husky/
 ├── _/husky.sh                 # runtime generado
-├── pre-commit                 # dotnet husky run --group pre-commit
-├── task-runner.json           # una tarea: format-staged.sh sobre **/*.cs staged
+├── pre-commit                 # gitleaks staged + format-staged
+├── pre-push                   # scripts/pre-push.sh
+├── commit-msg                 # scripts/commit-msg.sh
+├── task-runner.json           # tareas de pre-commit y pre-push
 └── format-staged.sh           # whitespace + style + verificación IDE0060
+scripts/
+├── commit-msg.sh              # convención del asunto
+├── gitleaks-staged.sh         # escaneo del índice
+├── install-gitleaks.sh        # binario fijado + SHA-256
+├── check-vulnerable-packages.sh
+└── pre-push.sh                # gates completos
 ```
 
-Lo que hace bien:
+- **`pre-commit`** (< 5 s): escanea el índice con gitleaks y formatea solo los `.cs` staged.
+  No hace `git add`: si `dotnet format` toca algo, aborta para revisar el diff. Detecta
+  cambios sin stagear en esos mismos archivos.
+- **`commit-msg`**: valida el asunto con
+  `^(feat|fix|refactor|docs|test|chore|build|perf|revert)(\([a-z0-9-]+\))?: .{1,72}$`,
+  permitiendo `Merge`, `Revert`, `fixup!` y `squash!`.
+- **`pre-push`**: `scripts/pre-push.sh` ejecuta build, `format whitespace/style/analyzers`,
+  **todos** los tests (unit, component y functional) y la auditoría de paquetes
+  vulnerables. Los component/functional necesitan Docker.
+- Se puede saltar con `HUSKY=0` o `--no-verify`. Instalación en un clon nuevo:
+  `npm run hooks:install` (o `dotnet tool restore && dotnet husky install`).
 
-- Solo formatea los `.cs` staged, no toda la solución.
-- No hace `git add` automático: si `dotnet format` cambia algo, aborta para que revises.
-- Bloquea `IDE0060` (parámetro sin usar) sin modificar el archivo.
-- Detecta cambios sin stagear en los mismos archivos.
-- Permite saltar con `HUSKY=0` o `--no-verify`.
+Problemas del Batch 6:
 
-Problemas:
+| ID | Estado |
+|---|---|
+| TOOL-001 | ✅ `pre-commit`, `commit-msg` y `pre-push`. |
+| TOOL-002 | ✅ Lista NUL + `xargs -0`; soporta rutas con espacios. |
+| TOOL-021 | ✅ Las tres llamadas usan `--no-restore`. |
+| TOOL-023 | ✅ La verificación usa `--diagnostics IDE0060`; el mensaje ya no acusa a otras reglas. |
+| TOOL-024 | ⚠️ Sin overrides de Windows/output. Git for Windows aporta `sh`; no se ha necesitado. |
+| TOOL-025 | ✅ `commit-msg` convencional. |
+| TOOL-026 | ✅ `pre-push` con build, formato, analyzers, todos los tests y paquetes. |
 
-| ID | Problema | Evidencia |
-|---|---|---|
-| TOOL-001 | Solo `pre-commit` y solo `.cs` | `.husky/task-runner.json` |
-| TOOL-002 | `--include $staged` y `git diff -- $staged` rompen con rutas con espacios | `format-staged.sh:32,51-52` |
-| TOOL-021 | Las dos primeras llamadas a `dotnet format` no usan `--no-restore` | `format-staged.sh:32-36` |
-| TOOL-023 | El mensaje de IDE0060 es engañoso con `--severity error` | `format-staged.sh:67-71` |
-| TOOL-024 | `task-runner.json` no tiene overrides de Windows/output | `task-runner.json` |
-| TOOL-025 | No hay `commit-msg` | `.husky/` |
-| TOOL-026 | No hay `pre-push` con build/tests | `.husky/` |
+### `pre-push` (implementado)
 
-## Husky: configuración recomendada
+1. `dotnet build CleanWebApiTemplate.slnx` (con restore y `TreatWarningsAsErrors`).
+2. `dotnet format whitespace/style --verify-no-changes --no-restore`.
+3. `dotnet format analyzers --verify-no-changes --exclude-diagnostics IL2026 IL3050`.
+4. `dotnet test --solution CleanWebApiTemplate.slnx --no-build` (todos los proyectos).
+5. `scripts/check-vulnerable-packages.sh` (falla si el JSON trae vulnerabilidades).
 
-### `pre-commit` (rápido, < 5 s)
+### `format-staged.sh` (implementado)
 
-- Formatear `.cs` staged con `dotnet format whitespace/style` y `--no-restore`.
-- Ejecutar `dotnet format analyzers` **solo si** se excluyen IL2026/IL3050 (falsos positivos de
-  minimal APIs) o no se usa en este repo.
-- Escanear secretos en staged con `gitleaks protect --staged` (si se instala).
-- Formatear JSON/YAML/MD solo si se adopta Prettier/markdownlint; no añadir Node por solo esto.
-- No ejecutar build ni tests: son lentos y van en `pre-push`.
-
-### `commit-msg` (rápido)
-
-Validar convención de commits:
-
-```text
-^(feat|fix|refactor|docs|test|chore|build|perf|revert)(\([a-z0-9-]+\))?: .{1,72}$
-```
-
-Permitir `Merge`, `Revert`, `fixup!` y `squash!`. Sin dependencias: un script `sh` o un `.csx`
-de Husky.
-
-### `pre-push` (medio, 1-3 min)
-
-- `dotnet build CleanWebApiTemplate.slnx --no-restore` con warnings-as-errors.
-- `dotnet format whitespace/style --verify-no-changes --no-restore`.
-- `dotnet test --project tests/CleanWebApiTemplate.Api.UnitTests/... --no-build`.
-- `dotnet list package --vulnerable --include-transitive`.
-- Tests de componente/functional solo con `HUSKY_FULL=1` (Docker, ~30 s; aceptable si se
-  quiere, pero no en cada push por defecto).
-
-### `post-checkout` / `post-merge`
-
-- `dotnet tool restore` si cambia `.config/dotnet-tools.json`.
-- `dotnet husky install` si falta `.husky/_`.
-- `dotnet restore` si cambian `Directory.Packages.props`/csproj.
-
-### Ejemplo de `task-runner.json`
-
-```json
-{
-  "$schema": "https://alirezanet.github.io/Husky.Net/schema.json",
-  "tasks": [
-    {
-      "name": "format-staged",
-      "group": "pre-commit",
-      "command": "sh",
-      "args": [".husky/format-staged.sh"],
-      "include": ["**/*.cs"],
-      "filteringRule": "staged"
-    },
-    {
-      "name": "build",
-      "group": "pre-push",
-      "command": "dotnet",
-      "args": ["build", "CleanWebApiTemplate.slnx", "--no-restore"]
-    },
-    {
-      "name": "unit-tests",
-      "group": "pre-push",
-      "command": "dotnet",
-      "args": ["test", "--project", "tests/CleanWebApiTemplate.Api.UnitTests/CleanWebApiTemplate.Api.UnitTests.csproj", "--no-build"]
-    },
-    {
-      "name": "vulnerable-packages",
-      "group": "pre-push",
-      "command": "dotnet",
-      "args": ["list", "CleanWebApiTemplate.slnx", "package", "--vulnerable", "--include-transitive"]
-    }
-  ]
-}
-```
-
-Para `commit-msg`, Husky.Net puede ejecutar un script propio; no hace falta commitlint.
-
-## `format-staged.sh`: mejoras concretas
-
-1. Usar `git diff --cached --name-only -z --diff-filter=ACMR -- '*.cs'` y `xargs -0` para
-   soportar rutas con espacios.
-2. Pasar `--no-restore` a las tres llamadas.
-3. Separar la verificación de `IDE0060` de otras reglas error-severity:
+1. `git diff --cached --name-only -z --diff-filter=ACMR -- '*.cs'` + `xargs -0`.
+2. `--no-restore` en whitespace, style y la verificación.
+3. Verificación IDE0060 aislada:
    `dotnet format style --diagnostics IDE0060 --severity error --verify-no-changes`.
-4. Mantener el comportamiento de “no hacer `git add`”: es correcto.
-5. Considerar un `.csx` de Husky para cross-platform, o mantener `sh` (Git Bash en Windows).
+4. Se mantiene “no hacer `git add`”.
+5. Script `sh` (Git Bash en Windows).
 
 ## Analyzers
 
-### Estado
+### Estado tras Batch 6
 
 - `dotnet build` normal: 0 warnings.
-- `AnalysisMode=Recommended`: 0 warnings.
-- `AnalysisMode=All`: mucho ruido (CA1707, CA1515, CA2007, CA2234, CA1062, CA1305, CA1819...).
-- `dotnet format analyzers`: falla con IL2026/IL3050 en `Map*` por no ejecutar el source
-  generator de request delegates.
+- `AnalysisMode=Recommended` + `AnalysisLevel=latest` en `src/`: 0 warnings.
+- `AnalysisMode=All` sigue siendo ruido (CA1707, CA1515, CA2007, CA2234, CA1062, CA1819...).
+- `dotnet format analyzers --exclude-diagnostics IL2026 IL3050`: ✅.
+- IL2026/IL3050 en `Map*` son falsos positivos: `dotnet format analyzers` no ejecuta el
+  source generator de request delegates. El gate AOT real es `dotnet publish`.
 
-### Recomendación
+### Decisiones
 
-1. `AnalysisMode=Recommended` + `AnalysisLevel=latest` en `Directory.Build.props`.
-2. Suprimir por carpeta:
-   - tests: CA1707, CA1515, CA2007, CA2000, CA2234;
-   - DTOs: CA1819;
-   - ASP.NET Core: CA2007.
-3. Corregir las reglas reales en `src/`: CA1305, CA1310, CA2234, CA1062 en entry points,
-   CA1848 si se quiere.
-4. Añadir `Microsoft.CodeAnalysis.BannedApiAnalyzers` + `BannedSymbols.txt`:
-   ```text
-   System.Reflection.Assembly.Load
-   System.Activator.CreateInstance
-   System.Type.GetType
-   System.Reflection.MethodInfo.MakeGenericMethod
-   System.Text.Json.JsonSerializer.Serialize(System.Object)
-   System.Text.Json.JsonSerializer.Deserialize(System.String,System.Type)
-   ```
-5. No añadir `dotnet format analyzers` al pre-commit sin excluir IL2026/IL3050; usar
-   `dotnet build`/`publish` como gate AOT.
+1. `AnalysisMode=Recommended` + `AnalysisLevel=latest` se aplica solo a `src/` mediante
+   `src/Directory.Build.props`; tests y `local/` conservan el conjunto por defecto del SDK.
+2. Reglas corregidas en `src/`: CA1304/CA1305/CA1311 (cultura), CA1310 (`EndsWith`),
+   CA1715 (parámetros genéricos), CA1805 (inicialización redundante), CA1852 (tipo sealed),
+   CA2208 (`ArgumentOutOfRangeException`) y CA1848 (LoggerMessage en `GlobalExceptionHandler`).
+3. Supresiones documentadas en `.editorconfig`:
+   - CA1000: factorías estáticas de `Result<T>` (API pública intencionada).
+   - CA1716: `Error` es el concepto del dominio; rename en QUAL-016 (P3).
+   - CA1707 en `Constants.cs`: claves de configuración; rename en QUAL-009 (P3).
+   - tests: CA1707/CA1861/CA1515/CA2007/CA2000/CA2234.
+   - `local/openapi`: CA1848/CA1873; migración en QUAL-015 (Batch 11).
+4. `Microsoft.CodeAnalysis.BannedApiAnalyzers` + `BannedSymbols.txt` ya estaban desde Batch 4b.
+5. `dotnet format analyzers` va en `pre-push` (no en `pre-commit`) y excluye IL2026/IL3050.
 
 ## Cobertura
 
@@ -166,63 +107,65 @@ Para `commit-msg`, Husky.Net puede ejecutar un script propio; no hace falta comm
 - `scripts/coverage.sh` recoge unit + component + functional, fusiona, genera el informe
   filtrado a `src/` y aplica umbrales.
 - `npm run coverage` es el punto de entrada documentado.
-- `Microsoft.Testing.Extensions.CodeCoverage` sigue declarado sin referencia; no se usa
-  porque la fusión con `dotnet-coverage` ya es reproducible.
+- `Microsoft.Testing.Extensions.CodeCoverage` se eliminó de `Directory.Packages.props`: no se
+  usaba y la fusión con `dotnet-coverage` ya es reproducible.
 
 ## Seguridad
 
-No hay gitleaks/semgrep/trivy. Recomendación:
+gitleaks está integrado desde Batch 6:
 
-- `gitleaks protect --staged` en pre-commit.
-- `gitleaks detect --log-opts=--all` una vez y en pre-push.
-- `dotnet list package --vulnerable --include-transitive` en pre-push.
-- `semgrep --config p/csharp --config p/security-audit .` manual.
-- `trivy fs --scanners vuln,secret .` manual.
-- ZAP baseline contra el AppHost local antes de un release.
+- `scripts/install-gitleaks.sh` descarga la versión fijada (8.30.1) y verifica su SHA-256.
+- `.husky` `pre-commit` ejecuta `gitleaks git --staged` sobre el índice; `.gitleaks.toml`
+  extiende las reglas por defecto y los fixtures de test con claves falsas llevan
+  `gitleaks:allow` en la línea.
+- `.husky` `pre-push` ejecuta `scripts/check-vulnerable-packages.sh`, que falla si
+  `dotnet list package --vulnerable --include-transitive` encuentra algo.
+- `semgrep --config p/csharp --config p/security-audit .`, `trivy fs --scanners vuln,secret .`
+  y ZAP baseline contra el AppHost local siguen siendo comprobaciones manuales.
 
-## `Directory.Build.props` propuesto
+## `Directory.Build.props` (implementado)
 
-Centralizar:
+`Directory.Build.props` centraliza:
 
 ```xml
 <PropertyGroup>
   <TargetFramework>net10.0</TargetFramework>
-  <Nullable>enable</Nullable>
   <ImplicitUsings>enable</ImplicitUsings>
+  <Nullable>enable</Nullable>
   <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-  <AnalysisLevel>latest</AnalysisLevel>
-  <AnalysisMode>Recommended</AnalysisMode>
   <EnableNETAnalyzers>true</EnableNETAnalyzers>
   <NuGetAudit>true</NuGetAudit>
   <NuGetAuditMode>all</NuGetAuditMode>
 </PropertyGroup>
 ```
 
-Cuidado: `TargetFramework` centralizado puede romper proyectos que necesiten otro; para este
-repo todos son `net10.0`. Los tests pueden mantener `IsTestProject`/`IsPackable`.
+`src/Directory.Build.props` importa el anterior y añade `AnalysisLevel=latest` +
+`AnalysisMode=Recommended` solo al código de producción. Tests y `local/` conservan el
+conjunto por defecto del SDK. Los `.csproj` mantienen lo específico: AOT, Aspire, tests,
+documentación XML y `UserSecretsId`.
+
+`TargetFramework` centralizado no rompe nada porque todos los proyectos son `net10.0`.
 
 ## `Directory.Packages.props`
 
-- Eliminar `Microsoft.AspNetCore.Http` y `.Abstractions` de Domain.
-- Referenciar `Microsoft.Testing.Extensions.CodeCoverage` en los proyectos de test o eliminarlo.
-- Eliminar `Microsoft.Testing.Platform` si MTP ya lo trae.
-- Añadir `Microsoft.CodeAnalysis.BannedApiAnalyzers` y `ArchUnitNET` (test-only).
-- Añadir `RestorePackagesWithLockFile` y commitear `packages.lock.json` si se quiere
-  reproducibilidad total.
-- Evaluar `Microsoft.OpenApi` 3.x y `xunit.v3` 4.x como migraciones separadas.
+- ✅ Eliminados `Microsoft.AspNetCore.Http` y `.Abstractions`.
+- ✅ Eliminado `Microsoft.Testing.Extensions.CodeCoverage` (sin referencia).
+- ✅ Eliminado `Microsoft.Testing.Platform` (MTP ya lo trae por xunit).
+- ✅ `Microsoft.CodeAnalysis.BannedApiAnalyzers` y `ArchUnitNET` ya estaban desde Batch 4b.
+- Pendiente (B11): `RestorePackagesWithLockFile` + `packages.lock.json`.
+- Migraciones separadas: `Microsoft.OpenApi` 3.x y `xunit.v3` 4.x.
 
 ## `package.json`
 
-Opciones:
+Se mantiene como manifiesto de scripts, sin dependencias Node:
 
-1. **Eliminarlo** si no se usa Node. Husky.Net no lo necesita. `package-lock.json` vacío sobra.
-2. **Convertirlo en tooling real**: `prettier` + `markdownlint-cli2` para JSON/YAML/MD y
-   scripts `format:json`, `lint:md`. Requiere `npm ci` y mantenimiento.
+```json
+"format", "format:check", "coverage", "test", "verify", "hooks:install", "gitleaks:install"
+```
 
-Mi recomendación: opción 1 salvo que se quiera formatear Markdown/JSON de forma estricta. El
-repo ya tiene `dotnet format` para C#; añadir Node solo por JSON/MD no compensa en un template
-.NET.
+`npm run verify` ejecuta los mismos gates que `pre-push`. No se añade Prettier ni
+markdownlint: el repo usa `dotnet format` para C# y no compensa meter Node solo para JSON/MD.
 
 ## Template tooling
 
@@ -230,7 +173,7 @@ Ver `07-template-docs.md`. Resumen:
 
 - `template.json` incompleto.
 - GUIDs fijos.
-- Incluye `coverage-report/` y `.agents/`.
+- Incluye `coverage-report/`, `.agents/` y `.tools/` (binario de gitleaks) si no se excluyen.
 - Excluye `.gitignore`/README.
 - Sin post-actions.
 - Sin smoke test.
@@ -244,15 +187,17 @@ usuario los configure manualmente:
 dotnet restore
 dotnet build CleanWebApiTemplate.slnx --no-restore
 dotnet format whitespace/style --verify-no-changes --no-restore
+dotnet format analyzers --verify-no-changes --no-restore --exclude-diagnostics IL2026 IL3050
 dotnet test --solution CleanWebApiTemplate.slnx --no-build
 dotnet list package --vulnerable --include-transitive
 dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj -c Release -r linux-x64 --self-contained
-gitleaks detect --source . --log-opts=--all
+gitleaks git --log-opts=--all --redact --no-banner
 ```
 
 ## Conclusión
 
-Husky está bien instalado y el script de formato tiene una intención excelente, pero el
-conjunto de hooks es demasiado pequeño para un template serio. La mejora de mayor retorno es
-añadir `pre-push` con build + unit tests + paquetes vulnerables y `commit-msg` con convención;
-la segunda es cablear cobertura y analyzers; la tercera es añadir escaneo de secretos.
+Los hooks cubren ya el ciclo completo: `pre-commit` formatea y bloquea secretos, `commit-msg`
+valida la convención y `pre-push` ejecuta build, formato, analyzers, **todos** los tests y la
+auditoría de paquetes. gitleaks está fijado con checksum y se instala solo la primera vez.
+Quedan como mejoras opcionales los overrides de Windows/output de `task-runner.json` (TOOL-024)
+y las herramientas externas (semgrep, trivy, ZAP, Stryker).

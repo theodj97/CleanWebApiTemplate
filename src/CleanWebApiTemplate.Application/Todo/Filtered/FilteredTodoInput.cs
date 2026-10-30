@@ -13,7 +13,7 @@ public sealed record FilteredTodoInput
     public string? EndDate { get; set; }
     public byte? PageNumber { get; set; }
     public byte? PageSize { get; set; }
-    public IEnumerable<KeyValuePair<string, bool>>? SortProperties { get; set; } = null;
+    public IEnumerable<KeyValuePair<string, bool>>? SortProperties { get; set; }
 
     internal TodoFilter ToFilter()
     {
@@ -22,7 +22,7 @@ public sealed record FilteredTodoInput
 
         return new TodoFilter
         {
-            Ids = Ids?.Select(Ulid.Parse).ToArray(),
+            Ids = Ids?.Select(id => Ulid.Parse(id, CultureInfo.InvariantCulture)).ToArray(),
             Titles = Title?.Where(title => string.IsNullOrWhiteSpace(title) is false)
                           .Select(title => title.Trim())
                           .ToArray(),

@@ -105,6 +105,40 @@ Resultado: **98,0% líneas / 95,7% ramas** en `src/`; Api **98,8% / 95,9%**. Umb
 aplicados y cumplidos. Detalle en `coverage-summary-batch5.txt` y
 `coverage-summary-batch5.md`.
 
+## Guardarraíles tras Batch 6
+
+```bash
+bash scripts/pre-push.sh
+```
+
+Resultado: build 0 warnings, formato whitespace/style/analyzers ✅, 313 tests (0 failed),
+sin paquetes vulnerables. Salida completa en [`batch-6-gates.txt`](batch-6-gates.txt).
+
+```bash
+dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj \
+  -c Release -r linux-x64 --self-contained
+```
+
+Resultado: publicación nativa correcta, 0 warnings.
+
+```bash
+bash scripts/install-gitleaks.sh
+bash scripts/gitleaks-staged.sh
+.tools/gitleaks/gitleaks dir . --config .gitleaks.toml
+```
+
+Resultado: gitleaks 8.30.1 instalado con checksum; `no leaks found` en el índice y en el
+árbol de trabajo (los tres fixtures con claves falsas están allowlisted).
+
+```bash
+sh scripts/commit-msg.sh /tmp/opencode/msg-valid    # exit 0
+sh scripts/commit-msg.sh /tmp/opencode/msg-invalid  # exit 1
+dotnet husky run --group pre-commit
+```
+
+Resultado: convención validada; `pre-commit` ejecuta gitleaks y salta el formateo si no hay
+`.cs` staged.
+
 ## Paquetes
 
 ```bash

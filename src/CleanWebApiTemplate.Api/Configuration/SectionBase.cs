@@ -8,7 +8,7 @@ public abstract class SectionBase
     {
         string typeName = GetType().Name;
 
-        SectionName = typeName.EndsWith(AppSettings.SECTION_EXTENSION)
+        SectionName = typeName.EndsWith(AppSettings.SECTION_EXTENSION, StringComparison.Ordinal)
             ? typeName[..^AppSettings.SECTION_EXTENSION.Length]
             : throw new ArgumentException($"Section name {typeName} doesn't match syntax finishing in {AppSettings.SECTION_EXTENSION}.");
     }

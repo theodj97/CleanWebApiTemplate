@@ -1,3 +1,4 @@
+using System.Globalization;
 using CleanWebApiTemplate.Application.Dtos.Todo;
 using CleanWebApiTemplate.Application.Results;
 using CleanWebApiTemplate.Application.Todo.Abstractions;
@@ -13,7 +14,7 @@ public sealed class UpdateTodoService(ITodoRepository todoRepository,
     public Task<Result<TodoDto?>> UpdateAsync(UpdateTodoInput input, CancellationToken cancellationToken) =>
         ExecuteAsync(input, validators, async () =>
         {
-            var todoDb = await todoRepository.GetByIdAsync(Ulid.Parse(input.Id), input.CreatedBy, cancellationToken);
+            var todoDb = await todoRepository.GetByIdAsync(Ulid.Parse(input.Id, CultureInfo.InvariantCulture), input.CreatedBy, cancellationToken);
             if (todoDb is null)
                 return Result<TodoDto?>.Failure(new NotFoundError("ID was not found."));
 

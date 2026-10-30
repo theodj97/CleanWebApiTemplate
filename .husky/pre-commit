@@ -1,5 +1,5 @@
 #!/bin/sh
-# Formatea los .cs en staging (whitespace + style) antes de cada commit.
+# Formatea los .cs en staging y bloquea secretos antes de cada commit.
 # Si `dotnet format` ha tenido que tocar algo, el hook falla para que revises
 # el diff y vuelvas a commitear. No hace `git add` de nada.
 # Formatear toda la solucion a mano: npm run format

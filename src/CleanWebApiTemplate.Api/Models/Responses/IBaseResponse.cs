@@ -1,6 +1,6 @@
 namespace CleanWebApiTemplate.Api.Models.Responses;
 
-public interface IBaseResponse<in DtoType, out ResponseType> where ResponseType : IBaseResponse<DtoType, ResponseType>
+public interface IBaseResponse<in TDto, out TResponse> where TResponse : IBaseResponse<TDto, TResponse>
 {
-    public abstract static ResponseType? ToResponseModel(DtoType? dto);
+    public abstract static TResponse? ToResponseModel(TDto? dto);
 }

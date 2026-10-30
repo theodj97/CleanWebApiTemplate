@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using CleanWebApiTemplate.Application.Results;
 using CleanWebApiTemplate.Application.Todo.Abstractions;
@@ -130,7 +131,8 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
             AppendAnd(where);
             string startParameter = NextParameterName(ref parameterIndex);
             string endParameter = NextParameterName(ref parameterIndex);
-            where.Append($"\"{TodoTable.CreatedAtColumn}\" >= {startParameter} AND \"{TodoTable.CreatedAtColumn}\" <= {endParameter}");
+            where.Append(CultureInfo.InvariantCulture,
+                         $"\"{TodoTable.CreatedAtColumn}\" >= {startParameter} AND \"{TodoTable.CreatedAtColumn}\" <= {endParameter}");
             // Stored as timestamptz; Npgsql requires an explicit UTC kind.
             command.Parameters.Add(startParameter, NpgsqlDbType.TimestampTz).Value = ToUtc(filter.StartDate.Value);
             command.Parameters.Add(endParameter, NpgsqlDbType.TimestampTz).Value = ToUtc(filter.EndDate.Value);
@@ -333,7 +335,8 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
                 where.Append(" OR ");
 
             string parameterName = NextParameterName(ref parameterIndex);
-            where.Append($"\"{TodoTable.TitleColumn}\" ILIKE {parameterName} ESCAPE '\\'");
+            where.Append(CultureInfo.InvariantCulture,
+                         $"\"{TodoTable.TitleColumn}\" ILIKE {parameterName} ESCAPE '\\'");
             command.Parameters.Add(parameterName, NpgsqlDbType.Text).Value = $"%{EscapeLike(fragments[i])}%";
         }
         where.Append(')');

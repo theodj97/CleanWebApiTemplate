@@ -30,6 +30,17 @@ dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj \
 Si aparece cualquier advertencia de trimming/AOT, el cambio no está terminado. Distingue siempre
 un build correcto de una publicación AOT correcta: el build no sustituye al publish.
 
+## Hooks locales
+
+- `npm run hooks:install` instala Husky (`dotnet tool restore && dotnet husky install`).
+- `npm run verify` ejecuta los mismos gates que el hook `pre-push`: build, formato,
+  analyzers, **todos** los tests (unit, component y functional; requieren Docker) y paquetes
+  vulnerables.
+- `npm run coverage` genera el informe y aplica los umbrales.
+- gitleaks se instala solo la primera vez que se ejecuta `pre-commit`
+  (`scripts/install-gitleaks.sh`, versión fijada con SHA-256).
+- Saltar los hooks: `HUSKY=0 git ...` o `--no-verify`.
+
 ## Agent skills
 
 ### Issue tracker

@@ -1,0 +1,5 @@
+# Configuración de gitleaks para el repositorio.
+# Se extienden las reglas por defecto. Las claves falsas de los tests llevan
+# `gitleaks:allow` en la propia línea para no excluir el resto del fichero.
+[extend]
+useDefault = true

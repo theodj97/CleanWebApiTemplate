@@ -10,7 +10,11 @@
   "scripts": {
     "format": "dotnet format whitespace CleanWebApiTemplate.slnx && dotnet format style CleanWebApiTemplate.slnx",
     "format:check": "dotnet format whitespace CleanWebApiTemplate.slnx --verify-no-changes && dotnet format style CleanWebApiTemplate.slnx --verify-no-changes",
-    "coverage": "bash scripts/coverage.sh"
+    "coverage": "bash scripts/coverage.sh",
+    "test": "dotnet test --solution CleanWebApiTemplate.slnx",
+    "verify": "bash scripts/pre-push.sh",
+    "hooks:install": "dotnet tool restore && dotnet husky install",
+    "gitleaks:install": "bash scripts/install-gitleaks.sh"
   },
   "repository": {
     "type": "git",

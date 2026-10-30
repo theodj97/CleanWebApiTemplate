@@ -34,7 +34,7 @@ internal sealed record AuthenticationSettings(
         {
             AuthenticationMode.Symmetric => CreateSymmetric(configuration, appSettings, authority),
             AuthenticationMode.Oidc => CreateOidc(appSettings, authority),
-            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unsupported authentication mode."),
+            _ => throw new InvalidOperationException($"Unsupported authentication mode: {mode}."),
         };
     }
 

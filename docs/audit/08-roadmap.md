@@ -114,21 +114,29 @@ pasan; no hay reflexión/`dynamic` en `src/`; build/AOT siguen limpios.
 **Criterio de aceptación:** cobertura reproducible desde el repo; umbral aplicado; OpenAPI
 contract test verde.
 
-### Batch 6 — Hooks y guardarraíles
+### Batch 6 — Hooks y guardarraíles — ✅ implementado
 
-- TOOL-001/026: `pre-push` con build + unit tests + format + paquetes vulnerables.
-- TOOL-025: `commit-msg` convencional.
-- TOOL-002: corregir quoting de `format-staged.sh`.
-- TOOL-003/004: decidir política de `dotnet format analyzers` (excluir IL2026/IL3050 o no
-  usarlo).
-- TOOL-005: cobertura en script/manifiesto.
-- TOOL-007: `AnalysisMode=Recommended` + banned APIs.
-- TOOL-013: gitleaks staged + auditoría de paquetes.
-- TOOL-008/009/010/011: centralizar build props, limpiar paquetes, ampliar editorconfig y
-  gitattributes.
+**Estado:** implementado y verificado el 2026-10-30. Detalle en
+[`15-batch-6.md`](15-batch-6.md).
 
-**Criterio de aceptación:** un commit con warning de build, test unitario roto o paquete
-vulnerable no llega al remoto; un secreto staged se bloquea.
+- TOOL-001/026: `pre-push` con build + formato + analyzers + **todos** los tests
+  (unit, component y functional) + paquetes vulnerables.
+- TOOL-025: `commit-msg` con convención (`feat`, `fix`, `refactor`, `docs`, `test`,
+  `chore`, `build`, `perf`, `revert`), permitiendo `Merge`/`Revert`/`fixup!`/`squash!`.
+- TOOL-002/021/023: `format-staged.sh` con lista NUL + `xargs -0` (rutas con espacios),
+  `--no-restore` y verificación IDE0060 aislada.
+- TOOL-003/004: `dotnet format analyzers` en `pre-push` excluyendo IL2026/IL3050; el gate
+  AOT real sigue siendo `dotnet publish`.
+- TOOL-005: cobertura ya cableada en Batch 5 (`npm run coverage`).
+- TOOL-007: `AnalysisMode=Recommended` + `AnalysisLevel=latest` en `src/` (los banned APIs
+  ya estaban desde Batch 4b).
+- TOOL-013: gitleaks fijado (8.30.1) y ejecutado en `pre-commit`; auditoría de paquetes en
+  `pre-push`.
+- TOOL-008/009/010/011: `Directory.Build.props` centralizado, paquetes sin uso eliminados,
+  `.editorconfig` y `.gitattributes` ampliados.
+
+**Criterio de aceptación:** un commit con warning de build, test roto o paquete vulnerable
+no llega al remoto; un secreto staged se bloquea. Verificado con el hook real.
 
 ### Batch 7 — Template y documentación
 
@@ -216,10 +224,10 @@ dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj \
 |---|---:|---:|
 | Build warnings | 0 | 0 |
 | AOT publish warnings | 0 | 0 |
-| Tests | 251 (211 auditoría + 16 B1 + 15 B2 + 9 B3 + 0 netos B4a) | ≥ 240 |
-| Cobertura `src/` líneas | 82,7% (83,8% tras B1–B3) | ≥ 90% |
-| Cobertura `src/` ramas | 79,7% (81,2% tras B1–B3) | ≥ 80% |
-| Api ramas | 56,9% (65,3% tras B1–B3) | ≥ 75% |
+| Tests | 211 (auditoría; 313 tras B5/B6) | ≥ 300 |
+| Cobertura `src/` líneas | 82,7% (98,0% tras B5) | ≥ 90% |
+| Cobertura `src/` ramas | 79,7% (95,7% tras B5) | ≥ 80% |
+| Api ramas | 56,9% (95,9% tras B5) | ≥ 75% |
 | Mutation score Application/Domain | No medido | ≥ 70% |
 | Paquetes vulnerables | 0 | 0 |
 | Secretos en historial | 0 | 0 |
@@ -229,7 +237,7 @@ dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj \
 ## Lo que no se debe hacer
 
 - No añadir CI/CD desde esta auditoría: el repositorio lo prohíbe. Dejar los comandos listos.
-- No instalar herramientas nuevas sin autorización; la auditoría solo las propone.
+- No añadir herramientas nuevas sin fijarlas (versión + checksum) y documentar su instalación.
 - No silenciar IL2026/IL3050 en código para que pase `dotnet format analyzers`; el gate AOT es
   `dotnet publish`.
 - No “arreglar” la cobertura con tests de constantes; usar tests de comportamiento/mutación.
@@ -238,11 +246,11 @@ dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj \
 
 ## Siguiente paso
 
-Empezar por el **Batch 1** con un agente de implementación:
+Continuar con el **Batch 7 (template y documentación)** con un agente de implementación:
 
-1. Escribir los tests de regresión (deben fallar).
-2. Corregir el manejo de errores de entrada y el contrato 201/204/404/405.
-3. Ejecutar los gates.
-4. Revisar el diff y continuar con Batch 2.
+1. Completar `template.json` (nombre, descripción, excludes y GUIDs).
+2. Añadir post-actions y smoke test de `dotnet new`.
+3. Escribir el README raíz y corregir el drift de `docs/`.
+4. Ejecutar los gates y el smoke test del template.
 
 No se debe abrir un PR con todo el roadmap: cada batch debe ser revisable por separado.

@@ -6,7 +6,7 @@ namespace CleanWebApiTemplate.OpenApiExamples.UnitTests;
 
 public sealed class LocalTokenServiceTests
 {
-    private const string Key = "0123456789abcdef0123456789abcdef";
+    private const string Key = "0123456789abcdef0123456789abcdef"; // gitleaks:allow (clave de test)
     private static readonly DateTimeOffset Now = new(2026, 1, 2, 3, 4, 5, TimeSpan.Zero);
 
     [Fact]

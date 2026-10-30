@@ -2,7 +2,7 @@ namespace CleanWebApiTemplate.OpenApiExamples.UnitTests;
 
 public sealed class LocalAuthTests
 {
-    private const string Key = "0123456789abcdef0123456789abcdef";
+    private const string Key = "0123456789abcdef0123456789abcdef"; // gitleaks:allow (clave de test)
 
     [Fact]
     public void Constructor_AcceptsValidSettings()

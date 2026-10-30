@@ -15,6 +15,7 @@
 | [`coverage-summary-batch3.md`](coverage-summary-batch3.md) | Resumen de cobertura tras Batch 3 en Markdown. |
 | [`coverage-summary-batch5.txt`](coverage-summary-batch5.txt) | Resumen de cobertura tras Batch 5. |
 | [`coverage-summary-batch5.md`](coverage-summary-batch5.md) | Resumen de cobertura tras Batch 5 en Markdown. |
+| [`batch-6-gates.txt`](batch-6-gates.txt) | Salida de `scripts/pre-push.sh` (build, formato, analyzers, 313 tests y paquetes) y del publish AOT tras Batch 6. |
 
 No se incluyen tokens, contraseñas, claves ni la URL del dashboard (contiene un token personal).
 Los logs completos de los comandos están en `/tmp/opencode/audit/` durante la sesión de

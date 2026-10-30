@@ -1,0 +1,8 @@
+#!/bin/sh
+# Valida el asunto del commit con la convención del repositorio.
+# Git pasa como $1 la ruta del fichero con el mensaje.
+# Saltar el hook: HUSKY=0 git commit ... (o git commit --no-verify).
+. "$(dirname "$0")/_/husky.sh"
+
+HOOK_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+sh "$HOOK_DIR/../scripts/commit-msg.sh" "$1"

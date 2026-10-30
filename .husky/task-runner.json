@@ -2,12 +2,24 @@
   "$schema": "https://alirezanet.github.io/Husky.Net/schema.json",
   "tasks": [
     {
+      "name": "gitleaks-staged",
+      "group": "pre-commit",
+      "command": "sh",
+      "args": ["scripts/gitleaks-staged.sh"]
+    },
+    {
       "name": "dotnet-format-staged",
       "group": "pre-commit",
       "command": "sh",
       "args": [".husky/format-staged.sh"],
       "include": ["**/*.cs"],
       "filteringRule": "staged"
+    },
+    {
+      "name": "pre-push",
+      "group": "pre-push",
+      "command": "sh",
+      "args": ["scripts/pre-push.sh"]
     }
   ]
 }

@@ -22,6 +22,16 @@ trim_trailing_whitespace = true
 [*.{csproj,fsproj,vbproj,proj,slnx,props,targets,nuspec,config,xml,json,yml,yaml}]
 indent_size = 2
 
+# Markdown: los dos espacios finales son un salto de línea intencionado, así que
+# no se recortan. La indentación de listas/anidaciones es de 2.
+[*.{md,markdown}]
+indent_size = 2
+trim_trailing_whitespace = false
+
+# Scripts de shell: misma indentación que el resto del repositorio.
+[*.{sh,bash}]
+indent_size = 4
+
 # ==========================================================================
 # C#: estilo
 # ==========================================================================
@@ -95,3 +105,43 @@ csharp_space_between_parentheses = false
 csharp_space_between_square_brackets = false
 csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = true
+
+# ==========================================================================
+# Excepciones documentadas de análisis (AnalysisMode=Recommended)
+# ==========================================================================
+# CA1000: `Result<T>.Success/Failure` son la API pública del tipo; moverlas a
+# una clase no genérica no aporta nada y rompería todos los llamadores.
+dotnet_diagnostic.CA1000.severity = none
+# CA1716: `Error` es el concepto del dominio. El rename (y el de sus parámetros)
+# se evalúa en QUAL-016 (P3); no es un cambio de un batch de guardarraíles.
+dotnet_diagnostic.CA1716.severity = none
+
+# Las claves de configuración se escriben como en appsettings (API_KEY); el
+# rename de las constantes está en QUAL-009 (P3).
+[src/**/Configuration/Constants.cs]
+dotnet_diagnostic.CA1707.severity = none
+
+# El sidecar local de OpenAPI no es código de producción: su migración a
+# LoggerMessage (CA1848/CA1873) está en QUAL-015 (Batch 11).
+[local/openapi/**/*.cs]
+dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1873.severity = none
+
+# Los nombres de los tests siguen Method_Scenario_ExpectedResult: los guiones
+# bajos son intencionados. El resto son reglas de rendimiento/disposición que
+# no aplican a código de test.
+[tests/**/*.cs]
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA1861.severity = none
+dotnet_diagnostic.CA1515.severity = none
+dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.CA2000.severity = none
+dotnet_diagnostic.CA2234.severity = none
+
+[local/openapi/**/*Tests.cs]
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA1861.severity = none
+dotnet_diagnostic.CA1515.severity = none
+dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.CA2000.severity = none
+dotnet_diagnostic.CA2234.severity = none

@@ -140,12 +140,13 @@ public class BaseAbstractValidator<TRequest> : AbstractValidator<TRequest> where
     {
         if (string.IsNullOrWhiteSpace(propertyName))
             propertyName = !string.IsNullOrWhiteSpace(context.DisplayName)
-                ? context.DisplayName.ToLower()
+                ? context.DisplayName.ToLowerInvariant()
                 : string.Empty;
         var builder = new StringBuilder();
 
         if (!string.IsNullOrWhiteSpace(propertyName))
-            builder.AppendLine($"Error while validanting property: '{propertyName}' .");
+            builder.AppendLine(CultureInfo.InvariantCulture,
+                               $"Error while validanting property: '{propertyName}' .");
 
         builder.Append(errorMessage);
 

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CleanWebApiTemplate.Api.Configuration;
 
-public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
+public sealed partial class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
     private readonly ILogger<GlobalExceptionHandler> logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -26,8 +26,7 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
                 ? "The request body is too large."
                 : "The request is invalid.";
 
-            if (logger.IsEnabled(LogLevel.Warning))
-                logger.LogWarning("Client request rejected with status {StatusCode}.", statusCode);
+            LogClientRequestRejected(statusCode);
 
             await ProblemDetailsFactory.WriteAsync(httpContext,
                                                    ProblemDetailsFactory.Create(httpContext, statusCode, detail),
@@ -37,8 +36,7 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
 
         if (exception is JsonException)
         {
-            if (logger.IsEnabled(LogLevel.Warning))
-                logger.LogWarning("Client request contained invalid JSON.");
+            LogInvalidJson();
 
             await ProblemDetailsFactory.WriteAsync(
                 httpContext,
@@ -54,13 +52,24 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             StatusCodes.Status500InternalServerError,
             "An error occurred while processing your request.");
 
-        if (logger.IsEnabled(LogLevel.Error))
-            logger.LogError(eventId: new(),
-                            exception: exception,
-                            "Internal server error: {ExceptionMessage}",
-                            exception.Message);
+        LogInternalServerError(exception, exception.Message);
 
         await ProblemDetailsFactory.WriteAsync(httpContext, problemDetails, cancellationToken);
         return true;
     }
+
+    [LoggerMessage(EventId = 1,
+                   Level = LogLevel.Warning,
+                   Message = "Client request rejected with status {StatusCode}.")]
+    private partial void LogClientRequestRejected(int statusCode);
+
+    [LoggerMessage(EventId = 2,
+                   Level = LogLevel.Warning,
+                   Message = "Client request contained invalid JSON.")]
+    private partial void LogInvalidJson();
+
+    [LoggerMessage(EventId = 3,
+                   Level = LogLevel.Error,
+                   Message = "Internal server error: {ExceptionMessage}")]
+    private partial void LogInternalServerError(Exception exception, string exceptionMessage);
 }

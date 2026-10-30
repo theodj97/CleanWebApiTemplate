@@ -1,11 +1,22 @@
 <Project>
 
   <!--
-    Respeta en `dotnet build`/`dotnet publish` las severidades de las reglas de
-    estilo de .editorconfig (IDE0060 = error, entre otras).
+    Propiedades comunes a todos los proyectos del repositorio. Cada proyecto
+    conserva las que son específicas (AOT, Aspire, tests, documentación XML).
   -->
   <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!--
+      Respeta en `dotnet build`/`dotnet publish` las severidades de las reglas de
+      estilo de .editorconfig (IDE0060 = error, entre otras).
+    -->
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
     <!--
       IDE0005 (using innecesario) necesita un fichero de documentación para
       analizarse en build. Las librerías no lo generan: la regla sigue
