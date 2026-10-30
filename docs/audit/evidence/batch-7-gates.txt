@@ -1,0 +1,123 @@
+# Batch 7 — gates y smoke test del template
+# Fecha: 2026-10-30. SDK 10.0.114, Aspire CLI 13.6.4, Docker 29.1.3.
+
+## bash scripts/pre-push.sh (repositorio)
+==> Build
+    0 Warning(s)
+    0 Error(s)
+==> Formato (whitespace)
+==> Formato (style)
+==> Análisis (analyzers)
+==> Tests (unit, component y functional)
+Test run summary: Passed!
+  total: 313
+  failed: 0
+  succeeded: 313
+  skipped: 0
+==> Paquetes vulnerables
+Comprobando paquetes vulnerables (incluidos transitivos)...
+Sin paquetes vulnerables.
+==> Pre-push OK
+
+## dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj -c Release -r linux-x64 --self-contained
+  CleanWebApiTemplate.Api -> CleanWebApiTemplate/src/CleanWebApiTemplate.Api/bin/Release/net10.0/linux-x64/CleanWebApiTemplate.Api.dll
+  Generating native code
+  CleanWebApiTemplate.Api -> CleanWebApiTemplate/src/CleanWebApiTemplate.Api/bin/Release/net10.0/linux-x64/publish/
+warnings: 0
+
+## bash scripts/template-smoke.sh
+==> Instalación del template (hive aislado: <tmp>/hive)
+The following template packages will be installed:
+   /home/theo/repos/theo/CleanWebApiTemplate
+Success: /home/theo/repos/theo/CleanWebApiTemplate installed the following templates:
+Template Name           Short Name                Language  Tags
+----------------------  ------------------------  --------  -------------------------------------
+Clean Web API Template  clean-webapi,cleanwebapi  [C#]      Web/Web API/Clean Architecture/Aspire
+==> Generación: Sample (con restore) y Sample2 (--no-restore)
+The template "Clean Web API Template" was created successfully.
+Processing post-creation actions...
+Restoring <tmp>/out/Sample/Sample.slnx:
+Restore succeeded.
+Running command 'dotnet tool restore'...
+Tool 'husky' (version '0.9.1') was restored. Available commands: husky
+Tool 'dotnet-coverage' (version '18.12.0') was restored. Available commands: dotnet-coverage
+Tool 'dotnet-reportgenerator-globaltool' (version '5.5.11') was restored. Available commands: reportgenerator
+Restore was successful.
+Command succeeded.
+The template "Clean Web API Template" was created successfully.
+Processing post-creation actions...
+==> Contenido generado
+  ✓ existe README.md
+  ✓ existe .gitignore
+  ✓ existe Sample.slnx
+  ✓ existe AGENTS.md
+  ✓ existe .config/dotnet-tools.json
+  ✓ no existe coverage-report
+  ✓ no existe .agents
+  ✓ no existe .tools
+  ✓ no existe .task-skill
+  ✓ no existe skills-lock.json
+  ✓ no existe docs/audit
+  ✓ no existe README.template.md
+  ✓ no existe scripts/template-smoke.sh
+  ✓ no existe .template.config
+  ✓ no existe .husky/_
+  ✓ README.md con el nombre del proyecto
+  ✓ ningún nombre de fichero contiene CleanWebApiTemplate
+  ✓ ningún fichero contiene CleanWebApiTemplate
+  ✓ package.json usa el nombre en minúsculas
+  ✓ UserSecretsId válido: 39200ba5-7b47-4432-8381-abc81de044d6
+  ✓ UserSecretsId válido: 54a60abc-883b-4914-8103-e0a07c9b9897
+  ✓ UserSecretsId válido: e261325e-6602-4edb-89e8-69aa4189a26b
+  ✓ UserSecretsId válido: df045e1e-da16-4131-89e7-20c3d92e6940
+  ✓ UserSecretsId distintos por proyecto y por generación
+  ✓ ejecutable: .husky/pre-commit
+  ✓ ejecutable: .husky/commit-msg
+  ✓ ejecutable: .husky/pre-push
+  ✓ ejecutable: scripts/pre-push.sh
+  ✓ ejecutable: scripts/commit-msg.sh
+  ✓ ejecutable: scripts/coverage.sh
+  ✓ ejecutable: scripts/gitleaks-staged.sh
+  ✓ ejecutable: scripts/install-gitleaks.sh
+  ✓ ejecutable: scripts/check-vulnerable-packages.sh
+==> Hooks (git init + dotnet husky install)
+Tool 'husky' (version '0.9.1') was restored. Available commands: husky
+Tool 'dotnet-coverage' (version '18.12.0') was restored. Available commands: dotnet-coverage
+Tool 'dotnet-reportgenerator-globaltool' (version '5.5.11') was restored. Available commands: reportgenerator
+Restore was successful.
+Git hooks installed
+  ✓ Husky instalado (core.hooksPath=.husky)
+==> Build
+  All projects are up-to-date for restore.
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+==> Tests sin contenedores (unit, architecture y sidecar local)
+<tmp>/out/Sample/tests/Sample.Api.UnitTests/bin/Debug/net10.0/Sample.Api.UnitTests.dll (net10.0|x64) passed (983ms)
+Test run summary: Passed!
+  total: 145
+  failed: 0
+  succeeded: 145
+  skipped: 0
+<tmp>/out/Sample/tests/Sample.ArchitectureTests/bin/Debug/net10.0/Sample.ArchitectureTests.dll (net10.0|x64) passed (954ms)
+Test run summary: Passed!
+  total: 9
+  failed: 0
+  succeeded: 9
+  skipped: 0
+<tmp>/out/Sample/local/openapi/Sample.OpenApiExamples.UnitTests/bin/Debug/net10.0/Sample.OpenApiExamples.UnitTests.dll (net10.0|x64) passed (567ms)
+Test run summary: Passed!
+  total: 33
+  failed: 0
+  succeeded: 33
+  skipped: 0
+==> Publish Native AOT (linux-x64)
+  Generating native code
+==> Smoke test del template OK
+
+## dotnet test --solution Sample.slnx (proyecto generado, con Docker)
+Test run summary: Passed!
+  total: 313
+  failed: 0
+  succeeded: 313
+exit=0

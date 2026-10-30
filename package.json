@@ -1,12 +1,8 @@
 {
   "name": "cleanwebapitemplate",
   "version": "1.0.0",
-  "description": "Welcome to the Clean Architecture WebAPI Template for .NET Core 10! This template is designed to provide a solid starting point for building scalable and maintainable web applications using the .NET Core framework and ASP NET Core. Tailored for .NET Core 10, it incorporates best practices and design patterns to kickstart your project.",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs",
-    "test": "tests"
-  },
+  "private": true,
+  "description": "Developer scripts for the CleanWebApiTemplate solution (format, tests, coverage and Git hooks).",
   "scripts": {
     "format": "dotnet format whitespace CleanWebApiTemplate.slnx && dotnet format style CleanWebApiTemplate.slnx",
     "format:check": "dotnet format whitespace CleanWebApiTemplate.slnx --verify-no-changes && dotnet format style CleanWebApiTemplate.slnx --verify-no-changes",
@@ -15,17 +11,5 @@
     "verify": "bash scripts/pre-push.sh",
     "hooks:install": "dotnet tool restore && dotnet husky install",
     "gitleaks:install": "bash scripts/install-gitleaks.sh"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/theodj97/CleanWebApiTemplate.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/theodj97/CleanWebApiTemplate/issues"
-  },
-  "homepage": "https://github.com/theodj97/CleanWebApiTemplate#readme"
+  }
 }

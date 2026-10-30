@@ -138,7 +138,11 @@ contract test verde.
 **Criterio de aceptación:** un commit con warning de build, test roto o paquete vulnerable
 no llega al remoto; un secreto staged se bloquea. Verificado con el hook real.
 
-### Batch 7 — Template y documentación
+### Batch 7 — Template y documentación — ✅ implementado
+
+**Estado:** implementado y verificado el 2026-10-30. Detalle en
+[`16-batch-7.md`](16-batch-7.md). TPL-008 (flags opcionales) y TPL-009 (LICENSE/CONTRIBUTING)
+siguen como P2.
 
 - TPL-001/002: metadatos del template.
 - TPL-003/004: excludes correctos.
@@ -206,16 +210,11 @@ dotnet format style CleanWebApiTemplate.slnx --verify-no-changes
 dotnet list CleanWebApiTemplate.slnx package --vulnerable --include-transitive
 ```
 
-Para batches de template:
+Para batches de template (hive aislado, dos generaciones, build, tests sin contenedores y
+publish AOT del proyecto generado):
 
 ```bash
-dotnet new install .
-dotnet new clean-webapi -n Sample -o /tmp/opencode/template-smoke/Sample
-cd /tmp/opencode/template-smoke/Sample
-dotnet build
-dotnet test --project tests/CleanWebApiTemplate.Api.UnitTests/CleanWebApiTemplate.Api.UnitTests.csproj
-dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj \
-  -c Release -r linux-x64 --self-contained
+bash scripts/template-smoke.sh
 ```
 
 ## Métricas de éxito
@@ -231,7 +230,7 @@ dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj \
 | Mutation score Application/Domain | No medido | ≥ 70% |
 | Paquetes vulnerables | 0 | 0 |
 | Secretos en historial | 0 | 0 |
-| `dotnet new` smoke test | No ejecutado | Verde |
+| `dotnet new` smoke test | No ejecutado (verde tras B7) | Verde |
 | Hooks | pre-commit | pre-commit + commit-msg + pre-push |
 
 ## Lo que no se debe hacer
@@ -246,11 +245,9 @@ dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj \
 
 ## Siguiente paso
 
-Continuar con el **Batch 7 (template y documentación)** con un agente de implementación:
-
-1. Completar `template.json` (nombre, descripción, excludes y GUIDs).
-2. Añadir post-actions y smoke test de `dotnet new`.
-3. Escribir el README raíz y corregir el drift de `docs/`.
-4. Ejecutar los gates y el smoke test del template.
+Batches 1–7 (P1) están cerrados. Continuar con el **Batch 8 (borde de seguridad)**:
+HSTS/security headers, `ForwardedHeaders`, rate limiting, límite de body, OpenBao por HTTPS y
+validación de CORS (SEC-004, SEC-005, SEC-006, SEC-009, SEC-016), con tests de regresión
+primero.
 
 No se debe abrir un PR con todo el roadmap: cada batch debe ser revisable por separado.

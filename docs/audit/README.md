@@ -6,10 +6,11 @@ Commit: `fbca5cae986bd08950292910fd6d15ea2c434930`
 
 Esta carpeta contiene la auditoría completa por fases. La auditoría original **no modificó
 código, configuración ni manifiestos**. Después se implementaron los **Batches 1, 2, 3, 4a, 4b,
-5 y 6** de remediación (ver [`09-batch-1.md`](09-batch-1.md), [`10-batch-2.md`](10-batch-2.md),
+5, 6 y 7** de remediación (ver [`09-batch-1.md`](09-batch-1.md), [`10-batch-2.md`](10-batch-2.md),
 [`11-batch-3.md`](11-batch-3.md), [`12-batch-4-structure.md`](12-batch-4-structure.md),
-[`13-batch-4b.md`](13-batch-4b.md), [`14-batch-5.md`](14-batch-5.md) y
-[`15-batch-6.md`](15-batch-6.md)); el resto de batches siguen pendientes.
+[`13-batch-4b.md`](13-batch-4b.md), [`14-batch-5.md`](14-batch-5.md),
+[`15-batch-6.md`](15-batch-6.md) y [`16-batch-7.md`](16-batch-7.md)); el resto de batches (P2/P3)
+siguen pendientes.
 
 ## Índice
 
@@ -31,6 +32,7 @@ código, configuración ni manifiestos**. Después se implementaron los **Batche
 | [`13-batch-4b.md`](13-batch-4b.md) | Batch 4b: architecture tests, banned APIs, configuración, ICurrentUser y OpenAPI. |
 | [`14-batch-5.md`](14-batch-5.md) | Batch 5: cobertura de caminos críticos, routing, validación y umbrales. |
 | [`15-batch-6.md`](15-batch-6.md) | Batch 6: hooks (pre-commit, commit-msg, pre-push), gitleaks, analyzers y guardarraíles. |
+| [`16-batch-7.md`](16-batch-7.md) | Batch 7: `template.json`, GUIDs, post-actions, smoke test de `dotnet new` y documentación. |
 | [`findings.csv`](findings.csv) | Registro completo de hallazgos, filtrable. |
 
 ## Resumen ejecutivo
@@ -54,9 +56,10 @@ código, configuración ni manifiestos**. Después se implementaron los **Batche
   `Infrastructure`, `Domain` no arrastra ASP.NET Core y `Result<T>` vive en Application sin
   semántica HTTP (Batch 4a). Batch 4b añadió los architecture tests, `BannedApiAnalyzers`,
   `ICurrentUser` y el split de OpenAPI.
-- **El template todavía no está listo para `dotnet new`**: `template.json` tiene `name` y
-  `description` vacíos, GUIDs fijos de `UserSecretsId`, excluye `.gitignore`/`README.md` e
-  incluiría `coverage-report/`, `.agents/` y `.tools/` (artefactos locales).
+- **El template ya funciona con `dotnet new` (Batch 7)**: metadatos completos, `UserSecretsId`
+  regenerados en cada generación, `.gitignore` y README propio incluidos, artefactos locales
+  (`coverage-report/`, `.agents/`, `.tools/`, `docs/audit/`) excluidos y un smoke test
+  (`scripts/template-smoke.sh`) que genera, compila, testea y publica AOT el proyecto.
 - **Los hooks ya son un guardarraíl real**: `pre-commit` formatea y escanea secretos con
   gitleaks, `commit-msg` valida la convención y `pre-push` ejecuta build, formato, analyzers,
   todos los tests y la auditoría de paquetes. Batch 6 los dejó cableados; quedan las
@@ -76,14 +79,16 @@ código, configuración ni manifiestos**. Después se implementaron los **Batche
 La severidad es relativa a “template listo para producción”: un P1 de tooling/template puede
 no ser un riesgo de runtime, pero sí un bloqueante para publicar el template.
 
-**Estado tras Batches 1, 2, 3, 4a, 4b, 5 y 6:** corregidos SEC-002, SEC-012, BUG-001, BUG-002,
+**Estado tras Batches 1, 2, 3, 4a, 4b, 5, 6 y 7:** corregidos SEC-002, SEC-012, BUG-001, BUG-002,
 BUG-006, BUG-007, BUG-012 (Batch 1); SEC-001, SEC-003, SEC-007, SEC-008 (Batch 2); BUG-003,
 BUG-004, BUG-005, BUG-009, BUG-010, BUG-011, BUG-014 (Batch 3; BUG-015 queda mitigado);
 ARCH-001, ARCH-002, ARCH-003, ARCH-004 y ARCH-010 (Batch 4a); ARCH-005, ARCH-006, ARCH-007
 y ARCH-008 (Batch 4b); TEST-001, TEST-002, TEST-003, TEST-004, TEST-005, TEST-006, TEST-008
 y TEST-012 (Batch 5); y TOOL-001, TOOL-002, TOOL-003/004, TOOL-005, TOOL-007, TOOL-008/009/
 010/011, TOOL-013, TOOL-021, TOOL-023, TOOL-025 y TOOL-026 (Batch 6; TOOL-024 queda como
-mejora opcional). También se automatizó en local la comprobación de supply chain de SEC-015
+mejora opcional); TPL-001, TPL-002, TPL-003, TPL-004, TPL-005, TPL-006, TPL-007, DOC-001,
+DOC-002, DOC-003, DOC-004, DOC-005, DOC-006, DOC-007 y DOC-010 (Batch 7; TPL-008/009 quedan
+como P2). También se automatizó en local la comprobación de supply chain de SEC-015
 (Info); CI sigue fuera de alcance. El registro se mantiene como foto de la auditoría; el
 detalle está en `09`–`15`.
 
@@ -124,8 +129,8 @@ Excluido por decisión del usuario:
 - La prueba de carga se limitó a comprobaciones puntuales de rate limiting y tamaño de body;
   no se hizo un benchmark formal.
 - El smoke test de `dotnet new` se intentó en un `HOME`/`DOTNET_CLI_HOME` temporal, sin tocar
-  el entorno global. Falló antes de generar nada con `[Error][MV002] Missing 'name'`; el
-  procedimiento completo queda documentado en `07-template-docs.md`.
+  el entorno global. Falló antes de generar nada con `[Error][MV002] Missing 'name'`. Batch 7
+  lo corrigió y lo automatizó en `scripts/template-smoke.sh` (hive aislado).
 
 ## Cómo reproducir
 
@@ -147,6 +152,9 @@ npm run hooks:install
 npm run verify            # = bash scripts/pre-push.sh
 npm run coverage          # = bash scripts/coverage.sh
 bash scripts/gitleaks-staged.sh
+
+# Template
+bash scripts/template-smoke.sh   # --keep conserva la salida, --no-aot omite el publish
 
 # Paquetes
 dotnet list CleanWebApiTemplate.slnx package --vulnerable --include-transitive

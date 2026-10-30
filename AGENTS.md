@@ -40,19 +40,3 @@ un build correcto de una publicación AOT correcta: el build no sustituye al pub
 - gitleaks se instala solo la primera vez que se ejecuta `pre-commit`
   (`scripts/install-gitleaks.sh`, versión fijada con SHA-256).
 - Saltar los hooks: `HUSKY=0 git ...` o `--no-verify`.
-
-## Agent skills
-
-### Issue tracker
-
-Las incidencias viven en GitHub Issues (`theodj97/CleanWebApiTemplate`), gestionadas con la CLI
-`gh`. Ver `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-Vocabulario por defecto de cinco roles: `needs-triage`, `needs-info`, `ready-for-agent`,
-`ready-for-human`, `wontfix`. Ver `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-Single-context: `GLOSSARY.md` en la raíz y `docs/adr/`. Ver `docs/agents/domain.md`.

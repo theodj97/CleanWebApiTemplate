@@ -28,9 +28,9 @@ shared by the API and the local `openbao-init` job. It stays in `src/` because t
 
 | Tool | Version used | Check |
 |---|---|---|
-| .NET SDK | 10.0.113 (`global.json`) | `dotnet --version` |
+| .NET SDK | 10.0.1xx (`global.json`: 10.0.100 with `rollForward: latestFeature`) | `dotnet --version` |
 | Aspire CLI | 13.6.4 | `aspire --version`. Install: <https://aspire.dev/get-started/install-cli/> |
-| Container runtime | Docker 29.8.2 | `docker info` |
+| Container runtime | Docker Engine/Desktop 29.x (or Podman with `ASPIRE_CONTAINER_RUNTIME=podman`) | `docker info` |
 | HTTPS development certificate | trusted for `localhost` | `dotnet dev-certs https --check --trust` |
 
 The API serves HTTPS only, with the ASP.NET development certificate. Create and trust it once per machine:
@@ -95,7 +95,7 @@ container and its data. There is nothing to reset by hand.
   `aspire ps --format Json` (`dashboardUrl`). The link contains a personal login token: do not commit or share it.
 - **API:** `https://localhost:5001`
   - `GET /openapi/v1.json` — OpenAPI document (the sidecar consumes it)
-  - `GET /health` (all checks), `GET /alive`, `GET /health/api`, `GET /health/postgresDb`
+  - `GET /health` (aggregate status of all checks), `GET /alive`, `GET /health/api`, `GET /health/postgresDb`
 - **Swagger with local examples and login:** the `swagger` resource in the dashboard (see § Swagger with local examples and login).
 
 ## Authentication: locally signed JWTs
@@ -166,6 +166,9 @@ The API only exposes the OpenAPI document at `/openapi/v1.json`; the sidecar is 
 - **Seed:** `local/database/seed/*.sql`, applied after the schema and only in Local mode (four synthetic TODOs owned by
   `local.user@example.com`, `local.operator@example.com` twice and `local.admin@example.com`).
 - **Persistence:** none. Data disappears with the container when the AppHost stops.
+- **Title rules:** titles are trimmed and unique per owner (`CreatedBy`), enforced by a unique index; a duplicate
+  returns `409 Conflict`. The `title` filter of `POST /api/Todo/filter` is a case-insensitive contains match
+  (`ILIKE`), with `%`, `_` and `\` matched literally.
 
 ### Seed coverage
 
@@ -266,18 +269,7 @@ new signing key in memory; the AppHost seeds it into OpenBao and the API reads i
 production. The component fixture also asserts that the key did not arrive as an environment variable, so a stray
 `API_KEY` cannot make the suite pass without exercising the store. No identity provider is contacted.
 
-## AI coding agents
-
-The repository ships the `dotnet-aspire` skill in `.agents/skills/dotnet-aspire`, next to the official Aspire skills.
-Refresh the official ones after upgrading the Aspire CLI:
-
-```bash
-aspire agent init --non-interactive --workspace-root . \
-  --skills aspire,aspire-init,aspire-orchestration,aspire-monitoring \
-  --skill-locations standard --mcp=false
-```
-
-MCP is not configured: agents use the Aspire CLI.
+## Diagnostics
 
 Diagnose failures with runtime evidence before changing code:
 
@@ -296,13 +288,13 @@ aspire resource api restart
 |---|---|
 | `The local JWT signing key is missing` | Run `dotnet local/tools/devtoken.cs init` from the repository root, then start the AppHost again. |
 | `ConnectionStrings.Postgres is required` | The environment variable `ConnectionStrings__Postgres` is missing; the AppHost injects it. |
-| Every request returns 500 | `API_KEY` did not reach the API from OpenBao (check `aspire logs openbao-init`), or it is too short for HS256; check `aspire logs api`. |
+| `'API_KEY' must be at least 32 UTF-8 bytes in Symmetric mode` | The API refuses to start with a short HS256 key. Rotate it with `dotnet local/tools/devtoken.cs init --rotate` and restart the AppHost. |
 | `db-init` failed | `aspire logs db-init`: the failing script and PostgreSQL error are printed there. |
 | `OpenBao initialization failed` | `aspire logs openbao-init`: check `OpenBao__Address`, the token and `OpenBao__Path`. |
 | `'API_KEY' is required` | The secret did not reach the store: check `aspire logs openbao-init` and `OpenBao__Path`. |
 | `OpenBao returned 403` | The token does not match the container's root token (a stale AppHost) or the policy denies the path. |
 | `OpenBao returned 404` | The secret path does not exist: the initializer did not run or `OpenBao__Path` differs. |
-| API `Unhealthy` | `curl --cacert "$HOME/.aspnet/dev-certs/trust" https://localhost:5001/health`; the health check reports the failing dependency. |
+| API `Unhealthy` | `/health` only returns the aggregate status (`Healthy`/`Unhealthy`), not the failing check. Query `/health/api` and `/health/postgresDb` (`curl https://localhost:5001/health/postgresDb`) and read `aspire logs api`. |
 | Port 5001 already in use | Another API is running; stop it or change the launch profile. |
 | 401 from the API | The token expired or was signed with a different key; select the profile again or press "New token"; run `devtoken init --rotate` and restart the AppHost if the key rotated. |
 | `swagger` resource: `Could not read the OpenAPI document` | The API is not ready or `OpenApi:Enabled` is false; wait for the API and refresh. |

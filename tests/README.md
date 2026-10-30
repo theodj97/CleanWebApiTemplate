@@ -5,6 +5,7 @@
 | `CleanWebApiTemplate.Api.UnitTests` | Validators and other pure logic in isolation. Dependencies are substitutes; no Aspire, no containers. | No | Yes |
 | `CleanWebApiTemplate.Api.ComponentTests` | The API in-process (`WebApplicationFactory<Program>`) against the real PostgreSQL and OpenBao containers started by the shared AppHost in `Component` mode. Covers endpoints, validation, database state and the authentication/authorization matrix. | Yes | No (shared database) |
 | `CleanWebApiTemplate.Api.FunctionalTests` | Complete flows with the API running as a separate process under the shared AppHost in `Functional` mode. Black box: HTTP only. | Yes | No (shared database) |
+| `CleanWebApiTemplate.ArchitectureTests` | Dependency rules between `src/` projects and structure conventions (ArchUnitNET). | No | Yes |
 | `CleanWebApiTemplate.Tests.Shared` | Fixtures, base classes, attributes, test users and token issuer, database resetters, test repository, builders and helpers. | — | — |
 
 Tests for local-only code (`local/openapi/`) live under `local/openapi/`, next to the sidecar. This folder only
@@ -16,7 +17,8 @@ volumes, empty databases (schema only, no local seed) and a per-run OpenBao root
 
 ## Requirements
 
-- .NET SDK 10.0.113 (see `global.json`; it also selects the Microsoft Testing Platform runner).
+- .NET SDK 10.0.1xx (`global.json` pins 10.0.100 with `latestFeature` and selects the Microsoft Testing Platform
+  runner).
 - Docker Engine/Desktop running, for component and functional tests. Unit tests need neither.
 - Nothing else: containers, test users and signing keys are created by the tests. The signing key is seeded into
   OpenBao by the AppHost and read by the application from there. No real service and no identity provider is ever
@@ -39,6 +41,27 @@ The first component/functional run pulls the PostgreSQL and OpenBao images and c
 functional tests run one after another inside each project because they share one database per run; the projects can
 run at the same time, and while the local environment is running, because each starts its own containers on random
 ports.
+
+## Coverage
+
+```bash
+npm run coverage   # or: bash scripts/coverage.sh
+```
+
+The script restores the local tools, builds the solution, collects coverage for the unit, component and functional
+projects with `dotnet-coverage`, merges it and writes the report to `coverage-report/coverage/report/` (`Summary.txt`,
+`SummaryGithub.md`, `Cobertura.xml`). Only `src/` assemblies are measured. It fails when a threshold is not met:
+
+| Scope | Lines | Branches |
+|---|---:|---:|
+| `src/` (total) | 90% | 80% |
+| `Api` | 85% | 75% |
+| `Application` | 95% | 90% |
+| `Domain` | 100% | 100% |
+| `Infrastructure` | 90% | 85% |
+| `ServiceDefaults` | 95% | 100% |
+
+`coverage-report/` is ignored by Git. Docker is required, as for the component and functional tests.
 
 ## Writing tests
 

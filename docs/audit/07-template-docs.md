@@ -1,6 +1,13 @@
 # 07 — Template y documentación
 
-## `template.json` actual
+> **Estado Batch 7:** TPL-001 a TPL-007, DOC-001 a DOC-007 y DOC-010 están corregidos (ver
+> [`16-batch-7.md`](16-batch-7.md)). `scripts/template-smoke.sh` instala el template en un hive
+> aislado y valida el proyecto generado. TPL-008 (flags opcionales) y TPL-009
+> (LICENSE/CONTRIBUTING) siguen pendientes como P2. Lo que sigue es la foto de la auditoría.
+> Corrección: el `actionId` `3A7C4B69-...` del ejemplo de post-actions no existe; la acción
+> “run script” es `3A7C4B45-1F5D-4A30-959A-51B88E82B5D2`.
+
+## `template.json` en la auditoría
 
 ```json
 {

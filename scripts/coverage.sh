@@ -110,7 +110,7 @@ check_package CleanWebApiTemplate.Infrastructure 90 85
 check_package CleanWebApiTemplate.ServiceDefaults 95 100
 
 echo
-echo "Report: $OUT_DIR/report/index.html"
+echo "Report: $OUT_DIR/report/Summary.txt"
 
 if [ "$failed" -ne 0 ]; then
     exit 1
