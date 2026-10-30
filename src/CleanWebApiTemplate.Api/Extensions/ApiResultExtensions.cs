@@ -1,43 +1,85 @@
+using System.Collections;
 using CleanWebApiTemplate.Api.Models.Responses;
-using CleanWebApiTemplate.Domain.ResultModel;
+using CleanWebApiTemplate.Application.Results;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace CleanWebApiTemplate.Api.Extensions;
 
 public static class ApiResultExtensions
 {
-    public static IResult ToResponse<TDto, TResponse>(this Result<TDto> result,
-                                                      Func<TDto, string>? createdLocation = null)
+    /// <summary>Maps a successful result to 200, or to 204 when it has no value.</summary>
+    public static IResult ToResponse<TDto, TResponse>(this Result<TDto> result)
         where TResponse : class, IBaseResponse<TDto, TResponse>
         where TDto : class?
     {
-        return result.ToResponseCore(res => res.IsCreated
-            ? Results.Created(ToUri(createdLocation, res.Value!),
-                              TResponse.ToResponseModel(res.Value))
-            : Results.Ok(TResponse.ToResponseModel(res.Value)));
+        return result.ToResponseCore(res => Results.Ok(TResponse.ToResponseModel(res.Value)));
     }
 
+    /// <summary>Maps a successful collection to 200, or to 204 when it is empty.</summary>
     public static IResult ToResponse<TDto, TResponse>(this Result<IEnumerable<TDto>> result)
         where TResponse : IBaseResponse<TDto, TResponse>
     {
-        return result.ToResponseCore(res => res.IsCreated
-            ? Results.Created((Uri?)null, (res.Value ?? []).Select(TResponse.ToResponseModel))
-            : Results.Ok((res.Value ?? []).Select(TResponse.ToResponseModel)));
+        return result.ToResponseCore(res => Results.Ok((res.Value ?? []).Select(TResponse.ToResponseModel)));
     }
 
-    public static IResult ToResponse<T>(this Result<T> result,
-                                        Func<T, string>? createdLocation = null)
+    /// <summary>Maps a successful scalar to 200, or to 204 when it is null.</summary>
+    public static IResult ToResponse<T>(this Result<T> result)
     {
-        return result.ToResponseCore(res => res.IsCreated
-            ? Results.Created(ToUri(createdLocation, res.Value!), res.Value)
-            : Results.Ok(res.Value));
+        return result.ToResponseCore(res => Results.Ok(res.Value));
     }
 
-    private static Uri? ToUri<T>(Func<T, string>? locationFactory, T value)
+    /// <summary>Maps a successful result to 201 with a Location header. Failures keep their error mapping.</summary>
+    public static IResult ToCreatedResponse<TDto, TResponse>(this Result<TDto> result,
+                                                             Func<TDto, string> locationFactory)
+        where TResponse : class, IBaseResponse<TDto, TResponse>
+        where TDto : class?
     {
-        if (locationFactory is null)
-            return null;
+        if (result.IsFailure)
+            return ResolveError(result.Error!);
 
+        if (result.Value is null)
+            throw new InvalidOperationException("A created result requires a value.");
+
+        return Results.Created(ToUri(locationFactory, result.Value),
+                               TResponse.ToResponseModel(result.Value));
+    }
+
+    private static IResult ToResponseCore<T>(this Result<T> result, Func<Result<T>, IResult> successAction)
+    {
+        if (result.IsFailure)
+            return ResolveError(result.Error!);
+
+        if (IsNoContent(result.Value))
+            return Results.NoContent();
+
+        return successAction(result);
+    }
+
+    private static bool IsNoContent(object? value)
+    {
+        if (value is null)
+            return true;
+
+        // An empty string is a value, not an empty collection.
+        if (value is string)
+            return false;
+
+        if (value is not IEnumerable enumerable)
+            return false;
+
+        IEnumerator enumerator = enumerable.GetEnumerator();
+        try
+        {
+            return enumerator.MoveNext() is false;
+        }
+        finally
+        {
+            (enumerator as IDisposable)?.Dispose();
+        }
+    }
+
+    private static Uri? ToUri<T>(Func<T, string> locationFactory, T value)
+    {
         string location = locationFactory(value);
         return string.IsNullOrWhiteSpace(location)
             ? null
@@ -60,15 +102,4 @@ public static class ApiResultExtensions
                         detail: error.Description,
                         statusCode: statusCode,
                         type: error.GetType().Name);
-
-    private static IResult ToResponseCore<T>(this Result<T> result, Func<Result<T>, IResult> successAction)
-    {
-        if (result.IsFailure)
-            return ResolveError(result.Error!);
-
-        if (result.IsNoContent)
-            return Results.NoContent();
-
-        return successAction(result);
-    }
 }

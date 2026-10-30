@@ -1,6 +1,6 @@
 using CleanWebApiTemplate.Application.Todo;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
-using CleanWebApiTemplate.Infrastructure.Constants;
+using CleanWebApiTemplate.Domain.Models.Todo;
 using FluentValidation;
 using FluentValidation.Results;
 
@@ -18,13 +18,13 @@ public class TodoValidatorTests
     public async Task ValidateTitle_WithOverlongTitle_AddsMaxLengthFailure()
     {
         // Arrange
-        var title = new string('a', TodoTable.TitleMaxLength + 1);
+        var title = new string('a', TodoConstraints.TitleMaxLength + 1);
 
         // Act
         var result = await ValidateAsync(new TestRequest { Title = title });
 
         // Assert
-        Assert.Contains($"max length is {TodoTable.TitleMaxLength}", Assert.Single(result.Errors).ErrorMessage);
+        Assert.Contains($"max length is {TodoConstraints.TitleMaxLength}", Assert.Single(result.Errors).ErrorMessage);
     }
 
     [Fact]
@@ -51,13 +51,13 @@ public class TodoValidatorTests
     public async Task ValidateDescription_WithOverlongDescription_AddsMaxLengthFailure()
     {
         // Arrange
-        var description = new string('a', TodoTable.DescriptionMaxLength + 1);
+        var description = new string('a', TodoConstraints.DescriptionMaxLength + 1);
 
         // Act
         var result = await ValidateAsync(new TestRequest { Description = description });
 
         // Assert
-        Assert.Contains($"max length is {TodoTable.DescriptionMaxLength}", Assert.Single(result.Errors).ErrorMessage);
+        Assert.Contains($"max length is {TodoConstraints.DescriptionMaxLength}", Assert.Single(result.Errors).ErrorMessage);
     }
 
     [Fact]

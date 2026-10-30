@@ -1,7 +1,7 @@
+using CleanWebApiTemplate.Application.Results;
+using CleanWebApiTemplate.Application.Todo.Abstractions;
 using CleanWebApiTemplate.Application.Todo.Create;
 using CleanWebApiTemplate.Domain.Models.Entities;
-using CleanWebApiTemplate.Domain.ResultModel;
-using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using NSubstitute;
 
 namespace CleanWebApiTemplate.Api.UnitTests.Application.Todo;
@@ -92,7 +92,6 @@ public class CreateTodoServiceTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.True(result.IsCreated);
         Assert.NotNull(result.Value);
         Assert.Equal("Unique", result.Value!.Title);
         Assert.Equal("details", result.Value.Description);

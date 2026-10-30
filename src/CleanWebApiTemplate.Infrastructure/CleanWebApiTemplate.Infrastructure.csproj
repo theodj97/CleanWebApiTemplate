@@ -15,6 +15,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\CleanWebApiTemplate.Domain\CleanWebApiTemplate.Domain.csproj" />
+		<ProjectReference Include="..\CleanWebApiTemplate.Application\CleanWebApiTemplate.Application.csproj" />
 	</ItemGroup>
 
 </Project>

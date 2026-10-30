@@ -1,5 +1,5 @@
 using CleanWebApiTemplate.Application.Dtos.Todo;
-using CleanWebApiTemplate.Domain.ResultModel;
+using CleanWebApiTemplate.Application.Results;
 
 namespace CleanWebApiTemplate.Application.Todo.GetTitles;
 

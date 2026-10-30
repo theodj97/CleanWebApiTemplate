@@ -1,6 +1,5 @@
 using CleanWebApiTemplate.Api.Configuration;
 using CleanWebApiTemplate.Api.Extensions;
-using CleanWebApiTemplate.Domain.Configuration;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 namespace CleanWebApiTemplate.Api;

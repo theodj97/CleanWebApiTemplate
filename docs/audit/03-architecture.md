@@ -13,7 +13,7 @@ graph TD
     Local[local/ AppHost y sidecar]
 
     Application --> Domain
-    Application --> Infrastructure
+    Infrastructure --> Application
     Infrastructure --> Domain
     Api --> Application
     Api --> Infrastructure
@@ -25,14 +25,19 @@ graph TD
     Local --> Infrastructure
 ```
 
+> **Estado Batch 4a:** ARCH-001, ARCH-002, ARCH-003, ARCH-004 y ARCH-010 están corregidos
+> (ver [`12-batch-4-structure.md`](12-batch-4-structure.md)). El mapa y la tabla siguientes
+> describen la foto original de la auditoría; ARCH-008 y el resto de Batch 4b siguen
+> pendientes.
+
 La regla de Clean Architecture es que las dependencias apunten hacia dentro:
 `Api -> Application -> Domain`, con `Infrastructure` implementando puertos definidos en
-`Application`/`Domain`. El grafo actual tiene dos violaciones claras:
+`Application`/`Domain`. En la auditoría original el grafo tenía dos violaciones claras:
 
-1. **`Application -> Infrastructure`**: `Application.csproj:16-18` referencia Infrastructure.
-   `Application` usa `ITodoRepository`, `TodoFilter` y `TodoTable` de Infrastructure.
-2. **`Domain -> ASP.NET Core`**: `Domain.csproj:12-13` referencia
-   `Microsoft.AspNetCore.Http` y `.Abstractions` (2.3.11), pero ningún tipo de Domain los usa.
+1. **`Application -> Infrastructure`**: `Application.csproj:16-18` referenciaba Infrastructure.
+   `Application` usaba `ITodoRepository`, `TodoFilter` y `TodoTable` de Infrastructure.
+2. **`Domain -> ASP.NET Core`**: `Domain.csproj:12-13` referenciaba
+   `Microsoft.AspNetCore.Http` y `.Abstractions` (2.3.11), pero ningún tipo de Domain los usaba.
 
 ## Hallazgos
 

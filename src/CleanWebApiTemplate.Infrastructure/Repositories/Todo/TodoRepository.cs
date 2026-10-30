@@ -1,14 +1,14 @@
 using System.Text;
+using CleanWebApiTemplate.Application.Results;
+using CleanWebApiTemplate.Application.Todo.Abstractions;
+using CleanWebApiTemplate.Application.Todo.Queries;
 using CleanWebApiTemplate.Domain.Models.Entities;
-using CleanWebApiTemplate.Domain.ResultModel;
-using CleanWebApiTemplate.Infrastructure.Constants;
 using CleanWebApiTemplate.Infrastructure.Data;
-using CleanWebApiTemplate.Infrastructure.Repositories.Helpers.Todo;
-using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
+using CleanWebApiTemplate.Infrastructure.Repositories.Todo.Helpers;
 using Npgsql;
 using NpgsqlTypes;
 
-namespace CleanWebApiTemplate.Infrastructure.Repositories;
+namespace CleanWebApiTemplate.Infrastructure.Repositories.Todo;
 
 /// <summary>
 /// Pure ADO.NET (Npgsql) repository. Native AOT safe by construction:

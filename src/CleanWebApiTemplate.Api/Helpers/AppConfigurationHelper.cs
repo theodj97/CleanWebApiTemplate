@@ -1,5 +1,4 @@
 using CleanWebApiTemplate.Api.Configuration;
-using CleanWebApiTemplate.Domain.Configuration;
 using CleanWebApiTemplate.Infrastructure.Secrets;
 using Microsoft.Extensions.Options;
 

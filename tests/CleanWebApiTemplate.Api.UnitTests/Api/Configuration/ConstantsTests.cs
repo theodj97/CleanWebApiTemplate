@@ -1,6 +1,6 @@
-using CleanWebApiTemplate.Domain.Configuration;
+using CleanWebApiTemplate.Api.Configuration;
 
-namespace CleanWebApiTemplate.Api.UnitTests.Domain.Configuration;
+namespace CleanWebApiTemplate.Api.UnitTests.Api.Configuration;
 
 /// <summary>The policy arrays are the single list of authorization policies every host must register.</summary>
 public class ConstantsTests

@@ -1,5 +1,5 @@
 using System.Globalization;
-using CleanWebApiTemplate.Infrastructure.Repositories.Helpers.Todo;
+using CleanWebApiTemplate.Application.Todo.Queries;
 
 namespace CleanWebApiTemplate.Application.Todo.Filtered;
 

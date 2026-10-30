@@ -1,6 +1,6 @@
 using CleanWebApiTemplate.Application.Abstractions;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
-using CleanWebApiTemplate.Infrastructure.Constants;
+using CleanWebApiTemplate.Domain.Models.Todo;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Todo;
@@ -20,8 +20,8 @@ public class TodoValidator<TRequest> : BaseAbstractValidator<TRequest> where TRe
         }
 
         string trimmed = title.Trim();
-        if (trimmed.Length > TodoTable.TitleMaxLength)
-            AddFailure(context, $"Property '{context.DisplayName}' max length is {TodoTable.TitleMaxLength}.");
+        if (trimmed.Length > TodoConstraints.TitleMaxLength)
+            AddFailure(context, $"Property '{context.DisplayName}' max length is {TodoConstraints.TitleMaxLength}.");
     }
 
     protected void ValidateDescription(string description,
@@ -30,8 +30,8 @@ public class TodoValidator<TRequest> : BaseAbstractValidator<TRequest> where TRe
         if (string.IsNullOrEmpty(description))
             return;
 
-        if (description.Length > TodoTable.DescriptionMaxLength)
-            AddFailure(context, $"Property '{context.DisplayName}' max length is {TodoTable.DescriptionMaxLength}.");
+        if (description.Length > TodoConstraints.DescriptionMaxLength)
+            AddFailure(context, $"Property '{context.DisplayName}' max length is {TodoConstraints.DescriptionMaxLength}.");
     }
 
     protected void ValidateUserEmail(string createdBy,

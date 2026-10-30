@@ -1,8 +1,8 @@
 using CleanWebApiTemplate.Application.Dtos.Todo;
+using CleanWebApiTemplate.Application.Results;
+using CleanWebApiTemplate.Application.Todo.Abstractions;
 using CleanWebApiTemplate.Application.Validation;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
-using CleanWebApiTemplate.Domain.ResultModel;
-using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Todo.Create;
@@ -35,6 +35,6 @@ public sealed class CreateTodoService(ITodoRepository todoRepository,
 
             return insertion.IsFailure
                 ? Result<TodoDto?>.Failure(insertion.Error!)
-                : Result<TodoDto?>.Created(insertion.Value!.ToDto());
+                : Result<TodoDto?>.Success(insertion.Value!.ToDto());
         }, cancellationToken);
 }

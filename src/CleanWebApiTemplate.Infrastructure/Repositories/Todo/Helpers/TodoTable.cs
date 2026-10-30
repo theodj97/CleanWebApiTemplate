@@ -1,9 +1,9 @@
-namespace CleanWebApiTemplate.Infrastructure.Constants;
+namespace CleanWebApiTemplate.Infrastructure.Repositories.Todo.Helpers;
 
 /// <summary>
-/// Schema metadata for the "Todo" table. Single source of truth for table/column
-/// names (used to build fixed, injection-safe SQL text) and column constraints
-/// (used by the application-layer validators).
+/// Schema metadata for the "Todo" table. Single source of truth for table and column
+/// names used to build fixed, injection-safe SQL text. Business constraints live in
+/// <c>Domain.Models.Todo.TodoConstraints</c>.
 /// </summary>
 public static class TodoTable
 {
@@ -20,11 +20,6 @@ public static class TodoTable
 
     /// <summary>Unique index that makes the title unique per owner at the database level.</summary>
     public const string UniqueTitleIndexName = "UX_Todo_CreatedBy_Title";
-
-    public static byte TitleMaxLength => 255;
-    public static int DescriptionMaxLength => 1000;
-    public static byte CreatedByMaxLength => 255;
-    public static byte UpdatedByMaxLength => 255;
 
     // The table DDL lives in local/database/*.sql so there is a single schema source.
 }

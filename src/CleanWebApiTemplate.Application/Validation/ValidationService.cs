@@ -1,4 +1,4 @@
-using CleanWebApiTemplate.Domain.ResultModel;
+using CleanWebApiTemplate.Application.Results;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Validation;

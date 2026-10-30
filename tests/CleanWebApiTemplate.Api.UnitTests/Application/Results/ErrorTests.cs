@@ -1,6 +1,6 @@
-using CleanWebApiTemplate.Domain.ResultModel;
+using CleanWebApiTemplate.Application.Results;
 
-namespace CleanWebApiTemplate.Api.UnitTests.Domain.ResultModel;
+namespace CleanWebApiTemplate.Api.UnitTests.Application.Results;
 
 /// <summary>Default titles and the explicit title overload of every error type.</summary>
 public class ErrorTests

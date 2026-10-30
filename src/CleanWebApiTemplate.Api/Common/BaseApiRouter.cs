@@ -1,6 +1,6 @@
 using System.Security.Claims;
+using CleanWebApiTemplate.Api.Configuration;
 using CleanWebApiTemplate.Api.Models.Interfaces;
-using CleanWebApiTemplate.Domain.Configuration;
 
 namespace CleanWebApiTemplate.Api.Common;
 

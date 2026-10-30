@@ -1,4 +1,3 @@
-using CleanWebApiTemplate.Domain.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace CleanWebApiTemplate.Api.Configuration;

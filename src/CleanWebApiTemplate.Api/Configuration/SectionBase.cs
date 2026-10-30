@@ -1,4 +1,4 @@
-namespace CleanWebApiTemplate.Domain.Configuration;
+namespace CleanWebApiTemplate.Api.Configuration;
 
 public abstract class SectionBase
 {

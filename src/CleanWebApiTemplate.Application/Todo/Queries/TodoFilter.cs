@@ -1,4 +1,4 @@
-namespace CleanWebApiTemplate.Infrastructure.Repositories.Helpers.Todo;
+namespace CleanWebApiTemplate.Application.Todo.Queries;
 
 /// <summary>
 /// Strongly-typed filter for Todo search queries. Every value is sent to the

@@ -1,6 +1,6 @@
 using CleanWebApiTemplate.Api.Extensions;
 using CleanWebApiTemplate.Api.Models.Responses;
-using CleanWebApiTemplate.Domain.ResultModel;
+using CleanWebApiTemplate.Application.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,23 +24,12 @@ public class ApiResultExtensionsTests
     }
 
     [Fact]
-    public async Task ToResponse_WithCreatedResult_ReturnsCreated()
-    {
-        // Act
-        var response = await ExecuteAsync(Result<TestDto>.Created(new TestDto { Name = "created" })
-                                                          .ToResponse<TestDto, TestResponse>());
-
-        // Assert
-        Assert.Equal(StatusCodes.Status201Created, response.Response.StatusCode);
-    }
-
-    [Fact]
-    public async Task ToResponse_WithCreatedResultAndLocation_ReturnsLocationHeader()
+    public async Task ToCreatedResponse_WithValue_ReturnsCreatedAndLocation()
     {
         // Act
         var response = await ExecuteAsync(
-            Result<TestDto>.Created(new TestDto { Name = "created" })
-                           .ToResponse<TestDto, TestResponse>(_ => "/api/test/1"));
+            Result<TestDto>.Success(new TestDto { Name = "created" })
+                           .ToCreatedResponse<TestDto, TestResponse>(_ => "/api/test/1"));
 
         // Assert
         Assert.Equal(StatusCodes.Status201Created, response.Response.StatusCode);
@@ -85,19 +74,6 @@ public class ApiResultExtensionsTests
     }
 
     [Fact]
-    public async Task ToResponse_WithCreatedCollection_ReturnsCreated()
-    {
-        // Arrange
-        var result = Result<IEnumerable<TestDto>>.Created([new TestDto { Name = "created" }]);
-
-        // Act
-        var response = await ExecuteAsync(result.ToResponse<TestDto, TestResponse>());
-
-        // Assert
-        Assert.Equal(StatusCodes.Status201Created, response.Response.StatusCode);
-    }
-
-    [Fact]
     public async Task ToResponse_WithGenericValue_ReturnsOk()
     {
         // Act
@@ -109,13 +85,13 @@ public class ApiResultExtensionsTests
     }
 
     [Fact]
-    public async Task ToResponse_WithGenericCreated_ReturnsCreated()
+    public async Task ToResponse_WithEmptyString_ReturnsOk()
     {
         // Act
-        var response = await ExecuteAsync(Result<string>.Created("value").ToResponse());
+        var response = await ExecuteAsync(Result<string>.Success(string.Empty).ToResponse());
 
         // Assert
-        Assert.Equal(StatusCodes.Status201Created, response.Response.StatusCode);
+        Assert.Equal(StatusCodes.Status200OK, response.Response.StatusCode);
     }
 
     [Theory]

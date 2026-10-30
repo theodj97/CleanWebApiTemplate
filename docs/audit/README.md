@@ -5,9 +5,10 @@ Rama auditada: `features/code-audit`
 Commit: `fbca5cae986bd08950292910fd6d15ea2c434930`
 
 Esta carpeta contiene la auditoría completa por fases. La auditoría original **no modificó
-código, configuración ni manifiestos**. Después se implementaron los **Batches 1, 2 y 3** de
-remediación (ver [`09-batch-1.md`](09-batch-1.md), [`10-batch-2.md`](10-batch-2.md) y
-[`11-batch-3.md`](11-batch-3.md)); el resto de batches siguen pendientes.
+código, configuración ni manifiestos**. Después se implementaron los **Batches 1, 2, 3 y 4a**
+de remediación (ver [`09-batch-1.md`](09-batch-1.md), [`10-batch-2.md`](10-batch-2.md),
+[`11-batch-3.md`](11-batch-3.md) y [`12-batch-4-structure.md`](12-batch-4-structure.md)); el
+resto de batches siguen pendientes.
 
 ## Índice
 
@@ -25,6 +26,7 @@ remediación (ver [`09-batch-1.md`](09-batch-1.md), [`10-batch-2.md`](10-batch-2
 | [`09-batch-1.md`](09-batch-1.md) | Remediación del Batch 1: errores de entrada, 201/204/404/405 y traceId. |
 | [`10-batch-2.md`](10-batch-2.md) | Remediación del Batch 2: modos de autenticación, HS256, claims y OIDC. |
 | [`11-batch-3.md`](11-batch-3.md) | Remediación del Batch 3: unicidad por owner, índice único, contains, trim y fechas. |
+| [`12-batch-4-structure.md`](12-batch-4-structure.md) | Batch 4a: estructura repository-centric, Domain limpio y Result sin HTTP. |
 | [`findings.csv`](findings.csv) | Registro completo de hallazgos, filtrable. |
 
 ## Resumen ejecutivo
@@ -33,17 +35,19 @@ remediación (ver [`09-batch-1.md`](09-batch-1.md), [`10-batch-2.md`](10-batch-2
   IDOR/BOLA ni inyección SQL en las rutas revisadas). La parametrización SQL y el filtro de
   ordenación son correctos.
 - **La calidad del baseline es buena**: build 0 warnings, AOT publish correcto, 211 tests
-  verdes en la auditoría (252 tras Batches 1, 2 y 3), sin paquetes vulnerables ni deprecados
-  y sin claves privadas en el historial.
+  verdes en la auditoría (251 tras Batches 1, 2, 3 y 4a), sin paquetes vulnerables ni
+  deprecados y sin claves privadas en el historial.
 - **Los mayores riesgos están en los bordes**: errores de entrada que devuelven 500, validación
   de `Status = 0`, contrato de unicidad de títulos, claims ausentes que provocan 500, falta de
   rate limiting/security headers/forwarded headers y ausencia de tests de esos caminos.
 - **La cobertura real de `src/` es 82,7% de líneas y 79,7% de ramas** en la auditoría
-  (83,8%/81,2% tras Batches 1, 2 y 3), no el 89,9%/72,5% del informe antiguo: ese informe
-  incluía `Tests.Shared` y `AppHost`. La zona más débil es `Api` (72,0% líneas / 65,3% ramas),
-  sobre todo `OpenApiConfiguration` (1,7%/2,8%) y `TodoRoutes` (91,3% líneas / 14,2% ramas).
-- **La arquitectura no respeta la regla de dependencias**: `Application` referencia
-  `Infrastructure` y `Domain` arrastra paquetes legacy de ASP.NET Core que no usa.
+  (83,8%/81,2% tras Batches 1–3; pendiente de regenerar tras 4a), no el 89,9%/72,5% del
+  informe antiguo: ese informe incluía `Tests.Shared` y `AppHost`. La zona más débil es `Api`
+  (72,0% líneas / 65,3% ramas), sobre todo `OpenApiConfiguration` (1,7%/2,8%) y `TodoRoutes`
+  (91,3% líneas / 14,2% ramas).
+- **La arquitectura ya respeta la regla de dependencias**: `Application` no referencia
+  `Infrastructure`, `Domain` no arrastra ASP.NET Core y `Result<T>` vive en Application sin
+  semántica HTTP (Batch 4a). Quedan pendientes los architecture tests y `BannedApiAnalyzers`.
 - **El template todavía no está listo para `dotnet new`**: `template.json` tiene `name` y
   `description` vacíos, GUIDs fijos de `UserSecretsId`, excluye `.gitignore`/`README.md` e
   incluiría `coverage-report/` y `.agents/` (≈8 MB de artefactos locales).
@@ -64,10 +68,11 @@ remediación (ver [`09-batch-1.md`](09-batch-1.md), [`10-batch-2.md`](10-batch-2
 La severidad es relativa a “template listo para producción”: un P1 de tooling/template puede
 no ser un riesgo de runtime, pero sí un bloqueante para publicar el template.
 
-**Estado tras Batches 1, 2 y 3:** corregidos SEC-002, SEC-012, BUG-001, BUG-002, BUG-006,
-BUG-007, BUG-012 (Batch 1); SEC-001, SEC-003, SEC-007, SEC-008 (Batch 2); y BUG-003,
-BUG-004, BUG-005, BUG-009, BUG-010, BUG-011, BUG-014 (Batch 3; BUG-015 queda mitigado).
-El registro se mantiene como foto de la auditoría; el detalle está en `09`–`11`.
+**Estado tras Batches 1, 2, 3 y 4a:** corregidos SEC-002, SEC-012, BUG-001, BUG-002, BUG-006,
+BUG-007, BUG-012 (Batch 1); SEC-001, SEC-003, SEC-007, SEC-008 (Batch 2); BUG-003, BUG-004,
+BUG-005, BUG-009, BUG-010, BUG-011, BUG-014 (Batch 3; BUG-015 queda mitigado); y ARCH-001,
+ARCH-002, ARCH-003, ARCH-004 y ARCH-010 (Batch 4a). El registro se mantiene como foto de la
+auditoría; el detalle está en `09`–`12`.
 
 ## Alcance
 

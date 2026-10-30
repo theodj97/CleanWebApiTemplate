@@ -1,8 +1,8 @@
+using CleanWebApiTemplate.Application.Results;
+using CleanWebApiTemplate.Application.Todo.Queries;
 using CleanWebApiTemplate.Domain.Models.Entities;
-using CleanWebApiTemplate.Domain.ResultModel;
-using CleanWebApiTemplate.Infrastructure.Repositories.Helpers.Todo;
 
-namespace CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
+namespace CleanWebApiTemplate.Application.Todo.Abstractions;
 
 public interface ITodoRepository
 {

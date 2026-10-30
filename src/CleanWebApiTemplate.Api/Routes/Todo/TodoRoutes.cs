@@ -1,6 +1,7 @@
 using System.Net;
 using CleanWebApiTemplate.Api.Common;
 using CleanWebApiTemplate.Api.Common.Abstractions;
+using CleanWebApiTemplate.Api.Configuration;
 using CleanWebApiTemplate.Api.Extensions;
 using CleanWebApiTemplate.Api.Models.Responses.Todo;
 using CleanWebApiTemplate.Api.Routes.Todo.Create;
@@ -8,14 +9,13 @@ using CleanWebApiTemplate.Api.Routes.Todo.Filter;
 using CleanWebApiTemplate.Api.Routes.Todo.Get;
 using CleanWebApiTemplate.Api.Routes.Todo.Update;
 using CleanWebApiTemplate.Application.Dtos.Todo;
+using CleanWebApiTemplate.Application.Results;
 using CleanWebApiTemplate.Application.Todo.Create;
 using CleanWebApiTemplate.Application.Todo.Delete;
 using CleanWebApiTemplate.Application.Todo.Filtered;
 using CleanWebApiTemplate.Application.Todo.GetById;
 using CleanWebApiTemplate.Application.Todo.GetTitles;
 using CleanWebApiTemplate.Application.Todo.Update;
-using CleanWebApiTemplate.Domain.Configuration;
-using CleanWebApiTemplate.Domain.ResultModel;
 using Microsoft.OpenApi;
 
 namespace CleanWebApiTemplate.Api.Routes.Todo;
@@ -87,7 +87,7 @@ public class TodoRoutes(IHttpContextAccessor httpContextAccessor) : BaseApiRoute
         {
             var input = request.ToInput(UserEmail);
             var result = await service.CreateAsync(input, cancellationToken);
-            return result.ToResponse<TodoDto?, TodoResponse>(dto => $"/api/Todo/{dto!.Id}");
+            return result.ToCreatedResponse<TodoDto?, TodoResponse>(dto => $"/api/Todo/{dto!.Id}");
         })
         .WithName("CreateTodo")
         .WithSummary("Create a TODO")

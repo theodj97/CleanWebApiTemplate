@@ -1,4 +1,4 @@
-namespace CleanWebApiTemplate.Domain.ResultModel;
+namespace CleanWebApiTemplate.Application.Results;
 
 public abstract record Error(string? Title = null, string? Description = null)
 {

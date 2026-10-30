@@ -1,6 +1,7 @@
-using CleanWebApiTemplate.Infrastructure.Constants;
+using CleanWebApiTemplate.Domain.Models.Todo;
+using CleanWebApiTemplate.Infrastructure.Repositories.Todo.Helpers;
 
-namespace CleanWebApiTemplate.Api.UnitTests.Infrastructure.Constants;
+namespace CleanWebApiTemplate.Api.UnitTests.Infrastructure.Repositories.Todo.Helpers;
 
 /// <summary>The table metadata is the single source of truth shared by SQL and validators.</summary>
 public class TodoTableTests
@@ -18,9 +19,9 @@ public class TodoTableTests
         Assert.Equal("CreatedBy", TodoTable.CreatedByColumn);
         Assert.Equal("UpdatedBy", TodoTable.UpdatedByColumn);
         Assert.Equal("UX_Todo_CreatedBy_Title", TodoTable.UniqueTitleIndexName);
-        Assert.Equal(255, TodoTable.TitleMaxLength);
-        Assert.Equal(1000, TodoTable.DescriptionMaxLength);
-        Assert.Equal(255, TodoTable.CreatedByMaxLength);
-        Assert.Equal(255, TodoTable.UpdatedByMaxLength);
+        Assert.Equal(255, TodoConstraints.TitleMaxLength);
+        Assert.Equal(1000, TodoConstraints.DescriptionMaxLength);
+        Assert.Equal(255, TodoConstraints.CreatedByMaxLength);
+        Assert.Equal(255, TodoConstraints.UpdatedByMaxLength);
     }
 }

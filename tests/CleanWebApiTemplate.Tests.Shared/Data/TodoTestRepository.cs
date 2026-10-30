@@ -1,9 +1,9 @@
+using CleanWebApiTemplate.Application.Results;
+using CleanWebApiTemplate.Application.Todo.Abstractions;
+using CleanWebApiTemplate.Application.Todo.Queries;
 using CleanWebApiTemplate.Domain.Models.Entities;
-using CleanWebApiTemplate.Domain.ResultModel;
 using CleanWebApiTemplate.Infrastructure.Data;
-using CleanWebApiTemplate.Infrastructure.Repositories;
-using CleanWebApiTemplate.Infrastructure.Repositories.Helpers.Todo;
-using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
+using CleanWebApiTemplate.Infrastructure.Repositories.Todo;
 using CleanWebApiTemplate.Tests.Shared.Fixtures;
 
 namespace CleanWebApiTemplate.Tests.Shared.Data;

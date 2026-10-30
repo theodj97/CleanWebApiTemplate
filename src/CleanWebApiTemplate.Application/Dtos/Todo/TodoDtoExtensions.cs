@@ -4,7 +4,7 @@ namespace CleanWebApiTemplate.Application.Dtos.Todo;
 
 /// <summary>
 /// Entity to DTO mapping. It lives in Application because Application is the layer that
-/// exposes DTOs; Domain and Infrastructure only deal with entities.
+/// exposes DTOs; Domain only deals with entities and the API maps them to responses.
 /// </summary>
 internal static class TodoDtoExtensions
 {

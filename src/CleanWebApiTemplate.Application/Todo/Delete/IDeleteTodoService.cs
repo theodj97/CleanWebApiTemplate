@@ -1,4 +1,4 @@
-using CleanWebApiTemplate.Domain.ResultModel;
+using CleanWebApiTemplate.Application.Results;
 
 namespace CleanWebApiTemplate.Application.Todo.Delete;
 

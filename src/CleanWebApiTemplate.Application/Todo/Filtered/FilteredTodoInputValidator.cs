@@ -1,6 +1,6 @@
 using CleanWebApiTemplate.Application.Abstractions;
 using CleanWebApiTemplate.Application.Dtos.Todo;
-using CleanWebApiTemplate.Infrastructure.Constants;
+using CleanWebApiTemplate.Domain.Models.Todo;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Todo.Filtered;
@@ -16,8 +16,8 @@ public class FilteredTodoInputValidator : TodoValidator<FilteredTodoInput>
         RuleForEach(x => x.Title)
             .Must(title => title is not null
                            && string.IsNullOrWhiteSpace(title) is false
-                           && title.Length <= TodoTable.TitleMaxLength)
-            .WithMessage($"Title must contain text and be at most {TodoTable.TitleMaxLength} characters")
+                           && title.Length <= TodoConstraints.TitleMaxLength)
+            .WithMessage($"Title must contain text and be at most {TodoConstraints.TitleMaxLength} characters")
             .When(x => x.Title is not null && x.Title.Any());
 
         RuleForEach(x => x.Status)

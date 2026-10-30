@@ -2,7 +2,7 @@ namespace CleanWebApiTemplate.Tests.Shared.Auth;
 
 /// <summary>
 /// Identities available to tests. Derived from the real authorization policies
-/// (<see cref="CleanWebApiTemplate.Domain.Configuration.Constants"/>): one user per role, plus an
+/// (<see cref="CleanWebApiTemplate.Api.Configuration.Constants"/>): one user per role, plus an
 /// authenticated user without roles to prove that protected endpoints answer 403.
 /// </summary>
 public enum TestUser

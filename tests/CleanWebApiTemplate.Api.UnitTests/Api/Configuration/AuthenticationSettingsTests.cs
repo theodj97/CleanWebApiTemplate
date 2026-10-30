@@ -1,5 +1,4 @@
 using CleanWebApiTemplate.Api.Configuration;
-using CleanWebApiTemplate.Domain.Configuration;
 using Microsoft.Extensions.Configuration;
 
 namespace CleanWebApiTemplate.Api.UnitTests.Api.Configuration;

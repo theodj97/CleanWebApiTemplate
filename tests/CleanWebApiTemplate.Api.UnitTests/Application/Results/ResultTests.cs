@@ -1,6 +1,6 @@
-using CleanWebApiTemplate.Domain.ResultModel;
+using CleanWebApiTemplate.Application.Results;
 
-namespace CleanWebApiTemplate.Api.UnitTests.Domain.ResultModel;
+namespace CleanWebApiTemplate.Api.UnitTests.Application.Results;
 
 /// <summary>Invariants of <see cref="Result{T}"/>: one success shape and one failure shape, never a mix.</summary>
 public class ResultTests
@@ -17,81 +17,20 @@ public class ResultTests
         // Assert
         Assert.True(result.IsSuccess);
         Assert.False(result.IsFailure);
-        Assert.False(result.IsNoContent);
-        Assert.False(result.IsCreated);
         Assert.Null(result.Error);
         Assert.Same(value, result.Value);
     }
 
     [Fact]
-    public void Success_WithNullValue_ReturnsNoContent()
+    public void Success_WithNullValue_IsSuccessful()
     {
         // Act
         var result = Result<object?>.Success(null);
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.True(result.IsNoContent);
-    }
-
-    [Fact]
-    public void Success_WithEmptyCollection_ReturnsNoContent()
-    {
-        // Act
-        var result = Result<object>.Success(Array.Empty<object>());
-
-        // Assert
-        Assert.True(result.IsNoContent);
-    }
-
-    [Fact]
-    public void Success_WithNonEmptyCollection_IsNotNoContent()
-    {
-        // Act
-        var result = Result<object>.Success(new object[] { new() });
-
-        // Assert
-        Assert.False(result.IsNoContent);
-    }
-
-    [Fact]
-    public void Success_WithEmptyGenericCollection_ReturnsNoContent()
-    {
-        // Act
-        var result = Result<IEnumerable<object>>.Success(Array.Empty<object>());
-
-        // Assert
-        Assert.True(result.IsNoContent);
-    }
-
-    [Fact]
-    public void Success_WithEmptyString_IsNotNoContent()
-    {
-        // Act
-        var result = Result<string>.Success(string.Empty);
-
-        // Assert
-        Assert.False(result.IsNoContent);
-    }
-
-    [Fact]
-    public void Created_WithValue_ReturnsCreatedResult()
-    {
-        // Act
-        var result = Result<string>.Created("created");
-
-        // Assert
-        Assert.True(result.IsSuccess);
-        Assert.True(result.IsCreated);
-        Assert.False(result.IsNoContent);
-        Assert.Equal("created", result.Value);
-    }
-
-    [Fact]
-    public void Created_WithNullValue_ThrowsBecauseCreatedAndNoContentAreExclusive()
-    {
-        // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => Result<string?>.Created(null!));
+        Assert.False(result.IsFailure);
+        Assert.Null(result.Value);
     }
 
     [Fact]

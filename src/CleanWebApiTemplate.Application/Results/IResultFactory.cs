@@ -1,4 +1,4 @@
-namespace CleanWebApiTemplate.Domain.ResultModel;
+namespace CleanWebApiTemplate.Application.Results;
 
 /// <summary>
 /// Allows cross-cutting code (e.g. validation decorators) to create a failed result

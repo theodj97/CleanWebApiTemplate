@@ -1,5 +1,4 @@
 using System.Text;
-using CleanWebApiTemplate.Domain.Configuration;
 
 namespace CleanWebApiTemplate.Api.Configuration;
 

@@ -1,7 +1,7 @@
+using CleanWebApiTemplate.Application.Results;
+using CleanWebApiTemplate.Application.Todo.Abstractions;
 using CleanWebApiTemplate.Application.Todo.Update;
 using CleanWebApiTemplate.Domain.Models.Entities;
-using CleanWebApiTemplate.Domain.ResultModel;
-using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using NSubstitute;
 
 namespace CleanWebApiTemplate.Api.UnitTests.Application.Todo;

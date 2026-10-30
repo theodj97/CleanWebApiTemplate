@@ -1,7 +1,7 @@
 using CleanWebApiTemplate.Application.Dtos.Todo;
+using CleanWebApiTemplate.Application.Results;
+using CleanWebApiTemplate.Application.Todo.Abstractions;
 using CleanWebApiTemplate.Application.Validation;
-using CleanWebApiTemplate.Domain.ResultModel;
-using CleanWebApiTemplate.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Todo.GetTitles;
