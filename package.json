@@ -9,7 +9,8 @@
   },
   "scripts": {
     "format": "dotnet format whitespace CleanWebApiTemplate.slnx && dotnet format style CleanWebApiTemplate.slnx",
-    "format:check": "dotnet format whitespace CleanWebApiTemplate.slnx --verify-no-changes && dotnet format style CleanWebApiTemplate.slnx --verify-no-changes"
+    "format:check": "dotnet format whitespace CleanWebApiTemplate.slnx --verify-no-changes && dotnet format style CleanWebApiTemplate.slnx --verify-no-changes",
+    "coverage": "bash scripts/coverage.sh"
   },
   "repository": {
     "type": "git",

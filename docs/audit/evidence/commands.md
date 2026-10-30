@@ -94,6 +94,17 @@ reportgenerator -reports:coverage-merged.xml -targetdir:coverage-src \
 Resultado: 82,7% líneas / 79,7% ramas / 94,8% métodos en `src/`.
 Detalle en `coverage-summary.txt` y `coverage-summary.md`.
 
+## Cobertura tras Batch 5
+
+```bash
+npm run coverage
+# equivalente a: bash scripts/coverage.sh
+```
+
+Resultado: **98,0% líneas / 95,7% ramas** en `src/`; Api **98,8% / 95,9%**. Umbrales
+aplicados y cumplidos. Detalle en `coverage-summary-batch5.txt` y
+`coverage-summary-batch5.md`.
+
 ## Paquetes
 
 ```bash

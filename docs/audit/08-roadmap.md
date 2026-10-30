@@ -98,7 +98,11 @@ de Domain, ASP.NET fuera de Domain y `Result<T>` sin HTTP. Detalle en
 **Criterio de aceptación:** el grafo de dependencias cumple la regla; los architecture tests
 pasan; no hay reflexión/`dynamic` en `src/`; build/AOT siguen limpios.
 
-### Batch 5 — Cobertura de los caminos críticos
+### Batch 5 — Cobertura de los caminos críticos — ✅ implementado
+
+**Estado:** 313 tests verdes; cobertura de `src/` 98,0% líneas / 95,7% ramas y Api 98,8% /
+95,9%; `scripts/coverage.sh` aplica umbrales estrictos. Detalle en
+[`14-batch-5.md`](14-batch-5.md).
 
 - TEST-001/005: tests de los bugs corregidos y de la matriz de auth.
 - TEST-002: test del documento OpenAPI.

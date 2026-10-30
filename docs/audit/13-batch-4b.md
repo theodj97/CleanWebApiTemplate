@@ -115,6 +115,7 @@ documentado en `06-tooling.md`.
 
 ## Pendiente
 
-- **Batch 5**: cobertura de caminos críticos, script de cobertura y umbral.
+- **Batch 5**: completado en [`14-batch-5.md`](14-batch-5.md) (cobertura, routing,
+  validación y umbrales).
 - **Batch 6**: hooks y guardarraíles de pre-push/commit-msg.
 - **Batch 7**: template y readmes.

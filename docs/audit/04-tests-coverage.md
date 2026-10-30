@@ -10,6 +10,12 @@
 | `OpenApiExamples.UnitTests` | 33 | ✅ |
 | **Total** | **211** | **✅ 0 fallos** |
 
+> **Estado Batch 5:** 313 tests verdes (145 unitarios, 115 de componente, 11 funcionales,
+> 9 de arquitectura y 33 de OpenAPI examples). Cobertura de `src/`: **98,0% líneas /
+> 95,7% ramas**; Api **98,8% / 95,9%**. Detalle en
+> [`14-batch-5.md`](14-batch-5.md) y evidencia en
+> [`evidence/coverage-summary-batch5.txt`](evidence/coverage-summary-batch5.txt).
+
 La infraestructura de tests es uno de los puntos fuertes del repositorio: Aspire levanta
 contenedores reales, los tests de componente usan `WebApplicationFactory<Program>`, los
 funcionales arrancan la API como proceso separado, se bloquean llamadas HTTP salientes y los
@@ -31,8 +37,15 @@ Generada con `dotnet-coverage` global, fusionando unit + component + functional 
 
 > **Tras Batches 1, 2 y 3:** `src/` 83,8% líneas / 81,2% ramas; Api 72,0% / 65,3%.
 > Evidencia: `evidence/coverage-summary-batch3.txt`.
+>
+> **Tras Batch 5:** `src/` 98,0% líneas / 95,7% ramas; Api 98,8% / 95,9%. Evidencia:
+> `evidence/coverage-summary-batch5.txt`.
 
 ### Clases con peor cobertura
+
+> Tabla del baseline. Tras Batch 5, `OpenApiConfiguration`, `OpenApiSchemaHelpers`,
+> `CommonOpenApiSchemas` y `TodoOpenApiSchemas` están al 100% de líneas, y `TodoRoutes` al
+> 100% de líneas / 81,2% de ramas.
 
 | Clase | Líneas | Ramas | Comentario |
 |---|---:|---:|---|
@@ -102,36 +115,30 @@ Generada con `dotnet-coverage` global, fusionando unit + component + functional 
 # Tests
 dotnet test --solution CleanWebApiTemplate.slnx
 
-# Cobertura de un proyecto
-dotnet-coverage collect -f cobertura -o coverage-unit.xml \
-  dotnet test --project tests/CleanWebApiTemplate.Api.UnitTests/CleanWebApiTemplate.Api.UnitTests.csproj --no-build
-
-# Fusión
-dotnet-coverage merge -f cobertura -o coverage-merged.xml \
-  coverage-unit.xml coverage-component.xml coverage-functional.xml
-
-# Informe solo src
-reportgenerator \
-  -reports:coverage-merged.xml \
-  -targetdir:coverage-src \
-  -reporttypes:'TextSummary;MarkdownSummaryGithub;Cobertura' \
-  -assemblyfilters:'+CleanWebApiTemplate.Api;+CleanWebApiTemplate.Application;+CleanWebApiTemplate.Domain;+CleanWebApiTemplate.Infrastructure;+CleanWebApiTemplate.ServiceDefaults' \
-  -filefilters:'-**/obj/**;-**/bin/**'
+# Cobertura completa (unit + component + functional) y umbrales
+npm run coverage
+# o directamente:
+bash scripts/coverage.sh
 ```
 
-## Umbrales propuestos
+El script deja los XML y el informe en `coverage-report/coverage/` y falla si no se cumple
+alguno de los umbrales de la sección siguiente. Requiere Docker para los tests de componente
+y funcionales.
+
+## Umbrales aplicados
 
 | Ámbito | Línea | Rama | Método |
 |---|---:|---:|---:|
-| `src/` total | ≥ 90% | ≥ 80% | ≥ 95% |
-| `Domain` | 100% | 100% | 100% |
-| `Application` | ≥ 95% | ≥ 90% | ≥ 95% |
-| `Infrastructure` | ≥ 90% | ≥ 85% | ≥ 90% |
-| `Api` | ≥ 85% | ≥ 75% | ≥ 90% |
-| `OpenApiConfiguration` | ≥ 80% | ≥ 70% | — |
+| `src/` total | ≥ 90% | ≥ 80% | — |
+| `Domain` | 100% | 100% | — |
+| `Application` | ≥ 95% | ≥ 90% | — |
+| `Infrastructure` | ≥ 90% | ≥ 85% | — |
+| `Api` | ≥ 85% | ≥ 75% | — |
+| `ServiceDefaults` | ≥ 95% | 100% | — |
 
-Los umbrales deben aplicarse sobre `src/` y excluir tests, `local/`, `obj/`, `bin/` y código
-generado. No obsesionarse con el 100%: la mutación es la métrica de calidad.
+`scripts/coverage.sh` aplica estos umbrales sobre el informe filtrado de `src/`; los tests,
+`local/`, `obj/`, `bin/` y el código generado quedan fuera. No se exige cobertura de métodos:
+ReportGenerator la reserva a la versión de pago.
 
 ## Mutation testing propuesto
 
@@ -147,19 +154,20 @@ No ejecutarlo en pre-commit; sí en una tarea manual o en CI.
 
 ## Tests de contrato OpenAPI
 
-Añadir un test de componente que:
-1. Arranque la app.
-2. Haga `GET /openapi/v1.json`.
-3. Verifique que `TodoResponse` tiene las propiedades que el runtime devuelve.
-4. Verifique que `CreateTodoRequest.required` incluye `title`.
-5. Verifique que las descripciones de `title`/`filter` coinciden con el comportamiento.
-6. Verifique que los códigos 200/201/204/400/404/409 documentados existen.
+Implementado en `tests/CleanWebApiTemplate.Api.ComponentTests/OpenApiContractTests.cs`:
+
+1. arranca la app;
+2. hace `GET /openapi/v1.json`;
+3. verifica las propiedades de `TodoResponse` y el `$ref` de `Ulid`;
+4. verifica que `CreateTodoRequest.required` incluye `title`;
+5. verifica las descripciones de `title`/`filter` y los límites de longitud;
+6. verifica los códigos 200/201/204/400/401/403/404/409/500 por operación.
 
 Esto habría detectado BUG-005, BUG-006, BUG-007 y BUG-008.
 
 ## Flakiness
 
-No se observó flakiness en la ejecución conjunta (211 tests, 16,5 s). Riesgos latentes:
+No se observó flakiness en la ejecución conjunta (313 tests tras Batch 5, 17,8 s). Riesgos latentes:
 
 - `ComponentTestFixture` modifica `ASPNETCORE_ENVIRONMENT` y varias variables de entorno del
   proceso durante el arranque; si component y functional arrancan a la vez, el proceso

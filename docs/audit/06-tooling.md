@@ -9,8 +9,8 @@
 | `dotnet format` | Integrado | `whitespace` y `style` pasan; `analyzers` falla por IL2026/IL3050. |
 | Node / npm | 24.22 / 11.19 | `package.json` sin dependencias reales. |
 | Docker | 29.1.3 | Component/functional tests funcionan. |
-| ReportGenerator | 5.5.11 global | Instalado, no cableado al repo. |
-| dotnet-coverage | 18.12.0 global | Instalado, no cableado al repo. |
+| ReportGenerator | 5.5.11 local | Fijado en `.config/dotnet-tools.json` y usado por `scripts/coverage.sh`. |
+| dotnet-coverage | 18.12.0 local | Fijado en `.config/dotnet-tools.json` y usado por `scripts/coverage.sh`. |
 | gitleaks / semgrep / trivy / ZAP / Stryker | No instalados | Se proponen comandos; no se ejecutaron. |
 
 ## Husky: lo que hay
@@ -161,20 +161,13 @@ Para `commit-msg`, Husky.Net puede ejecutar un script propio; no hace falta comm
 
 ## Cobertura
 
-- `Microsoft.Testing.Extensions.CodeCoverage` está declarado pero no referenciado.
-- `dotnet-coverage` y ReportGenerator están instalados globalmente, no en el manifiesto local.
-- No hay script ni umbral.
-
-Recomendación:
-
-```json
-// package.json o scripts/
-"test:coverage": "dotnet-coverage collect -f cobertura -o coverage/merged.xml \"dotnet test --solution CleanWebApiTemplate.slnx\" && reportgenerator -reports:coverage/merged.xml -targetdir:coverage-report -reporttypes:Html;TextSummary"
-```
-
-Mejor aún: añadir `dotnet-reportgenerator-globaltool` y `dotnet-coverage` al
-`.config/dotnet-tools.json` para que `dotnet tool restore` los instale. Aplicar umbral en un
-script que lea `Summary.txt` y falle si `src/` baja de 90/80.
+- `dotnet-coverage` 18.12.0 y ReportGenerator 5.5.11 están fijados en
+  `.config/dotnet-tools.json`.
+- `scripts/coverage.sh` recoge unit + component + functional, fusiona, genera el informe
+  filtrado a `src/` y aplica umbrales.
+- `npm run coverage` es el punto de entrada documentado.
+- `Microsoft.Testing.Extensions.CodeCoverage` sigue declarado sin referencia; no se usa
+  porque la fusión con `dotnet-coverage` ya es reproducible.
 
 ## Seguridad
 

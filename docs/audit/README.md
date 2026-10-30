@@ -5,10 +5,11 @@ Rama auditada: `features/code-audit`
 Commit: `fbca5cae986bd08950292910fd6d15ea2c434930`
 
 Esta carpeta contiene la auditoría completa por fases. La auditoría original **no modificó
-código, configuración ni manifiestos**. Después se implementaron los **Batches 1, 2, 3, 4a y
-4b** de remediación (ver [`09-batch-1.md`](09-batch-1.md), [`10-batch-2.md`](10-batch-2.md),
-[`11-batch-3.md`](11-batch-3.md), [`12-batch-4-structure.md`](12-batch-4-structure.md) y
-[`13-batch-4b.md`](13-batch-4b.md)); el resto de batches siguen pendientes.
+código, configuración ni manifiestos**. Después se implementaron los **Batches 1, 2, 3, 4a, 4b
+y 5** de remediación (ver [`09-batch-1.md`](09-batch-1.md), [`10-batch-2.md`](10-batch-2.md),
+[`11-batch-3.md`](11-batch-3.md), [`12-batch-4-structure.md`](12-batch-4-structure.md),
+[`13-batch-4b.md`](13-batch-4b.md) y [`14-batch-5.md`](14-batch-5.md)); el resto de batches
+siguen pendientes.
 
 ## Índice
 
@@ -28,6 +29,7 @@ código, configuración ni manifiestos**. Después se implementaron los **Batche
 | [`11-batch-3.md`](11-batch-3.md) | Remediación del Batch 3: unicidad por owner, índice único, contains, trim y fechas. |
 | [`12-batch-4-structure.md`](12-batch-4-structure.md) | Batch 4a: estructura repository-centric, Domain limpio y Result sin HTTP. |
 | [`13-batch-4b.md`](13-batch-4b.md) | Batch 4b: architecture tests, banned APIs, configuración, ICurrentUser y OpenAPI. |
+| [`14-batch-5.md`](14-batch-5.md) | Batch 5: cobertura de caminos críticos, routing, validación y umbrales. |
 | [`findings.csv`](findings.csv) | Registro completo de hallazgos, filtrable. |
 
 ## Resumen ejecutivo
@@ -36,16 +38,17 @@ código, configuración ni manifiestos**. Después se implementaron los **Batche
   IDOR/BOLA ni inyección SQL en las rutas revisadas). La parametrización SQL y el filtro de
   ordenación son correctos.
 - **La calidad del baseline es buena**: build 0 warnings, AOT publish correcto, 211 tests
-  verdes en la auditoría (264 tras Batches 1, 2, 3, 4a y 4b), sin paquetes vulnerables ni
-  deprecados y sin claves privadas en el historial.
-- **Los mayores riesgos están en los bordes**: errores de entrada que devuelven 500, validación
-  de `Status = 0`, contrato de unicidad de títulos, claims ausentes que provocan 500, falta de
-  rate limiting/security headers/forwarded headers y ausencia de tests de esos caminos.
-- **La cobertura real de `src/` es 82,7% de líneas y 79,7% de ramas** en la auditoría
-  (83,8%/81,2% tras Batches 1–3; pendiente de regenerar tras 4a/4b), no el 89,9%/72,5% del
-  informe antiguo: ese informe incluía `Tests.Shared` y `AppHost`. La zona más débil es `Api`
-  (72,0% líneas / 65,3% ramas), sobre todo `OpenApiConfiguration` (1,7%/2,8%) y `TodoRoutes`
-  (91,3% líneas / 14,2% ramas).
+  verdes en la auditoría (313 tras Batches 1–5), sin paquetes vulnerables ni deprecados y sin
+  claves privadas en el historial.
+- **Los mayores riesgos estaban en los bordes**: errores de entrada que devolvían 500,
+  validación de `Status = 0`, contrato de unicidad de títulos, claims ausentes que provocaban
+  500, falta de rate limiting/security headers/forwarded headers y ausencia de tests de esos
+  caminos. Batch 5 cubrió validación, routing y autorización; los controles de borde de
+  seguridad quedan para Batch 8.
+- **La cobertura real de `src/` es 98,0% de líneas y 95,7% de ramas tras Batch 5** (82,7%/
+  79,7% en la auditoría inicial; 83,8%/81,2% tras Batches 1–3), no el 89,9%/72,5% del informe
+  antiguo: ese informe incluía `Tests.Shared` y `AppHost`. Api queda en 98,8% líneas / 95,9%
+  ramas, frente al 72,0%/65,3% del baseline.
 - **La arquitectura ya respeta la regla de dependencias**: `Application` no referencia
   `Infrastructure`, `Domain` no arrastra ASP.NET Core y `Result<T>` vive en Application sin
   semántica HTTP (Batch 4a). Batch 4b añadió los architecture tests, `BannedApiAnalyzers`,
@@ -70,12 +73,13 @@ código, configuración ni manifiestos**. Después se implementaron los **Batche
 La severidad es relativa a “template listo para producción”: un P1 de tooling/template puede
 no ser un riesgo de runtime, pero sí un bloqueante para publicar el template.
 
-**Estado tras Batches 1, 2, 3, 4a y 4b:** corregidos SEC-002, SEC-012, BUG-001, BUG-002,
+**Estado tras Batches 1, 2, 3, 4a, 4b y 5:** corregidos SEC-002, SEC-012, BUG-001, BUG-002,
 BUG-006, BUG-007, BUG-012 (Batch 1); SEC-001, SEC-003, SEC-007, SEC-008 (Batch 2); BUG-003,
 BUG-004, BUG-005, BUG-009, BUG-010, BUG-011, BUG-014 (Batch 3; BUG-015 queda mitigado);
-ARCH-001, ARCH-002, ARCH-003, ARCH-004 y ARCH-010 (Batch 4a); y ARCH-005, ARCH-006, ARCH-007
-y ARCH-008 (Batch 4b). El registro se mantiene como foto de la auditoría; el detalle está en
-`09`–`13`.
+ARCH-001, ARCH-002, ARCH-003, ARCH-004 y ARCH-010 (Batch 4a); ARCH-005, ARCH-006, ARCH-007
+y ARCH-008 (Batch 4b); y TEST-001, TEST-002, TEST-003, TEST-004, TEST-005, TEST-006, TEST-008
+y TEST-012 (Batch 5). El registro se mantiene como foto de la auditoría; el detalle está en
+`09`–`14`.
 
 ## Alcance
 

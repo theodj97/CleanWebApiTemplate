@@ -27,6 +27,8 @@ public class OpenApiContractTests(ComponentTestFixture fixture) : ComponentTestB
         var bearer = securitySchemes.GetProperty("Bearer");
         Assert.Equal("http", bearer.GetProperty("type").GetString());
         Assert.Equal("bearer", bearer.GetProperty("scheme").GetString());
+        Assert.Contains(root.GetProperty("security").EnumerateArray(),
+                        requirement => requirement.TryGetProperty("Bearer", out _));
     }
 
     [Fact]
@@ -44,12 +46,36 @@ public class OpenApiContractTests(ComponentTestFixture fixture) : ComponentTestB
             .SelectMany(path => path.Value.EnumerateObject())
             .Where(operation => operation.Value.TryGetProperty("operationId", out _))
             .Select(operation => operation.Value.GetProperty("operationId").GetString())
+            .OfType<string>()
             .Order()
             .ToArray();
 
         Assert.Equal(
             ["CreateTodo", "DeleteTodo", "FilterTodos", "GetTodoById", "GetTodoTitles", "UpdateTodo"],
             operationIds);
+    }
+
+    [Fact]
+    public async Task Operations_DocumentTheStatusCodesTheApiReturns()
+    {
+        // Act
+        using var document = await GetDocumentAsync();
+
+        // Assert
+        var paths = document.RootElement.GetProperty("paths");
+
+        AssertResponses(paths.GetProperty("/api/Todo").GetProperty("post"),
+                        "201", "400", "401", "403", "409", "500");
+        AssertResponses(paths.GetProperty("/api/Todo/{id}").GetProperty("get"),
+                        "200", "204", "400", "401", "403", "500");
+        AssertResponses(paths.GetProperty("/api/Todo/{id}").GetProperty("put"),
+                        "200", "400", "401", "403", "404", "409", "500");
+        AssertResponses(paths.GetProperty("/api/Todo/{id}").GetProperty("delete"),
+                        "200", "400", "401", "403", "500");
+        AssertResponses(paths.GetProperty("/api/Todo/filter").GetProperty("post"),
+                        "200", "204", "400", "401", "403", "500");
+        AssertResponses(paths.GetProperty("/api/Todo/titles").GetProperty("post"),
+                        "200", "204", "400", "401", "403", "500");
     }
 
     [Fact]
@@ -66,10 +92,19 @@ public class OpenApiContractTests(ComponentTestFixture fixture) : ComponentTestB
         Assert.Equal("ulid", ulid.GetProperty("format").GetString());
         Assert.Equal("^[0-9A-HJKMNP-TV-Z]{26}$", ulid.GetProperty("pattern").GetString());
 
-        var create = schemas.GetProperty("CreateTodoRequest").GetProperty("properties");
+        var createSchema = schemas.GetProperty("CreateTodoRequest");
+        Assert.Contains("title", createSchema.GetProperty("required").EnumerateArray()
+            .Select(property => property.GetString()));
+
+        var create = createSchema.GetProperty("properties");
         Assert.Equal(255, create.GetProperty("title").GetProperty("maxLength").GetInt32());
         Assert.Equal(1000, create.GetProperty("description").GetProperty("maxLength").GetInt32());
-        Assert.False(string.IsNullOrWhiteSpace(create.GetProperty("title").GetProperty("description").GetString()));
+        Assert.Equal("Short task description. Trimmed; unique per owner.",
+                     create.GetProperty("title").GetProperty("description").GetString());
+
+        var filter = schemas.GetProperty("FilteredTodoRequest").GetProperty("properties");
+        Assert.Contains("contains", filter.GetProperty("title").GetProperty("items")
+            .GetProperty("description").GetString());
 
         var todo = schemas.GetProperty("TodoResponse").GetProperty("properties");
         Assert.Equal("#/components/schemas/Ulid", todo.GetProperty("id").GetProperty("$ref").GetString());
@@ -89,5 +124,14 @@ public class OpenApiContractTests(ComponentTestFixture fixture) : ComponentTestB
         Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
 
         return JsonDocument.Parse(await response.Content.ReadAsStringAsync(CancellationToken));
+    }
+
+    private static void AssertResponses(JsonElement operation, params string[] expected)
+    {
+        var responses = operation.GetProperty("responses").EnumerateObject()
+            .Select(response => response.Name)
+            .ToArray();
+
+        Assert.All(expected, status => Assert.Contains(status, responses));
     }
 }
