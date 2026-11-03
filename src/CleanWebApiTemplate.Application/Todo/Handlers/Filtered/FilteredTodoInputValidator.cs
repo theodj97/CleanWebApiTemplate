@@ -1,0 +1,64 @@
+using CleanWebApiTemplate.Application.Dtos.Todo;
+using CleanWebApiTemplate.Application.Validation;
+using CleanWebApiTemplate.Domain.Models.Todo;
+using FluentValidation;
+
+namespace CleanWebApiTemplate.Application.Todo.Handlers.Filtered;
+
+public class FilteredTodoInputValidator : TodoValidator<FilteredTodoInput>
+{
+    public FilteredTodoInputValidator()
+    {
+        RuleForEach(x => x.Ids)
+            .Custom(ValidateUlid)
+            .When(x => x.Ids is not null && x.Ids.Any());
+
+        RuleForEach(x => x.Title)
+            .Must(title => title is not null
+                           && string.IsNullOrWhiteSpace(title) is false
+                           && title.Length <= TodoConstraints.TitleMaxLength)
+            .WithMessage($"Title must contain text and be at most {TodoConstraints.TitleMaxLength} characters")
+            .When(x => x.Title is not null && x.Title.Any());
+
+        RuleForEach(x => x.Status)
+            .Custom(ValidateStatus)
+            .When(x => x.Status is not null);
+
+        RuleForEach(x => x.CreatedBy)
+            .Custom(ValidateUserEmail)
+            .When(x => x.CreatedBy is not null);
+
+        RuleFor(x => x.StartDate)
+            .Custom(ValidateDateTime!)
+            .When(x => x.StartDate is not null);
+
+        RuleFor(x => x.EndDate)
+            .Custom(ValidateDateTime!)
+            .When(x => x.EndDate is not null);
+
+        RuleFor(x => new DateRange(x.StartDate, x.EndDate))
+            .Custom(ValidateStartDateAndEndDate);
+
+        RuleFor(x => x.PageNumber).Must(value => value is not null && value > 0)
+            .When(x => x.PageSize is not null || x.PageNumber is not null)
+            .WithMessage($"Property {nameof(FilteredTodoInput.PageNumber)} can't be null or 0 if property {nameof(FilteredTodoInput.PageSize)} is not null.");
+
+        RuleFor(x => x.PageSize).Must(value => value is not null && value > 0)
+            .When(x => x.PageNumber is not null || x.PageSize is not null)
+            .WithMessage($"Property {nameof(FilteredTodoInput.PageSize)} must be greater than 0 if property {nameof(FilteredTodoInput.PageNumber)} is not null.");
+
+        RuleFor(x => x.SortProperties).Custom((sortProperties, context) => ValidateSortBy(sortProperties,
+                                                                                           new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                                                                                           {
+                                                                                               nameof(TodoDto.Id),
+                                                                                               nameof(TodoDto.Title),
+                                                                                               nameof(TodoDto.Description),
+                                                                                               nameof(TodoDto.CreatedAt),
+                                                                                               nameof(TodoDto.UpdatedAt),
+                                                                                               nameof(TodoDto.Status),
+                                                                                               nameof(TodoDto.CreatedBy),
+                                                                                               nameof(TodoDto.UpdatedBy),
+                                                                                           },
+                                                                                           context)).When(x => x.SortProperties is not null);
+    }
+}

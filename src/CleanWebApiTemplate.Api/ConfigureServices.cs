@@ -3,14 +3,16 @@ using System.Text;
 using CleanWebApiTemplate.Api.Common;
 using CleanWebApiTemplate.Api.Configuration;
 using CleanWebApiTemplate.Api.Extensions;
-using CleanWebApiTemplate.Application.Abstractions;
-using CleanWebApiTemplate.Application.Todo.Abstractions;
-using CleanWebApiTemplate.Application.Todo.Create;
-using CleanWebApiTemplate.Application.Todo.Delete;
-using CleanWebApiTemplate.Application.Todo.Filtered;
-using CleanWebApiTemplate.Application.Todo.GetById;
-using CleanWebApiTemplate.Application.Todo.GetTitles;
-using CleanWebApiTemplate.Application.Todo.Update;
+using CleanWebApiTemplate.Application.Abstractions.Handlers;
+using CleanWebApiTemplate.Application.Abstractions.Identity;
+using CleanWebApiTemplate.Application.Abstractions.Repositories;
+using CleanWebApiTemplate.Application.Dtos.Todo;
+using CleanWebApiTemplate.Application.Todo.Handlers.Create;
+using CleanWebApiTemplate.Application.Todo.Handlers.Delete;
+using CleanWebApiTemplate.Application.Todo.Handlers.Filtered;
+using CleanWebApiTemplate.Application.Todo.Handlers.GetById;
+using CleanWebApiTemplate.Application.Todo.Handlers.GetTitles;
+using CleanWebApiTemplate.Application.Todo.Handlers.Update;
 using CleanWebApiTemplate.Infrastructure.Data;
 using CleanWebApiTemplate.Infrastructure.Repositories.Todo;
 using FluentValidation;
@@ -82,7 +84,7 @@ public static class ConfigureServices
     }
 
     /// <summary>
-    /// Validators and application services. Registered one by one on purpose: no assembly scanning,
+    /// Validators and application handlers. Registered one by one on purpose: no assembly scanning,
     /// so every type stays statically visible to the Native AOT analyzer.
     /// </summary>
     private static IServiceCollection ConfigureServicesAndValidators(this IServiceCollection services)
@@ -95,13 +97,13 @@ public static class ConfigureServices
         services.AddTransient<IValidator<GetTodoTitlesInput>, GetTodoTitlesInputValidator>();
         services.AddTransient<IValidator<FilteredTodoInput>, FilteredTodoInputValidator>();
 
-        // Services
-        services.AddTransient<ICreateTodoService, CreateTodoService>();
-        services.AddTransient<IUpdateTodoService, UpdateTodoService>();
-        services.AddTransient<IDeleteTodoService, DeleteTodoService>();
-        services.AddTransient<IGetTodoByIdService, GetTodoByIdService>();
-        services.AddTransient<IGetTodoTitlesService, GetTodoTitlesService>();
-        services.AddTransient<IFilteredTodoService, FilteredTodoService>();
+        // Handlers
+        services.AddTransient<IHandler<CreateTodoInput, TodoDto?>, CreateTodoHandler>();
+        services.AddTransient<IHandler<UpdateTodoInput, TodoDto?>, UpdateTodoHandler>();
+        services.AddTransient<IHandler<DeleteTodoInput, bool>, DeleteTodoHandler>();
+        services.AddTransient<IHandler<GetTodoByIdInput, TodoDto?>, GetTodoByIdHandler>();
+        services.AddTransient<IHandler<GetTodoTitlesInput, IEnumerable<TodoDto?>>, GetTodoTitlesHandler>();
+        services.AddTransient<IHandler<FilteredTodoInput, IEnumerable<TodoDto?>>, FilteredTodoHandler>();
 
         return services;
     }

@@ -1,19 +1,43 @@
+using CleanWebApiTemplate.Application.Abstractions.Handlers;
+using CleanWebApiTemplate.Application.Abstractions.Identity;
+using CleanWebApiTemplate.Application.Abstractions.Repositories;
 using CleanWebApiTemplate.Application.Results;
-using CleanWebApiTemplate.Application.Todo.Abstractions;
-using CleanWebApiTemplate.Application.Todo.Queries;
+using CleanWebApiTemplate.Application.Todo.Handlers.Queries;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Infrastructure.Repositories.Todo;
 
 namespace CleanWebApiTemplate.ArchitectureTests;
 
-/// <summary>Location and naming conventions that keep the repository pattern honest.</summary>
+/// <summary>Location and naming conventions that keep the application boundaries honest.</summary>
 public class StructureTests
 {
     [Fact]
-    public void RepositoryPortAndQueryContract_ShouldLiveInApplication()
+    public void ApplicationPortsAndQueryContract_ShouldLiveUnderExpectedNamespaces()
     {
-        Assert.Equal("CleanWebApiTemplate.Application.Todo.Abstractions", typeof(ITodoRepository).Namespace);
-        Assert.Equal("CleanWebApiTemplate.Application.Todo.Queries", typeof(TodoFilter).Namespace);
+        Assert.Equal("CleanWebApiTemplate.Application.Abstractions.Repositories", typeof(ITodoRepository).Namespace);
+        Assert.Equal("CleanWebApiTemplate.Application.Abstractions.Identity", typeof(ICurrentUser).Namespace);
+        Assert.Equal("CleanWebApiTemplate.Application.Abstractions.Handlers", typeof(IHandler<,>).Namespace);
+        Assert.Equal("CleanWebApiTemplate.Application.Todo.Handlers.Queries", typeof(TodoFilter).Namespace);
+    }
+
+    [Fact]
+    public void ApplicationHandlers_ShouldBeSealedAndLiveUnderTheirFeature()
+    {
+        var handlerTypes = typeof(IHandler<,>).Assembly.GetTypes()
+            .Where(type => type is { IsClass: true, IsAbstract: false })
+            .Where(type => type.GetInterfaces()
+                               .Any(@interface => @interface.IsGenericType
+                                                  && @interface.GetGenericTypeDefinition() == typeof(IHandler<,>)))
+            .ToArray();
+
+        Assert.NotEmpty(handlerTypes);
+        Assert.All(handlerTypes, type =>
+        {
+            Assert.True(type.IsSealed, $"{type.FullName} must be sealed.");
+            Assert.StartsWith("CleanWebApiTemplate.Application.Todo.Handlers.",
+                              type.Namespace!,
+                              StringComparison.Ordinal);
+        });
     }
 
     [Fact]

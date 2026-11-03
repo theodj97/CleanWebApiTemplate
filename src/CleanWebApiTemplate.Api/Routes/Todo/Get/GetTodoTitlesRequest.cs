@@ -1,4 +1,4 @@
-using CleanWebApiTemplate.Application.Todo.GetTitles;
+using CleanWebApiTemplate.Application.Todo.Handlers.GetTitles;
 
 namespace CleanWebApiTemplate.Api.Routes.Todo.Get;
 

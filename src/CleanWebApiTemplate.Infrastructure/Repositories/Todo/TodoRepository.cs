@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.Text;
+using CleanWebApiTemplate.Application.Abstractions.Repositories;
 using CleanWebApiTemplate.Application.Results;
-using CleanWebApiTemplate.Application.Todo.Abstractions;
-using CleanWebApiTemplate.Application.Todo.Queries;
+using CleanWebApiTemplate.Application.Todo.Handlers.Queries;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Infrastructure.Data;
 using CleanWebApiTemplate.Infrastructure.Repositories.Todo.Helpers;

@@ -4,7 +4,7 @@ using FluentValidation;
 namespace CleanWebApiTemplate.Application.Validation;
 
 /// <summary>
-/// Base class for application services that must validate their input before running.
+/// Base class for application handlers that must validate their input before running.
 /// Reproduces the behaviour of the former validation decorators without commands or queries.
 /// </summary>
 public abstract class ValidationService

@@ -1,4 +1,4 @@
-using CleanWebApiTemplate.Application.Todo;
+using CleanWebApiTemplate.Application.Todo.Handlers;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using CleanWebApiTemplate.Domain.Models.Todo;
 using FluentValidation;

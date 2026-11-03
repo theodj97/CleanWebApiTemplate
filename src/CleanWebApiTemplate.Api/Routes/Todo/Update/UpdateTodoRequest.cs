@@ -1,4 +1,4 @@
-using CleanWebApiTemplate.Application.Todo.Update;
+using CleanWebApiTemplate.Application.Todo.Handlers.Update;
 
 namespace CleanWebApiTemplate.Api.Routes.Todo.Update;
 
