@@ -13,7 +13,7 @@ dotnet new install CleanWebApiTemplate
 Pin a version:
 
 ```bash
-dotnet new install CleanWebApiTemplate::1.0.0
+dotnet new install CleanWebApiTemplate::1.1.0
 ```
 
 Generate a project:
