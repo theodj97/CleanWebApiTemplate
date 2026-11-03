@@ -1,4 +1,6 @@
+using CleanWebApiTemplate.Application.Abstractions.Identity;
 using CleanWebApiTemplate.Application.Todo.Handlers.GetTitles;
+using CleanWebApiTemplate.Application.Todo.Sorting;
 
 namespace CleanWebApiTemplate.Api.Routes.Todo.Get;
 
@@ -12,16 +14,16 @@ public sealed class GetTodoTitlesRequest
     public byte? PageSize { get; set; }
 
     /// <summary>
-    /// Sort keys and directions, applied in order. Supported keys: id, title, description,
-    /// createdAt, updatedAt, status, createdBy, updatedBy.
+    /// Sort keys and directions, applied in order. See <see cref="TodoSortCatalog"/> for the
+    /// accepted keys.
     /// </summary>
     public IEnumerable<KeyValuePair<string, bool>>? SortProperties { get; set; }
 
-    public GetTodoTitlesInput ToInput(string? ownerScope) => new()
+    public GetTodoTitlesInput ToInput(OwnerScope owner) => new()
     {
         PageNumber = PageNumber,
         PageSize = PageSize,
         SortProperties = SortProperties,
-        CreatedBy = ownerScope
+        CreatedBy = owner.VisibleOwner
     };
 }

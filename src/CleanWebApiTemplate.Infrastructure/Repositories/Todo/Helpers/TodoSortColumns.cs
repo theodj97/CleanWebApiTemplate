@@ -9,7 +9,7 @@ namespace CleanWebApiTemplate.Infrastructure.Repositories.Todo.Helpers;
 /// impossible. Keep it in sync with the valid sort properties declared in the
 /// application-layer query validators.
 /// </summary>
-internal static class TodoSortColumns
+public static class TodoSortColumns
 {
     public static readonly IReadOnlyDictionary<string, string> Map =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

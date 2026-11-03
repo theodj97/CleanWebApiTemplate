@@ -4,12 +4,11 @@ using CleanWebApiTemplate.Application.Dtos.Todo;
 using CleanWebApiTemplate.Application.Results;
 using CleanWebApiTemplate.Application.Validation;
 using CleanWebApiTemplate.Domain.Models.Enums.Todo;
-using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Todo.Handlers.Create;
 
 public sealed class CreateTodoHandler(ITodoRepository todoRepository,
-                                      IEnumerable<IValidator<CreateTodoInput>> validators)
+                                      ValidatorSet<CreateTodoInput> validators)
     : ValidationService, IHandler<CreateTodoInput, TodoDto?>
 {
     public Task<Result<TodoDto?>> HandleAsync(CreateTodoInput input, CancellationToken cancellationToken) =>

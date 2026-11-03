@@ -1,6 +1,7 @@
 using CleanWebApiTemplate.Application.Abstractions.Repositories;
 using CleanWebApiTemplate.Application.Results;
 using CleanWebApiTemplate.Application.Todo.Handlers.Create;
+using CleanWebApiTemplate.Application.Validation;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using NSubstitute;
 
@@ -21,7 +22,9 @@ public class CreateTodoHandlerTests
     {
         _repository.TitleExistsAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Ulid?>(), Arg.Any<CancellationToken>())
                    .Returns(false);
-        _handler = new CreateTodoHandler(_repository, []);
+        _handler = new CreateTodoHandler(
+            _repository,
+            new ValidatorSet<CreateTodoInput>([new CreateTodoInputValidator()]));
     }
 
     [Fact]

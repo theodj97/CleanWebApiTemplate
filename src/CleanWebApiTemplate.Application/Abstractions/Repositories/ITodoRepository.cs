@@ -1,5 +1,6 @@
 using CleanWebApiTemplate.Application.Results;
 using CleanWebApiTemplate.Application.Todo.Handlers.Queries;
+using CleanWebApiTemplate.Application.Todo.Projections;
 using CleanWebApiTemplate.Domain.Models.Entities;
 
 namespace CleanWebApiTemplate.Application.Abstractions.Repositories;
@@ -16,8 +17,7 @@ public interface ITodoRepository
     /// Reads only the Id/Title columns (projection query for the titles endpoint).
     /// When <paramref name="createdBy"/> is not null the query is restricted to that owner.
     /// </summary>
-    /// <returns>Partial entities: only Id and Title are populated.</returns>
-    public Task<IReadOnlyList<TodoEntity>> GetTitlesAsync(int? pageNumber,
+    public Task<IReadOnlyList<TodoTitle>> GetTitlesAsync(int? pageNumber,
                                                 int? pageSize,
                                                 IEnumerable<KeyValuePair<string, bool>>? sortProperties,
                                                 string? createdBy = null,

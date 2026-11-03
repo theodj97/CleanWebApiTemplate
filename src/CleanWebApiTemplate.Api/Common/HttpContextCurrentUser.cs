@@ -13,5 +13,5 @@ public sealed class HttpContextCurrentUser(IHttpContextAccessor contextAccessor)
 
     public bool IsAdmin => contextAccessor.HttpContext?.User.IsInRole(Constants.ADMIN_POLICY) ?? false;
 
-    public string? OwnerScope => IsAdmin ? null : Email;
+    public OwnerScope Owner => new(Email, IsAdmin);
 }

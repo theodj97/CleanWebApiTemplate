@@ -1,4 +1,6 @@
 using System.Text.Json.Nodes;
+using CleanWebApiTemplate.Application.Todo.Sorting;
+using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using Microsoft.OpenApi;
 
 namespace CleanWebApiTemplate.Api.Configuration;
@@ -31,8 +33,7 @@ internal static class OpenApiSchemaHelpers
             return;
 
         schema.Description =
-            "Sort keys and directions, applied in order. Supported keys: id, title, description, "
-            + "createdAt, updatedAt, status, createdBy, updatedBy.";
+            $"Sort keys and directions, applied in order. Supported keys: {TodoSortCatalog.Describe()}.";
         schema.Example = JsonNode.Parse("""[{"key":"createdAt","value":false}]""");
     }
 
@@ -43,19 +44,15 @@ internal static class OpenApiSchemaHelpers
         if (schema is null)
             return;
 
-        schema.Description = description ?? "Status: 1 Pending, 2 InProgress, 3 Completed, 4 Cancelled.";
-        schema.Example = JsonValue.Create(1);
+        string values = string.Join(", ", Enum.GetValues<ETodoStatus>()
+                                                    .Select(status => $"{(int)status} {status}"));
+        schema.Description = description is null ? $"Status: {values}." : $"{description} Values: {values}.";
+        schema.Example = JsonValue.Create((int)ETodoStatus.Pending);
 
         if (!withAllowedValues)
             return;
 
-        schema.Enum =
-        [
-            JsonValue.Create(1),
-            JsonValue.Create(2),
-            JsonValue.Create(3),
-            JsonValue.Create(4),
-        ];
+        schema.Enum = [.. Enum.GetValues<ETodoStatus>().Select(status => JsonValue.Create((int)status))];
     }
 
     public static void Describe(OpenApiSchema? schema,

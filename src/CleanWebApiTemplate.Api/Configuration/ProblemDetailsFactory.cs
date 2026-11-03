@@ -9,12 +9,15 @@ namespace CleanWebApiTemplate.Api.Configuration;
 /// </summary>
 internal static class ProblemDetailsFactory
 {
-    public static ProblemDetails Create(HttpContext context, int statusCode, string? detail = null)
+    public static ProblemDetails Create(HttpContext context,
+                                        int statusCode,
+                                        string? detail = null,
+                                        string? title = null)
     {
         ProblemDetails problemDetails = new()
         {
             Status = statusCode,
-            Title = ReasonPhrases.GetReasonPhrase(statusCode),
+            Title = title ?? ReasonPhrases.GetReasonPhrase(statusCode),
             Type = $"https://httpstatuses.io/{statusCode}",
             Detail = detail,
         };

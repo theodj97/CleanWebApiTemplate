@@ -3,6 +3,7 @@ using System.Text;
 using CleanWebApiTemplate.Application.Abstractions.Repositories;
 using CleanWebApiTemplate.Application.Results;
 using CleanWebApiTemplate.Application.Todo.Handlers.Queries;
+using CleanWebApiTemplate.Application.Todo.Projections;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using CleanWebApiTemplate.Infrastructure.Data;
 using CleanWebApiTemplate.Infrastructure.Repositories.Todo.Helpers;
@@ -69,7 +70,7 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
         return await reader.ReadAsync(cancellationToken) ? MapTodo(reader) : null;
     }
 
-    public async Task<IReadOnlyList<TodoEntity>> GetTitlesAsync(int? pageNumber,
+    public async Task<IReadOnlyList<TodoTitle>> GetTitlesAsync(int? pageNumber,
                                                              int? pageSize,
                                                              IEnumerable<KeyValuePair<string, bool>>? sortProperties,
                                                              string? createdBy = null,
@@ -90,14 +91,12 @@ public sealed class TodoRepository(INpgsqlConnectionFactory connectionFactory) :
 
         using var reader = await command.ExecuteReaderAsync(cancellationToken);
 
-        List<TodoEntity> titles = [];
+        List<TodoTitle> titles = [];
         while (await reader.ReadAsync(cancellationToken))
         {
-            titles.Add(new TodoEntity
-            {
-                Id = reader.IsDBNull(0) ? Ulid.Empty : new Ulid(reader.GetFieldValue<byte[]>(0)),
-                Title = reader.IsDBNull(1) ? string.Empty : reader.GetString(1)
-            });
+            Ulid id = reader.IsDBNull(0) ? Ulid.Empty : new Ulid(reader.GetFieldValue<byte[]>(0));
+            string title = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
+            titles.Add(new TodoTitle(id, title));
         }
 
         return titles;

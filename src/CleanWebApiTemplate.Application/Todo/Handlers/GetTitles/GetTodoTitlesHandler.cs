@@ -1,17 +1,16 @@
 using CleanWebApiTemplate.Application.Abstractions.Handlers;
 using CleanWebApiTemplate.Application.Abstractions.Repositories;
-using CleanWebApiTemplate.Application.Dtos.Todo;
 using CleanWebApiTemplate.Application.Results;
+using CleanWebApiTemplate.Application.Todo.Projections;
 using CleanWebApiTemplate.Application.Validation;
-using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Todo.Handlers.GetTitles;
 
 public sealed class GetTodoTitlesHandler(ITodoRepository todoRepository,
-                                         IEnumerable<IValidator<GetTodoTitlesInput>> validators)
-    : ValidationService, IHandler<GetTodoTitlesInput, IEnumerable<TodoDto?>>
+                                         ValidatorSet<GetTodoTitlesInput> validators)
+    : ValidationService, IHandler<GetTodoTitlesInput, IEnumerable<TodoTitle>>
 {
-    public Task<Result<IEnumerable<TodoDto?>>> HandleAsync(GetTodoTitlesInput input, CancellationToken cancellationToken) =>
+    public Task<Result<IEnumerable<TodoTitle>>> HandleAsync(GetTodoTitlesInput input, CancellationToken cancellationToken) =>
         ExecuteAsync(input, validators, async () =>
         {
             var projectedTodos = await todoRepository.GetTitlesAsync(input.PageNumber,
@@ -20,6 +19,6 @@ public sealed class GetTodoTitlesHandler(ITodoRepository todoRepository,
                                                                      input.CreatedBy,
                                                                      cancellationToken);
 
-            return Result<IEnumerable<TodoDto?>>.Success(projectedTodos.Select(todo => todo.ToTitleDto()));
+            return Result<IEnumerable<TodoTitle>>.Success(projectedTodos);
         }, cancellationToken);
 }

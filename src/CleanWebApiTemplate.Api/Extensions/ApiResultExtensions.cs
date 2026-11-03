@@ -1,41 +1,43 @@
 using System.Collections;
+using CleanWebApiTemplate.Api.Configuration;
 using CleanWebApiTemplate.Api.Models.Responses;
 using CleanWebApiTemplate.Application.Results;
-using Microsoft.AspNetCore.WebUtilities;
 
 namespace CleanWebApiTemplate.Api.Extensions;
 
 public static class ApiResultExtensions
 {
     /// <summary>Maps a successful result to 200, or to 204 when it has no value.</summary>
-    public static IResult ToResponse<TDto, TResponse>(this Result<TDto> result)
+    public static IResult ToResponse<TDto, TResponse>(this Result<TDto> result, HttpContext context)
         where TResponse : class, IBaseResponse<TDto, TResponse>
         where TDto : class?
     {
-        return result.ToResponseCore(res => Results.Ok(TResponse.ToResponseModel(res.Value)));
+        return result.ToResponseCore(context, res => Results.Ok(TResponse.ToResponseModel(res.Value)));
     }
 
     /// <summary>Maps a successful collection to 200, or to 204 when it is empty.</summary>
-    public static IResult ToResponse<TDto, TResponse>(this Result<IEnumerable<TDto>> result)
+    public static IResult ToResponse<TDto, TResponse>(this Result<IEnumerable<TDto>> result, HttpContext context)
         where TResponse : IBaseResponse<TDto, TResponse>
     {
-        return result.ToResponseCore(res => Results.Ok((res.Value ?? []).Select(TResponse.ToResponseModel)));
+        return result.ToResponseCore(context,
+                                     res => Results.Ok((res.Value ?? []).Select(TResponse.ToResponseModel)));
     }
 
     /// <summary>Maps a successful scalar to 200, or to 204 when it is null.</summary>
-    public static IResult ToResponse<T>(this Result<T> result)
+    public static IResult ToResponse<T>(this Result<T> result, HttpContext context)
     {
-        return result.ToResponseCore(res => Results.Ok(res.Value));
+        return result.ToResponseCore(context, res => Results.Ok(res.Value));
     }
 
     /// <summary>Maps a successful result to 201 with a Location header. Failures keep their error mapping.</summary>
     public static IResult ToCreatedResponse<TDto, TResponse>(this Result<TDto> result,
+                                                             HttpContext context,
                                                              Func<TDto, string> locationFactory)
         where TResponse : class, IBaseResponse<TDto, TResponse>
         where TDto : class?
     {
         if (result.IsFailure)
-            return ResolveError(result.Error!);
+            return ResolveError(result.Error!, context);
 
         if (result.Value is null)
             throw new InvalidOperationException("A created result requires a value.");
@@ -44,10 +46,12 @@ public static class ApiResultExtensions
                                TResponse.ToResponseModel(result.Value));
     }
 
-    private static IResult ToResponseCore<T>(this Result<T> result, Func<Result<T>, IResult> successAction)
+    private static IResult ToResponseCore<T>(this Result<T> result,
+                                             HttpContext context,
+                                             Func<Result<T>, IResult> successAction)
     {
         if (result.IsFailure)
-            return ResolveError(result.Error!);
+            return ResolveError(result.Error!, context);
 
         if (IsNoContent(result.Value))
             return Results.NoContent();
@@ -86,20 +90,18 @@ public static class ApiResultExtensions
             : new Uri(location, UriKind.RelativeOrAbsolute);
     }
 
-    private static IResult ResolveError(Error error) => error switch
+    private static IResult ResolveError(Error error, HttpContext context) => error switch
     {
-        BadRequestError => ResolveProblemDetail(StatusCodes.Status400BadRequest, error),
-        DomainError => ResolveProblemDetail(StatusCodes.Status400BadRequest, error),
-        NotFoundError => ResolveProblemDetail(StatusCodes.Status404NotFound, error),
-        ConflictError => ResolveProblemDetail(StatusCodes.Status409Conflict, error),
-        UnauthorizedError => Results.Unauthorized(),
-        ForbiddenError => Results.Forbid(),
+        BadRequestError or DomainError => Results.Problem(
+            ProblemDetailsFactory.Create(context, StatusCodes.Status400BadRequest, error.Description, error.Title)),
+        NotFoundError => Results.Problem(
+            ProblemDetailsFactory.Create(context, StatusCodes.Status404NotFound, error.Description, error.Title)),
+        ConflictError => Results.Problem(
+            ProblemDetailsFactory.Create(context, StatusCodes.Status409Conflict, error.Description, error.Title)),
+        UnauthorizedError => Results.Problem(
+            ProblemDetailsFactory.Create(context, StatusCodes.Status401Unauthorized, error.Description, error.Title)),
+        ForbiddenError => Results.Problem(
+            ProblemDetailsFactory.Create(context, StatusCodes.Status403Forbidden, error.Description, error.Title)),
         _ => throw new ArgumentOutOfRangeException(nameof(error), $"Unhandled error type: {error!.GetType().Name}")
     };
-
-    private static IResult ResolveProblemDetail(int statusCode, Error error) =>
-        Results.Problem(title: error.Title ?? ReasonPhrases.GetReasonPhrase(statusCode),
-                        detail: error.Description,
-                        statusCode: statusCode,
-                        type: error.GetType().Name);
 }

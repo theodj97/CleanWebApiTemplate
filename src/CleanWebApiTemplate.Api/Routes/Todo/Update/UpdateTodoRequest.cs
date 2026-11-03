@@ -1,3 +1,4 @@
+using CleanWebApiTemplate.Application.Abstractions.Identity;
 using CleanWebApiTemplate.Application.Todo.Handlers.Update;
 
 namespace CleanWebApiTemplate.Api.Routes.Todo.Update;
@@ -14,13 +15,13 @@ public sealed class UpdateTodoRequest
     /// <summary>New status: 1 Pending, 2 InProgress, 3 Completed, 4 Cancelled.</summary>
     public int? Status { get; set; }
 
-    public UpdateTodoInput ToInput(string id, string userEmail, string? ownerScope) => new()
+    public UpdateTodoInput ToInput(string id, OwnerScope owner) => new()
     {
         Id = id,
         Title = Title,
         Description = Description,
         Status = Status,
-        UpdatedBy = userEmail,
-        CreatedBy = ownerScope
+        UpdatedBy = owner.Email,
+        CreatedBy = owner.VisibleOwner
     };
 }

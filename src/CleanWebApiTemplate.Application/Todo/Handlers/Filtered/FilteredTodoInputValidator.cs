@@ -1,4 +1,4 @@
-using CleanWebApiTemplate.Application.Dtos.Todo;
+using CleanWebApiTemplate.Application.Todo.Sorting;
 using CleanWebApiTemplate.Application.Validation;
 using CleanWebApiTemplate.Domain.Models.Todo;
 using FluentValidation;
@@ -48,17 +48,7 @@ public class FilteredTodoInputValidator : TodoValidator<FilteredTodoInput>
             .WithMessage($"Property {nameof(FilteredTodoInput.PageSize)} must be greater than 0 if property {nameof(FilteredTodoInput.PageNumber)} is not null.");
 
         RuleFor(x => x.SortProperties).Custom((sortProperties, context) => ValidateSortBy(sortProperties,
-                                                                                           new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                                                                                           {
-                                                                                               nameof(TodoDto.Id),
-                                                                                               nameof(TodoDto.Title),
-                                                                                               nameof(TodoDto.Description),
-                                                                                               nameof(TodoDto.CreatedAt),
-                                                                                               nameof(TodoDto.UpdatedAt),
-                                                                                               nameof(TodoDto.Status),
-                                                                                               nameof(TodoDto.CreatedBy),
-                                                                                               nameof(TodoDto.UpdatedBy),
-                                                                                           },
+                                                                                           TodoSortCatalog.KeySet,
                                                                                            context)).When(x => x.SortProperties is not null);
     }
 }

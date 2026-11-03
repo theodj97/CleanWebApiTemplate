@@ -13,6 +13,8 @@ using CleanWebApiTemplate.Application.Todo.Handlers.Filtered;
 using CleanWebApiTemplate.Application.Todo.Handlers.GetById;
 using CleanWebApiTemplate.Application.Todo.Handlers.GetTitles;
 using CleanWebApiTemplate.Application.Todo.Handlers.Update;
+using CleanWebApiTemplate.Application.Todo.Projections;
+using CleanWebApiTemplate.Application.Validation;
 using CleanWebApiTemplate.Infrastructure.Data;
 using CleanWebApiTemplate.Infrastructure.Repositories.Todo;
 using FluentValidation;
@@ -97,12 +99,21 @@ public static class ConfigureServices
         services.AddTransient<IValidator<GetTodoTitlesInput>, GetTodoTitlesInputValidator>();
         services.AddTransient<IValidator<FilteredTodoInput>, FilteredTodoInputValidator>();
 
+        // One set per input: resolving a handler with no validators fails at startup through
+        // UseDefaultServiceProvider(ValidateOnBuild). Keep these explicit for Native AOT.
+        services.AddTransient<ValidatorSet<CreateTodoInput>>();
+        services.AddTransient<ValidatorSet<UpdateTodoInput>>();
+        services.AddTransient<ValidatorSet<DeleteTodoInput>>();
+        services.AddTransient<ValidatorSet<GetTodoByIdInput>>();
+        services.AddTransient<ValidatorSet<GetTodoTitlesInput>>();
+        services.AddTransient<ValidatorSet<FilteredTodoInput>>();
+
         // Handlers
         services.AddTransient<IHandler<CreateTodoInput, TodoDto?>, CreateTodoHandler>();
         services.AddTransient<IHandler<UpdateTodoInput, TodoDto?>, UpdateTodoHandler>();
         services.AddTransient<IHandler<DeleteTodoInput, bool>, DeleteTodoHandler>();
         services.AddTransient<IHandler<GetTodoByIdInput, TodoDto?>, GetTodoByIdHandler>();
-        services.AddTransient<IHandler<GetTodoTitlesInput, IEnumerable<TodoDto?>>, GetTodoTitlesHandler>();
+        services.AddTransient<IHandler<GetTodoTitlesInput, IEnumerable<TodoTitle>>, GetTodoTitlesHandler>();
         services.AddTransient<IHandler<FilteredTodoInput, IEnumerable<TodoDto?>>, FilteredTodoHandler>();
 
         return services;

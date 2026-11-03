@@ -13,10 +13,11 @@ public class ApiResultExtensionsTests
     public async Task ToResponse_WithSuccess_ReturnsOkWithBody()
     {
         // Arrange
+        var context = CreateContext();
         var result = Result<TestDto>.Success(new TestDto { Name = "value" });
 
         // Act
-        var response = await ExecuteAsync(result.ToResponse<TestDto, TestResponse>());
+        var response = await ExecuteAsync(result.ToResponse<TestDto, TestResponse>(context), context);
 
         // Assert
         Assert.Equal(StatusCodes.Status200OK, response.Response.StatusCode);
@@ -26,10 +27,14 @@ public class ApiResultExtensionsTests
     [Fact]
     public async Task ToCreatedResponse_WithValue_ReturnsCreatedAndLocation()
     {
+        // Arrange
+        var context = CreateContext();
+
         // Act
         var response = await ExecuteAsync(
             Result<TestDto>.Success(new TestDto { Name = "created" })
-                           .ToCreatedResponse<TestDto, TestResponse>(_ => "/api/test/1"));
+                           .ToCreatedResponse<TestDto, TestResponse>(context, _ => "/api/test/1"),
+            context);
 
         // Assert
         Assert.Equal(StatusCodes.Status201Created, response.Response.StatusCode);
@@ -39,8 +44,12 @@ public class ApiResultExtensionsTests
     [Fact]
     public async Task ToResponse_WithNoContentResult_ReturnsNoContent()
     {
+        // Arrange
+        var context = CreateContext();
+
         // Act
-        var response = await ExecuteAsync(Result<TestDto>.Success(null).ToResponse<TestDto, TestResponse>());
+        var response = await ExecuteAsync(
+            Result<TestDto>.Success(null).ToResponse<TestDto, TestResponse>(context), context);
 
         // Assert
         Assert.Equal(StatusCodes.Status204NoContent, response.Response.StatusCode);
@@ -50,10 +59,11 @@ public class ApiResultExtensionsTests
     public async Task ToResponse_WithCollectionSuccess_ReturnsOkWithEveryItem()
     {
         // Arrange
+        var context = CreateContext();
         var result = Result<IEnumerable<TestDto>>.Success([new TestDto { Name = "one" }, new TestDto { Name = "two" }]);
 
         // Act
-        var response = await ExecuteAsync(result.ToResponse<TestDto, TestResponse>());
+        var response = await ExecuteAsync(result.ToResponse<TestDto, TestResponse>(context), context);
 
         // Assert
         Assert.Equal(StatusCodes.Status200OK, response.Response.StatusCode);
@@ -65,9 +75,14 @@ public class ApiResultExtensionsTests
     [Fact]
     public async Task ToResponse_WithEmptyCollection_ReturnsNoContent()
     {
+        // Arrange
+        var context = CreateContext();
+
         // Act
-        var response = await ExecuteAsync(Result<IEnumerable<TestDto>>.Success([])
-                                                          .ToResponse<TestDto, TestResponse>());
+        var response = await ExecuteAsync(
+            Result<IEnumerable<TestDto>>.Success([])
+                                        .ToResponse<TestDto, TestResponse>(context),
+            context);
 
         // Assert
         Assert.Equal(StatusCodes.Status204NoContent, response.Response.StatusCode);
@@ -76,8 +91,11 @@ public class ApiResultExtensionsTests
     [Fact]
     public async Task ToResponse_WithGenericValue_ReturnsOk()
     {
+        // Arrange
+        var context = CreateContext();
+
         // Act
-        var response = await ExecuteAsync(Result<bool>.Success(true).ToResponse());
+        var response = await ExecuteAsync(Result<bool>.Success(true).ToResponse(context), context);
 
         // Assert
         Assert.Equal(StatusCodes.Status200OK, response.Response.StatusCode);
@@ -87,8 +105,11 @@ public class ApiResultExtensionsTests
     [Fact]
     public async Task ToResponse_WithEmptyString_ReturnsOk()
     {
+        // Arrange
+        var context = CreateContext();
+
         // Act
-        var response = await ExecuteAsync(Result<string>.Success(string.Empty).ToResponse());
+        var response = await ExecuteAsync(Result<string>.Success(string.Empty).ToResponse(context), context);
 
         // Assert
         Assert.Equal(StatusCodes.Status200OK, response.Response.StatusCode);
@@ -102,49 +123,82 @@ public class ApiResultExtensionsTests
     public async Task ToResponse_WithProblemError_ReturnsTheMatchingProblemDetails(int expectedStatus, Type errorType)
     {
         // Arrange
+        var context = CreateContext();
         Error error = errorType == typeof(BadRequestError) ? new BadRequestError("failure")
                      : errorType == typeof(DomainError) ? new DomainError("failure")
                      : errorType == typeof(NotFoundError) ? new NotFoundError("failure")
                      : new ConflictError("failure");
 
         // Act
-        var response = await ExecuteAsync(Result<TestDto>.Failure(error).ToResponse<TestDto, TestResponse>());
+        var response = await ExecuteAsync(
+            Result<TestDto>.Failure(error).ToResponse<TestDto, TestResponse>(context), context);
 
         // Assert
         Assert.Equal(expectedStatus, response.Response.StatusCode);
+        Assert.Equal("application/problem+json", response.Response.ContentType?.Split(';')[0]);
         Assert.Contains("failure", await ReadBodyAsync(response));
     }
 
     [Fact]
-    public async Task ToResponse_WithUnauthorizedError_ReturnsUnauthorized()
+    public async Task ToResponse_WithUnauthorizedError_ReturnsUnauthorizedProblem()
     {
+        // Arrange
+        var context = CreateContext();
+
         // Act
-        var response = await ExecuteAsync(Result<TestDto>.Failure(new UnauthorizedError())
-                                                          .ToResponse<TestDto, TestResponse>());
+        var response = await ExecuteAsync(
+            Result<TestDto>.Failure(new UnauthorizedError()).ToResponse<TestDto, TestResponse>(context),
+            context);
 
         // Assert
         Assert.Equal(StatusCodes.Status401Unauthorized, response.Response.StatusCode);
+        Assert.Equal("application/problem+json", response.Response.ContentType?.Split(';')[0]);
     }
 
     [Fact]
-    public void ToResponse_WithForbiddenError_ReturnsForbidResult()
+    public async Task ToResponse_WithForbiddenError_ReturnsForbiddenProblem()
     {
+        // Arrange
+        var context = CreateContext();
+
         // Act
-        var result = Result<TestDto>.Failure(new ForbiddenError()).ToResponse<TestDto, TestResponse>();
+        var response = await ExecuteAsync(
+            Result<TestDto>.Failure(new ForbiddenError()).ToResponse<TestDto, TestResponse>(context),
+            context);
 
         // Assert
-        Assert.Equal("ForbidHttpResult", result.GetType().Name);
+        Assert.Equal(StatusCodes.Status403Forbidden, response.Response.StatusCode);
+        Assert.Equal("application/problem+json", response.Response.ContentType?.Split(';')[0]);
     }
 
     [Fact]
     public void ToResponse_WithUnhandledErrorType_Throws()
     {
+        // Arrange
+        var context = CreateContext();
+
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(
-            () => Result<TestDto>.Failure(new UnknownError()).ToResponse<TestDto, TestResponse>());
+            () => Result<TestDto>.Failure(new UnknownError()).ToResponse<TestDto, TestResponse>(context));
     }
 
-    private static async Task<HttpContext> ExecuteAsync(IResult result)
+    [Fact]
+    public async Task ToResponse_WithProblemError_AddsTheTraceId()
+    {
+        // Arrange
+        var context = CreateContext();
+        context.TraceIdentifier = "trace-123";
+
+        // Act
+        var response = await ExecuteAsync(
+            Result<TestDto>.Failure(new ConflictError("failure")).ToResponse<TestDto, TestResponse>(context),
+            context);
+
+        // Assert
+        Assert.Contains("\"traceId\":\"trace-123\"", await ReadBodyAsync(response));
+    }
+
+    private static HttpContext CreateContext()
     {
         var context = new DefaultHttpContext();
         context.Response.Body = new MemoryStream();
@@ -152,7 +206,11 @@ public class ApiResultExtensionsTests
                                    .AddLogging()
                                    .AddProblemDetails()
                                    .BuildServiceProvider();
+        return context;
+    }
 
+    private static async Task<HttpContext> ExecuteAsync(IResult result, HttpContext context)
+    {
         await result.ExecuteAsync(context);
         return context;
     }

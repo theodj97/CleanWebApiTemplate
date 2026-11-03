@@ -1,3 +1,9 @@
+using CleanWebApiTemplate.Api.Models.Responses.Todo;
+using CleanWebApiTemplate.Api.Routes.Todo.Create;
+using CleanWebApiTemplate.Api.Routes.Todo.Filter;
+using CleanWebApiTemplate.Api.Routes.Todo.Get;
+using CleanWebApiTemplate.Api.Routes.Todo.Update;
+using CleanWebApiTemplate.Domain.Models.Todo;
 using Microsoft.OpenApi;
 using static CleanWebApiTemplate.Api.Configuration.OpenApiSchemaHelpers;
 
@@ -11,34 +17,34 @@ internal static class TodoOpenApiSchemas
         if (document.Components?.Schemas is not { } schemas)
             return;
 
-        Patch(schemas, "CreateTodoRequest", schema =>
+        Patch(schemas, nameof(CreateTodoRequest), schema =>
         {
             Describe(Property(schema, "title"),
                      "Short task description. Trimmed; unique per owner.",
-                     maxLength: 255,
+                     maxLength: TodoConstraints.TitleMaxLength,
                      example: "Prepare the release notes");
             Describe(Property(schema, "description"),
                      "Optional details for the task.",
-                     maxLength: 1000,
+                     maxLength: TodoConstraints.DescriptionMaxLength,
                      example: "Include the migration notes and the changelog link.");
         });
 
-        Patch(schemas, "UpdateTodoRequest", schema =>
+        Patch(schemas, nameof(UpdateTodoRequest), schema =>
         {
             Describe(Property(schema, "title"),
                      "New title. Titles stay unique per owner.",
-                     maxLength: 255,
+                     maxLength: TodoConstraints.TitleMaxLength,
                      example: "Publish the release notes");
             Describe(Property(schema, "description"),
                      "New details for the task.",
-                     maxLength: 1000,
+                     maxLength: TodoConstraints.DescriptionMaxLength,
                      example: "The draft is ready for review.");
             DescribeStatus(Property(schema, "status"),
-                           "New status: 1 Pending, 2 InProgress, 3 Completed, 4 Cancelled. Omit to leave it unchanged.",
+                           "New status. Omit to leave it unchanged.",
                            withAllowedValues: false);
         });
 
-        Patch(schemas, "FilteredTodoRequest", schema =>
+        Patch(schemas, nameof(FilteredTodoRequest), schema =>
         {
             Describe(ArrayItems(Property(schema, "ids")),
                      "TODO ids to include.",
@@ -46,7 +52,7 @@ internal static class TodoOpenApiSchemas
                      example: "01HWXHRB80000G000000000001");
             Describe(ArrayItems(Property(schema, "title")),
                      "Title fragments to match (contains).",
-                     maxLength: 255,
+                     maxLength: TodoConstraints.TitleMaxLength,
                      example: "release");
             DescribeStatus(ArrayItems(Property(schema, "status")), withAllowedValues: true);
             Describe(ArrayItems(Property(schema, "createdBy")),
@@ -66,13 +72,13 @@ internal static class TodoOpenApiSchemas
             DescribeSort(Property(schema, "sortProperties"));
         });
 
-        Patch(schemas, "GetTodoTitlesRequest", schema =>
+        Patch(schemas, nameof(GetTodoTitlesRequest), schema =>
         {
             DescribePaging(schema);
             DescribeSort(Property(schema, "sortProperties"));
         });
 
-        Patch(schemas, "TodoResponse", schema =>
+        Patch(schemas, nameof(TodoResponse), schema =>
         {
             Describe(Property(schema, "id"),
                      "TODO identifier.",
@@ -80,11 +86,11 @@ internal static class TodoOpenApiSchemas
                      example: "01HWXHRB80000G000000000001");
             Describe(Property(schema, "title"),
                      "Task title.",
-                     maxLength: 255,
+                     maxLength: TodoConstraints.TitleMaxLength,
                      example: "Set up the local environment");
             Describe(Property(schema, "description"),
                      "Task details.",
-                     maxLength: 1000,
+                     maxLength: TodoConstraints.DescriptionMaxLength,
                      example: "Started with Aspire, PostgreSQL and locally signed JWTs.");
             Describe(Property(schema, "createdAt"),
                      "Creation timestamp (UTC).",
@@ -101,7 +107,7 @@ internal static class TodoOpenApiSchemas
                      example: "local.user@example.com");
         });
 
-        Patch(schemas, "TodoTitleResponse", schema =>
+        Patch(schemas, nameof(TodoTitleResponse), schema =>
         {
             Describe(Property(schema, "id"),
                      "TODO identifier.",
@@ -109,7 +115,7 @@ internal static class TodoOpenApiSchemas
                      example: "01HWXHRB80000G000000000001");
             Describe(Property(schema, "title"),
                      "Task title.",
-                     maxLength: 255,
+                     maxLength: TodoConstraints.TitleMaxLength,
                      example: "Set up the local environment");
         });
     }

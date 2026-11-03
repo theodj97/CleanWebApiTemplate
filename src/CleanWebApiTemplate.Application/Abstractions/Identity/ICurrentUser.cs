@@ -11,9 +11,6 @@ public interface ICurrentUser
     /// <summary>True when the caller has the admin role.</summary>
     bool IsAdmin { get; }
 
-    /// <summary>
-    /// The owner filter for repository queries: null for admins (they see every owner),
-    /// the caller's email for everyone else.
-    /// </summary>
-    string? OwnerScope { get; }
+    /// <summary>The caller's effective owner scope, resolved by <see cref="OwnerScope"/>.</summary>
+    OwnerScope Owner { get; }
 }

@@ -39,7 +39,7 @@ public class HttpContextCurrentUserTests
     }
 
     [Fact]
-    public void OwnerScope_AsAdmin_IsNull()
+    public void Owner_AsAdmin_HasNoVisibleOwner()
     {
         // Arrange
         var currentUser = CreateCurrentUser(
@@ -47,12 +47,12 @@ public class HttpContextCurrentUserTests
             new Claim(ClaimTypes.Role, Constants.ADMIN_POLICY));
 
         // Act & Assert
-        Assert.True(currentUser.IsAdmin);
-        Assert.Null(currentUser.OwnerScope);
+        Assert.True(currentUser.Owner.IsAdmin);
+        Assert.Null(currentUser.Owner.VisibleOwner);
     }
 
     [Fact]
-    public void OwnerScope_AsUser_IsTheEmail()
+    public void Owner_AsUser_IsPinnedToTheEmail()
     {
         // Arrange
         var currentUser = CreateCurrentUser(
@@ -60,8 +60,8 @@ public class HttpContextCurrentUserTests
             new Claim(ClaimTypes.Role, Constants.USER_POLICY));
 
         // Act & Assert
-        Assert.False(currentUser.IsAdmin);
-        Assert.Equal("user@example.com", currentUser.OwnerScope);
+        Assert.False(currentUser.Owner.IsAdmin);
+        Assert.Equal("user@example.com", currentUser.Owner.VisibleOwner);
     }
 
     private static HttpContextCurrentUser CreateCurrentUser(params Claim[] claims)

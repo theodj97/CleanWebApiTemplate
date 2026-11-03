@@ -1,4 +1,6 @@
+using CleanWebApiTemplate.Application.Abstractions.Identity;
 using CleanWebApiTemplate.Application.Todo.Handlers.Filtered;
+using CleanWebApiTemplate.Application.Todo.Sorting;
 
 namespace CleanWebApiTemplate.Api.Routes.Todo.Filter;
 
@@ -33,18 +35,16 @@ public sealed class FilteredTodoRequest
     public byte? PageSize { get; set; }
 
     /// <summary>
-    /// Sort keys and directions, applied in order. Supported keys: id, title, description,
-    /// createdAt, updatedAt, status, createdBy, updatedBy.
+    /// Sort keys and directions, applied in order. See <see cref="TodoSortCatalog"/> for the
+    /// accepted keys.
     /// </summary>
     public IEnumerable<KeyValuePair<string, bool>>? SortProperties { get; set; }
 
-    public FilteredTodoInput ToInput(string? ownerScope) => new()
+    public FilteredTodoInput ToInput(OwnerScope owner) => new()
     {
         Status = Status,
         Title = Title,
-        // Administrators (ownerScope null) may filter by another user. For everyone
-        // else the owner is always the authenticated user from the validated JWT.
-        CreatedBy = ownerScope is null ? CreatedBy : [ownerScope],
+        CreatedBy = owner.FilterOwners(CreatedBy),
         StartDate = StartDate,
         EndDate = EndDate,
         Ids = Ids,

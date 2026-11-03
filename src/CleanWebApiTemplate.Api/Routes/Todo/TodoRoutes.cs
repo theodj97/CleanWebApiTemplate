@@ -1,28 +1,13 @@
 using System.Net;
 using CleanWebApiTemplate.Api.Common.Abstractions;
 using CleanWebApiTemplate.Api.Configuration;
-using CleanWebApiTemplate.Api.Extensions;
 using CleanWebApiTemplate.Api.Models.Interfaces;
 using CleanWebApiTemplate.Api.Models.Responses.Todo;
-using CleanWebApiTemplate.Api.Routes.Todo.Create;
-using CleanWebApiTemplate.Api.Routes.Todo.Filter;
-using CleanWebApiTemplate.Api.Routes.Todo.Get;
-using CleanWebApiTemplate.Api.Routes.Todo.Update;
-using CleanWebApiTemplate.Application.Abstractions.Handlers;
-using CleanWebApiTemplate.Application.Abstractions.Identity;
-using CleanWebApiTemplate.Application.Dtos.Todo;
-using CleanWebApiTemplate.Application.Results;
-using CleanWebApiTemplate.Application.Todo.Handlers.Create;
-using CleanWebApiTemplate.Application.Todo.Handlers.Delete;
-using CleanWebApiTemplate.Application.Todo.Handlers.Filtered;
-using CleanWebApiTemplate.Application.Todo.Handlers.GetById;
-using CleanWebApiTemplate.Application.Todo.Handlers.GetTitles;
-using CleanWebApiTemplate.Application.Todo.Handlers.Update;
 using Microsoft.OpenApi;
 
 namespace CleanWebApiTemplate.Api.Routes.Todo;
 
-public sealed class TodoRoutes(ICurrentUser currentUser) : IGroupMap
+public sealed class TodoRoutes : IGroupMap
 {
     private const string RouteName = "Todo";
 
@@ -34,14 +19,7 @@ public sealed class TodoRoutes(ICurrentUser currentUser) : IGroupMap
         DescribeIdParameter(userGroup);
         DescribeIdParameter(operatorGroup);
 
-        userGroup.MapGet("/{id}", async (string id,
-                                         IHandler<GetTodoByIdInput, TodoDto?> handler,
-                                         CancellationToken cancellationToken) =>
-        {
-            GetTodoByIdInput input = new() { Id = id, CreatedBy = currentUser.OwnerScope };
-            Result<TodoDto?> result = await handler.HandleAsync(input, cancellationToken);
-            return result.ToResponse<TodoDto?, TodoResponse>();
-        })
+        userGroup.MapGet("/{id}", TodoEndpoints.GetByIdAsync)
         .WithName("GetTodoById")
         .WithSummary("Get a TODO by id")
         .WithDescription(
@@ -51,14 +29,7 @@ public sealed class TodoRoutes(ICurrentUser currentUser) : IGroupMap
         .Produces<TodoResponse>((int)HttpStatusCode.OK)
         .Produces((int)HttpStatusCode.NoContent, typeof(void));
 
-        userGroup.MapPost("/filter", async (FilteredTodoRequest request,
-                                            IHandler<FilteredTodoInput, IEnumerable<TodoDto?>> handler,
-                                            CancellationToken cancellationToken) =>
-        {
-            var input = request.ToInput(currentUser.OwnerScope);
-            var result = await handler.HandleAsync(input, cancellationToken);
-            return result.ToResponse<TodoDto?, TodoResponse>();
-        })
+        userGroup.MapPost("/filter", TodoEndpoints.FilterAsync)
         .WithName("FilterTodos")
         .WithSummary("Filter TODOs")
         .WithDescription(
@@ -68,14 +39,7 @@ public sealed class TodoRoutes(ICurrentUser currentUser) : IGroupMap
         .Produces<IEnumerable<TodoResponse>>((int)HttpStatusCode.OK)
         .Produces((int)HttpStatusCode.NoContent, typeof(void));
 
-        userGroup.MapPost("/titles", async (GetTodoTitlesRequest request,
-                                            IHandler<GetTodoTitlesInput, IEnumerable<TodoDto?>> handler,
-                                            CancellationToken cancellationToken) =>
-        {
-            var input = request.ToInput(currentUser.OwnerScope);
-            var result = await handler.HandleAsync(input, cancellationToken);
-            return result.ToResponse<TodoDto?, TodoTitleResponse>();
-        })
+        userGroup.MapPost("/titles", TodoEndpoints.GetTitlesAsync)
         .WithName("GetTodoTitles")
         .WithSummary("List TODO titles")
         .WithDescription(
@@ -85,14 +49,7 @@ public sealed class TodoRoutes(ICurrentUser currentUser) : IGroupMap
         .Produces<IEnumerable<TodoTitleResponse>>((int)HttpStatusCode.OK)
         .Produces((int)HttpStatusCode.NoContent, typeof(void));
 
-        userGroup.MapPost("/", async (CreateTodoRequest request,
-                                      IHandler<CreateTodoInput, TodoDto?> handler,
-                                      CancellationToken cancellationToken) =>
-        {
-            var input = request.ToInput(currentUser.Email);
-            var result = await handler.HandleAsync(input, cancellationToken);
-            return result.ToCreatedResponse<TodoDto?, TodoResponse>(dto => $"/api/Todo/{dto!.Id}");
-        })
+        userGroup.MapPost("/", TodoEndpoints.CreateAsync)
         .WithName("CreateTodo")
         .WithSummary("Create a TODO")
         .WithDescription(
@@ -102,15 +59,7 @@ public sealed class TodoRoutes(ICurrentUser currentUser) : IGroupMap
         .Produces<TodoResponse>((int)HttpStatusCode.Created)
         .ProducesProblem((int)HttpStatusCode.Conflict);
 
-        userGroup.MapPut("/{id}", async (string id,
-                                         UpdateTodoRequest request,
-                                         IHandler<UpdateTodoInput, TodoDto?> handler,
-                                         CancellationToken cancellationToken) =>
-        {
-            var input = request.ToInput(id, currentUser.Email, currentUser.OwnerScope);
-            var result = await handler.HandleAsync(input, cancellationToken);
-            return result.ToResponse<TodoDto?, TodoResponse>();
-        })
+        userGroup.MapPut("/{id}", TodoEndpoints.UpdateAsync)
         .WithName("UpdateTodo")
         .WithSummary("Update a TODO")
         .WithDescription(
@@ -122,14 +71,7 @@ public sealed class TodoRoutes(ICurrentUser currentUser) : IGroupMap
         .ProducesProblem((int)HttpStatusCode.NotFound)
         .ProducesProblem((int)HttpStatusCode.Conflict);
 
-        operatorGroup.MapDelete("/{id}", async (string id,
-                                                IHandler<DeleteTodoInput, bool> handler,
-                                                CancellationToken cancellationToken) =>
-        {
-            var input = new DeleteTodoInput() { Id = id, CreatedBy = currentUser.OwnerScope };
-            var result = await handler.HandleAsync(input, cancellationToken);
-            return result.ToResponse();
-        })
+        operatorGroup.MapDelete("/{id}", TodoEndpoints.DeleteAsync)
         .WithName("DeleteTodo")
         .WithSummary("Delete a TODO")
         .WithDescription(

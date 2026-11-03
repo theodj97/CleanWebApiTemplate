@@ -1,5 +1,4 @@
 using CleanWebApiTemplate.Application.Results;
-using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Validation;
 
@@ -15,12 +14,12 @@ public abstract class ValidationService
     /// failed result is returned.
     /// </summary>
     protected static async Task<TResult> ExecuteAsync<TInput, TResult>(TInput input,
-                                                                       IEnumerable<IValidator<TInput>> validators,
+                                                                       ValidatorSet<TInput> validators,
                                                                        Func<Task<TResult>> action,
                                                                        CancellationToken cancellationToken)
         where TResult : IResultFactory<TResult>
     {
-        var error = await ValidationRunner.ValidateAsync(input, validators, cancellationToken);
+        var error = await validators.ValidateAsync(input, cancellationToken);
 
         return error is not null
             ? TResult.Failure(error)

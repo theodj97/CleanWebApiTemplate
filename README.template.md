@@ -84,7 +84,7 @@ All routes need a JWT. Policies are role based: `User` (User, Operator, Admin), 
 
 | Method | Route | Policy | Success |
 |---|---|---|---|
-| `GET` | `/api/Todo/{id}` | User | `200`; `404` when missing or not owned |
+| `GET` | `/api/Todo/{id}` | User | `200`; `204` when missing or not owned |
 | `POST` | `/api/Todo/filter` | User | `200`; `204` when empty |
 | `POST` | `/api/Todo/titles` | User | `200`; `204` when empty |
 | `POST` | `/api/Todo/` | User | `201` with `Location`; `409` for a duplicate title |

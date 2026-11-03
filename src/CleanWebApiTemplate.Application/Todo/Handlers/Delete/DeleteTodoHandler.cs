@@ -3,12 +3,11 @@ using CleanWebApiTemplate.Application.Abstractions.Handlers;
 using CleanWebApiTemplate.Application.Abstractions.Repositories;
 using CleanWebApiTemplate.Application.Results;
 using CleanWebApiTemplate.Application.Validation;
-using FluentValidation;
 
 namespace CleanWebApiTemplate.Application.Todo.Handlers.Delete;
 
 public sealed class DeleteTodoHandler(ITodoRepository todoRepository,
-                                      IEnumerable<IValidator<DeleteTodoInput>> validators)
+                                      ValidatorSet<DeleteTodoInput> validators)
     : ValidationService, IHandler<DeleteTodoInput, bool>
 {
     public Task<Result<bool>> HandleAsync(DeleteTodoInput input, CancellationToken cancellationToken) =>

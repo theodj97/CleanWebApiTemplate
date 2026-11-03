@@ -1,3 +1,4 @@
+using CleanWebApiTemplate.Application.Abstractions.Identity;
 using CleanWebApiTemplate.Application.Todo.Handlers.Create;
 
 namespace CleanWebApiTemplate.Api.Routes.Todo.Create;
@@ -11,10 +12,10 @@ public sealed class CreateTodoRequest
     /// <summary>Optional details for the task. Up to 1000 characters.</summary>
     public string Description { get; set; } = string.Empty;
 
-    public CreateTodoInput ToInput(string userEmail) => new()
+    public CreateTodoInput ToInput(OwnerScope owner) => new()
     {
         Title = Title,
         Description = Description,
-        CreatedBy = userEmail
+        CreatedBy = owner.OwnerForCreate
     };
 }

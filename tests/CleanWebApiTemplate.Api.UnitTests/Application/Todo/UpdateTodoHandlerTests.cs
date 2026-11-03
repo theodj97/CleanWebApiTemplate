@@ -1,6 +1,7 @@
 using CleanWebApiTemplate.Application.Abstractions.Repositories;
 using CleanWebApiTemplate.Application.Results;
 using CleanWebApiTemplate.Application.Todo.Handlers.Update;
+using CleanWebApiTemplate.Application.Validation;
 using CleanWebApiTemplate.Domain.Models.Entities;
 using NSubstitute;
 
@@ -32,7 +33,9 @@ public class UpdateTodoHandlerTests
         _repository.GetByIdAsync(_todo.Id, Owner, Arg.Any<CancellationToken>()).Returns(_todo);
         _repository.TitleExistsAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Ulid?>(), Arg.Any<CancellationToken>())
                    .Returns(false);
-        _handler = new UpdateTodoHandler(_repository, []);
+        _handler = new UpdateTodoHandler(
+            _repository,
+            new ValidatorSet<UpdateTodoInput>([new UpdateTodoInputValidator()]));
     }
 
     [Fact]

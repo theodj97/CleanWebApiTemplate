@@ -1,4 +1,5 @@
 using CleanWebApiTemplate.Api.Routes.Todo.Filter;
+using CleanWebApiTemplate.Application.Abstractions.Identity;
 
 namespace CleanWebApiTemplate.Api.UnitTests.Api.Routes.Todo;
 
@@ -21,7 +22,7 @@ public class FilteredTodoRequestTests
         };
 
         // Act
-        var input = request.ToInput(ownerScope: "current@example.com");
+        var input = request.ToInput(new OwnerScope("current@example.com", IsAdmin: false));
 
         // Assert
         Assert.Equal("current@example.com", Assert.Single(input.CreatedBy!));
@@ -40,7 +41,7 @@ public class FilteredTodoRequestTests
         };
 
         // Act
-        var input = request.ToInput(ownerScope: null);
+        var input = request.ToInput(new OwnerScope("admin@example.com", IsAdmin: true));
 
         // Assert
         Assert.Equal(new[] { "first@example.com", "second@example.com" }, input.CreatedBy);
@@ -50,7 +51,7 @@ public class FilteredTodoRequestTests
     public void ToInput_AsAdminWithoutCreatedBy_DoesNotRestrictTheOwner()
     {
         // Act
-        var input = new FilteredTodoRequest().ToInput(ownerScope: null);
+        var input = new FilteredTodoRequest().ToInput(new OwnerScope("admin@example.com", IsAdmin: true));
 
         // Assert
         Assert.Null(input.CreatedBy);

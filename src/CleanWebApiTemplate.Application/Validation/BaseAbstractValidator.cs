@@ -97,16 +97,16 @@ public class BaseAbstractValidator<TRequest> : AbstractValidator<TRequest> where
     /// <param name="validProperties"></param>
     /// <param name="context"></param>
     protected void ValidateSortBy(IEnumerable<KeyValuePair<string, bool>>? sortProperty,
-                                  HashSet<string> validProperties,
+                                  IReadOnlySet<string> validProperties,
                                   ValidationContext<TRequest> context)
     {
         if (sortProperty is null || sortProperty.Any() is false) return;
 
-        if (sortProperty!.Select(kvp => kvp.Key).Distinct().Count() != sortProperty!.Count())
+        if (sortProperty!.Select(kvp => kvp.Key).Distinct(StringComparer.OrdinalIgnoreCase).Count() != sortProperty!.Count())
             AddFailure(context, $"Property '{nameof(sortProperty)}' contains duplicated sorts.");
 
         foreach (var property in sortProperty!)
-            if (!validProperties.Contains(property.Key, StringComparer.OrdinalIgnoreCase))
+            if (!validProperties.Contains(property.Key))
                 AddFailure(context, $"Property '{property.Key}' is not a valid sort property.");
     }
 
