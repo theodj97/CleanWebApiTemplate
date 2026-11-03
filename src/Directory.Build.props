@@ -1,0 +1,19 @@
+<Project>
+
+  <!--
+    Hereda las propiedades comunes del repositorio.
+    https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-by-directory
+  -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!--
+    Los analizadores de calidad solo se aplican al código de producción. Tests y
+    herramientas locales conservan el conjunto por defecto del SDK para que las
+    reglas de nombres/rendimiento de los tests no oculten las señales reales.
+  -->
+  <PropertyGroup>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+  </PropertyGroup>
+
+</Project>

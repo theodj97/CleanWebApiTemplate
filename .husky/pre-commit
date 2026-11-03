@@ -1,0 +1,9 @@
+#!/bin/sh
+# Formatea los .cs en staging y bloquea secretos antes de cada commit.
+# Si `dotnet format` ha tenido que tocar algo, el hook falla para que revises
+# el diff y vuelvas a commitear. No hace `git add` de nada.
+# Formatear toda la solucion a mano: npm run format
+# Saltar el hook: HUSKY=0 git commit ... (o git commit --no-verify).
+. "$(dirname "$0")/_/husky.sh"
+
+dotnet husky run --group pre-commit

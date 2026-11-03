@@ -1,0 +1,7 @@
+#!/bin/sh
+# Gates antes de cada push: build, formato, análisis, todos los tests y
+# paquetes vulnerables. Los tests de componente/funcional necesitan Docker.
+# Saltar el hook: HUSKY=0 git push (o git push --no-verify).
+. "$(dirname "$0")/_/husky.sh"
+
+dotnet husky run --group pre-push

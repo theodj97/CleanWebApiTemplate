@@ -1,0 +1,78 @@
+==> Build
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  CleanWebApiTemplate.Domain -> /home/theo/repos/theo/CleanWebApiTemplate/src/CleanWebApiTemplate.Domain/bin/Debug/net10.0/CleanWebApiTemplate.Domain.dll
+  CleanWebApiTemplate.DbInitializer -> /home/theo/repos/theo/CleanWebApiTemplate/local/aspire/CleanWebApiTemplate.DbInitializer/bin/Debug/net10.0/CleanWebApiTemplate.DbInitializer.dll
+  CleanWebApiTemplate.ServiceDefaults -> /home/theo/repos/theo/CleanWebApiTemplate/src/CleanWebApiTemplate.ServiceDefaults/bin/Debug/net10.0/CleanWebApiTemplate.ServiceDefaults.dll
+  CleanWebApiTemplate.OpenApiExamples -> /home/theo/repos/theo/CleanWebApiTemplate/local/openapi/CleanWebApiTemplate.OpenApiExamples/bin/Debug/net10.0/CleanWebApiTemplate.OpenApiExamples.dll
+  CleanWebApiTemplate.Application -> /home/theo/repos/theo/CleanWebApiTemplate/src/CleanWebApiTemplate.Application/bin/Debug/net10.0/CleanWebApiTemplate.Application.dll
+  CleanWebApiTemplate.OpenApiExamples.UnitTests -> /home/theo/repos/theo/CleanWebApiTemplate/local/openapi/CleanWebApiTemplate.OpenApiExamples.UnitTests/bin/Debug/net10.0/CleanWebApiTemplate.OpenApiExamples.UnitTests.dll
+  CleanWebApiTemplate.Infrastructure -> /home/theo/repos/theo/CleanWebApiTemplate/src/CleanWebApiTemplate.Infrastructure/bin/Debug/net10.0/CleanWebApiTemplate.Infrastructure.dll
+  CleanWebApiTemplate.OpenBaoInitializer -> /home/theo/repos/theo/CleanWebApiTemplate/local/aspire/CleanWebApiTemplate.OpenBaoInitializer/bin/Debug/net10.0/CleanWebApiTemplate.OpenBaoInitializer.dll
+  CleanWebApiTemplate.Tests.Shared -> /home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.Tests.Shared/bin/Debug/net10.0/CleanWebApiTemplate.Tests.Shared.dll
+  CleanWebApiTemplate.Api -> /home/theo/repos/theo/CleanWebApiTemplate/src/CleanWebApiTemplate.Api/bin/Debug/net10.0/CleanWebApiTemplate.Api.dll
+  CleanWebApiTemplate.AppHost -> /home/theo/repos/theo/CleanWebApiTemplate/local/aspire/CleanWebApiTemplate.AppHost/bin/Debug/net10.0/CleanWebApiTemplate.AppHost.dll
+  CleanWebApiTemplate.Api.FunctionalTests -> /home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.Api.FunctionalTests/bin/Debug/net10.0/CleanWebApiTemplate.Api.FunctionalTests.dll
+  CleanWebApiTemplate.Api.UnitTests -> /home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.Api.UnitTests/bin/Debug/net10.0/CleanWebApiTemplate.Api.UnitTests.dll
+  CleanWebApiTemplate.Api.ComponentTests -> /home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.Api.ComponentTests/bin/Debug/net10.0/CleanWebApiTemplate.Api.ComponentTests.dll
+  CleanWebApiTemplate.ArchitectureTests -> /home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.ArchitectureTests/bin/Debug/net10.0/CleanWebApiTemplate.ArchitectureTests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.58
+==> Formato (whitespace)
+==> Formato (style)
+==> Análisis (analyzers)
+==> Tests (unit, component y functional)
+Running tests from /home/theo/repos/theo/CleanWebApiTemplate/local/openapi/CleanWebApiTemplate.OpenApiExamples.UnitTests/bin/Debug/net10.0/CleanWebApiTemplate.OpenApiExamples.UnitTests.dll (net10.0|x64)
+Running tests from /home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.ArchitectureTests/bin/Debug/net10.0/CleanWebApiTemplate.ArchitectureTests.dll (net10.0|x64)
+Running tests from /home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.Api.FunctionalTests/bin/Debug/net10.0/CleanWebApiTemplate.Api.FunctionalTests.dll (net10.0|x64)
+Running tests from /home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.Api.ComponentTests/bin/Debug/net10.0/CleanWebApiTemplate.Api.ComponentTests.dll (net10.0|x64)
+Running tests from /home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.Api.UnitTests/bin/Debug/net10.0/CleanWebApiTemplate.Api.UnitTests.dll (net10.0|x64)
+/home/theo/repos/theo/CleanWebApiTemplate/local/openapi/CleanWebApiTemplate.OpenApiExamples.UnitTests/bin/Debug/net10.0/CleanWebApiTemplate.OpenApiExamples.UnitTests.dll (net10.0|x64) passed (664ms)
+/home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.Api.UnitTests/bin/Debug/net10.0/CleanWebApiTemplate.Api.UnitTests.dll (net10.0|x64) passed (903ms)
+/home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.ArchitectureTests/bin/Debug/net10.0/CleanWebApiTemplate.ArchitectureTests.dll (net10.0|x64) passed (1s 360ms)
+[+0/x0/?0] CleanWebApiTemplate.Api.FunctionalTests.dll (net10.0|x64)(2s)
+[+0/x0/?0] CleanWebApiTemplate.Api.ComponentTests.dll (net10.0|x64)(2s)
+
+[+0/x0/?0] CleanWebApiTemplate.Api.FunctionalTests.dll (net10.0|x64)(5s)
+[+0/x0/?0] CleanWebApiTemplate.Api.ComponentTests.dll (net10.0|x64)(5s)
+
+[+0/x0/?0] CleanWebApiTemplate.Api.FunctionalTests.dll (net10.0|x64)(8s)
+[+0/x0/?0] CleanWebApiTemplate.Api.ComponentTests.dll (net10.0|x64)(8s)
+
+[+11/x0/?0] CleanWebApiTemplate.Api.FunctionalTests.dll (net10.0|x64)(11s)
+[+115/x0/?0] CleanWebApiTemplate.Api.ComponentTests.dll (net10.0|x64)(11s)
+
+/home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.Api.ComponentTests/bin/Debug/net10.0/CleanWebApiTemplate.Api.ComponentTests.dll (net10.0|x64) passed (14s 121ms)
+/home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.Api.FunctionalTests/bin/Debug/net10.0/CleanWebApiTemplate.Api.FunctionalTests.dll (net10.0|x64) passed (14s 712ms)
+
+Test run summary: Passed!
+  /home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.Api.UnitTests/bin/Debug/net10.0/CleanWebApiTemplate.Api.UnitTests.dll (net10.0|x64) passed (903ms)
+  /home/theo/repos/theo/CleanWebApiTemplate/local/openapi/CleanWebApiTemplate.OpenApiExamples.UnitTests/bin/Debug/net10.0/CleanWebApiTemplate.OpenApiExamples.UnitTests.dll (net10.0|x64) passed (664ms)
+  /home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.ArchitectureTests/bin/Debug/net10.0/CleanWebApiTemplate.ArchitectureTests.dll (net10.0|x64) passed (1s 360ms)
+  /home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.Api.FunctionalTests/bin/Debug/net10.0/CleanWebApiTemplate.Api.FunctionalTests.dll (net10.0|x64) passed (14s 712ms)
+  /home/theo/repos/theo/CleanWebApiTemplate/tests/CleanWebApiTemplate.Api.ComponentTests/bin/Debug/net10.0/CleanWebApiTemplate.Api.ComponentTests.dll (net10.0|x64) passed (14s 121ms)
+
+  total: 313
+  failed: 0
+  succeeded: 313
+  skipped: 0
+  duration: 14s 905ms
+==> Paquetes vulnerables
+Comprobando paquetes vulnerables (incluidos transitivos)...
+Sin paquetes vulnerables.
+==> Pre-push OK
+
+==> AOT publish
+dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj \
+  -c Release -r linux-x64 --self-contained
+
+Build succeeded. 0 Warning(s), 0 Error(s). Publicación nativa correcta en
+src/CleanWebApiTemplate.Api/bin/Release/net10.0/linux-x64/publish/.
+
+==> gitleaks
+gitleaks dir . --config .gitleaks.toml
+Resultado: no leaks found. Los tres fixtures de test con claves falsas llevan `gitleaks:allow`.

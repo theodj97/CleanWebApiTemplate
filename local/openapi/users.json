@@ -1,0 +1,42 @@
+{
+  "users": {
+    "user": {
+      "name": "local.user",
+      "email": "local.user@example.com",
+      "roles": [
+        "User"
+      ],
+      "subject": "0b7c2f4e-0000-4000-8000-000000000001"
+    },
+    "operator": {
+      "name": "local.operator",
+      "email": "local.operator@example.com",
+      "roles": [
+        "Operator"
+      ],
+      "subject": "0b7c2f4e-0000-4000-8000-000000000002"
+    },
+    "admin": {
+      "name": "local.admin",
+      "email": "local.admin@example.com",
+      "roles": [
+        "Admin"
+      ],
+      "subject": "0b7c2f4e-0000-4000-8000-000000000003"
+    },
+    "external": {
+      "name": "local.external",
+      "email": "local.external@example.com",
+      "roles": [
+        "External"
+      ],
+      "subject": "0b7c2f4e-0000-4000-8000-000000000004"
+    },
+    "no-role": {
+      "name": "local.norole",
+      "email": "local.norole@example.com",
+      "roles": [],
+      "subject": "0b7c2f4e-0000-4000-8000-000000000005"
+    }
+  }
+}

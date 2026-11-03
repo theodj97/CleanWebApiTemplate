@@ -1,0 +1,83 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    NuGet packaging project for the `dotnet new` template.
+
+    It does not compile code: it packs the repository content under `content/` so that
+    `dotnet new install CleanWebApiTemplate` can install the template from a NuGet feed.
+
+    Build:  dotnet pack build/CleanWebApiTemplate.Template.csproj -c Release -o artifacts
+    Test:   bash scripts/package-smoke.sh
+  -->
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageId>CleanWebApiTemplate</PackageId>
+    <Version>1.0.0</Version>
+    <Title>Clean Web API Template</Title>
+    <Authors>Theo Delvas Játiva</Authors>
+    <Description>ASP.NET Core 10 Minimal API template with Clean Architecture, Native AOT, JWT authentication, PostgreSQL, OpenBao and Aspire.</Description>
+    <PackageTags>dotnet-new;templates;webapi;clean-architecture;native-aot;aspire;jwt;postgresql;openbao</PackageTags>
+    <PackageProjectUrl>https://github.com/theodj97/CleanWebApiTemplate</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/theodj97/CleanWebApiTemplate</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>See CHANGELOG.md in the repository.</PackageReleaseNotes>
+
+    <IsPackable>true</IsPackable>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <!-- Template content: everything the generated project needs. -->
+  <ItemGroup>
+    <Content Include="..\src\**\*"
+             Exclude="..\src\**\bin\**;..\src\**\obj\**;..\src\**\TestResults\**"
+             Pack="true"
+             PackagePath="content\src\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\tests\**\*"
+             Exclude="..\tests\**\bin\**;..\tests\**\obj\**;..\tests\**\TestResults\**"
+             Pack="true"
+             PackagePath="content\tests\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\local\**\*"
+             Exclude="..\local\**\bin\**;..\local\**\obj\**;..\local\**\TestResults\**"
+             Pack="true"
+             PackagePath="content\local\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\scripts\**\*"
+             Exclude="..\scripts\template-smoke.sh;..\scripts\package-smoke.sh"
+             Pack="true"
+             PackagePath="content\scripts\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\.config\**\*"
+             Pack="true"
+             PackagePath="content\.config\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\.husky\**\*"
+             Exclude="..\.husky\_\**"
+             Pack="true"
+             PackagePath="content\.husky\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\.template.config\**\*"
+             Pack="true"
+             PackagePath="content\.template.config\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\.vscode\**\*"
+             Pack="true"
+             PackagePath="content\.vscode\%(RecursiveDir)%(Filename)%(Extension)" />
+
+    <!-- Root files that belong to the generated project. -->
+    <Content Include="..\.editorconfig;..\.gitattributes;..\.gitignore;..\.gitleaks.toml;..\AGENTS.md;..\BannedSymbols.txt;..\CleanWebApiTemplate.slnx;..\Directory.Build.props;..\Directory.Packages.props;..\README.template.md;..\aspire.config.json;..\global.json;..\package.json;..\package-lock.json"
+             Pack="true"
+             PackagePath="content\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- Files shown on nuget.org and kept at the package root. -->
+  <ItemGroup>
+    <None Include="..\README.nuget.md" Pack="true" PackagePath="README.md" />
+    <None Include="..\LICENSE" Pack="true" PackagePath="\" />
+    <None Include="..\CHANGELOG.md" Pack="true" PackagePath="CHANGELOG.md" />
+  </ItemGroup>
+
+</Project>
