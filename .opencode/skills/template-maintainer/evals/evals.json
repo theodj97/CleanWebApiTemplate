@@ -1,0 +1,112 @@
+{
+  "skill_name": "clean-webapi",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add a Project feature with create, get by id and filter. A project has a name unique per owner, a description and a status (Draft, Active, Completed, Archived). Only the owner can read it; admins can read every project. Add the SQL, the seed, the local Swagger examples and the tests. Finish with the repository gates.",
+      "expected_output": "A complete vertical slice: Domain entity/enum/constraints; Application input/validator/port/filter/sort catalog/DTO/handler with ValidatorSet; Infrastructure table/sort columns/ADO.NET repository over NpgsqlDataSource; SQL schema + seed; API request/response/endpoints/route group/module/JSON context/OpenAPI descriptors; local Swagger examples with seed-consistent bodies, parameters and responses; unit, component, functional and architecture tests, including sort alignment; README update; build, AOT publish, test and coverage results reported. The agent presents a plan first because the change adds a table and crosses layers.",
+      "expectations": [
+        "The plan names every layer and the files it will touch before editing, and waits for confirmation because a table is added",
+        "Domain contains ProjectEntity, EProjectStatus and ProjectConstraints and references no outer layer",
+        "Application contains CreateProjectInput/Validator/Handler, GetProjectByIdInput/Validator/Handler, FilteredProjectInput/Validator/Handler, IProjectRepository, ProjectFilter, ProjectSortCatalog, ProjectDto and ProjectDtoExtensions",
+        "The handlers implement IHandler<TInput, TResult>, derive from ValidationService, take ValidatorSet<TInput>, return Result<T>, check NameExistsAsync before InsertAsync and return ConflictError for a duplicate",
+        "The API reports one AddUseCase per use case and one AddProjectModule call, not per-type registrations scattered through ConfigureServices",
+        "Infrastructure contains ProjectTable, ProjectSortColumns and ProjectRepository; every query value is a bound NpgsqlParameter and every identifier comes from ProjectTable",
+        "ProjectSortCatalog is the single accepted-key list; ProjectSortColumns maps it; ProjectSortColumnsTests asserts the two sets are equal",
+        "The SQL script creates the table with Id bytea, timestamptz audit columns and UX_Project_CreatedBy_Name; the seed uses the devtoken emails and covers every status",
+        "The module registers the repository, one AddUseCase per input, ProjectRoutes as IGroupMap, ProjectJsonSerializerContext and the OpenAPI transformer",
+        "local/openapi/examples.json has an entry for every Project operation, with bodies and responses that match the seed and users.json; route parameters use the array form",
+        "Create uses currentUser.Owner.OwnerForCreate; get and filter use currentUser.Owner.VisibleOwner or FilterOwners; no owner comes from the request body",
+        "The endpoint plumbing lives in ProjectEndpoints; ProjectRoutes keeps templates and metadata and does not inject ICurrentUser",
+        "Tests include validator tests, handler tests with ValidatorSet and NSubstitute, a sort-alignment test, component tests (201/400/409/200/404/204), an authorization matrix (401/403/2xx), a functional flow and a JSON contract test",
+        "Tests use [ResetDatabase], [AuthenticatedAs], TestData, ProjectBuilder and Eventually; no Thread.Sleep, Task.Delay, hardcoded id or login endpoint",
+        "The AOT publish was run and its result reported separately from the build",
+        "The final report lists the real commands and exit codes and does not claim a gate that did not run"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add a component test for POST /api/todos that proves a duplicate name returns 409 and that the row is not inserted twice.",
+      "expected_output": "One component test class in the ComponentTests project, following the fixture, attributes, TestData and builder conventions. The test seeds a Todo, posts the same name as the same owner, asserts 409 and asserts the stored count is unchanged. The agent runs the test project and reports the result.",
+      "files": [],
+      "expectations": [
+        "The test lives in tests/CleanWebApiTemplate.Api.ComponentTests/Todo (or the matching feature folder), not in UnitTests",
+        "The class derives from ComponentTestBase and uses the ComponentTestFixture",
+        "The test uses [ResetDatabase] and [AuthenticatedAs(TestUser.TodoUser)] on the method or class",
+        "The test seeds with Fixture.Todos.AddAsync(new TodoBuilder()...), not with raw SQL",
+        "The test posts to /api/todos/ with TestData.Unique or a fixed name and asserts HttpStatusCode.Conflict",
+        "The test asserts the row count or that only one row with that name exists",
+        "The test uses CancellationToken and has Arrange/Act/Assert",
+        "The agent ran dotnet test --project tests/CleanWebApiTemplate.Api.ComponentTests/... and reported the real result",
+        "The agent did not weaken BlockExternalHttpHandler or the authorization configuration to make the test pass"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Add a Priority column (Low, Normal, High) to Todo. It must be persisted, validated, exposed in the API, included in the seed, documented in OpenAPI and covered by tests.",
+      "expected_output": "A full column change: enum/constraints and entity in Domain; input/validator and DTO updates in Application; table constant, repository column list/mapping/parameters and SQL in Infrastructure/database; request/response and JSON/OpenAPI updates in Api; seed values; unit, component and OpenAPI tests; README update; gates.",
+      "files": [],
+      "expectations": [
+        "The enum EPriority has explicit values starting at 1 and is used instead of raw integers in the domain/application contracts",
+        "The entity, input, DTO, request and response carry the new field; the create and update validators reject unknown values",
+        "TodoTable, the Columns list, the INSERT/UPDATE parameters, MapTodo and a new forward-only SQL script all include the column with consistent types",
+        "If Priority is sortable, TodoSortCatalog and TodoSortColumns both include it and TodoSortColumnsTests passes",
+        "The SQL default or seed covers every priority and does not violate a constraint",
+        "The JSON context and the OpenAPI schema describe the new field, including the allowed values",
+        "The local Swagger request/response examples include the new field and remain consistent with the seed",
+        "Unit tests cover the validator and handler; component tests cover create/read/update with the new field; the OpenAPI contract test asserts the schema",
+        "The agent ran the build, the AOT publish, the tests and coverage and reported real results",
+        "No reflection, dynamic, EF Core or Dapper was introduced"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Add a Reports role that can read every owner's projects but cannot create, update or delete them. Add it to the local profiles and the tests.",
+      "expected_output": "A new role and policy: Constants, ConfigureAuth policy, a route group or endpoint using it, TestUser/TestUsers definitions, devtoken and local OpenAPI users, an authorization matrix (401/403/2xx) and docs. The new role must not gain write access.",
+      "files": [],
+      "expectations": [
+        "Constants contains the Reports policy/role and ConfigureAuth registers it with RequireRole plus the email assertion",
+        "The read endpoints for projects use the Reports policy or a policy that includes Reports; the write endpoints do not",
+        "The policy is mapped with CreateAuthorizedRouteGroupBuilder on a group that contains only read endpoints",
+        "TestUser has a Reports identity and TestUsers defines its fixed subject/email/role; the existing identities are preserved",
+        "local/tools/devtoken.json and local/openapi/users.json have a Reports profile/user with the same email and role",
+        "The authorization matrix covers anonymous 401, no-role 403, wrong-role 403, Reports 2xx on reads and 403 on writes",
+        "The agent ran the component tests and reported the real result",
+        "README API table and the local development docs mention the new role"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Review this working tree against the repository architecture and conventions. Report findings with severity and file:line; do not rewrite the code.",
+      "expected_output": "A review using references/review-checklist.md: hard-rule findings first (layer violation, SQL in the API, missing JSON context, test sleep), then judgement calls. Each finding cites the file, the rule and a one-line fix. The agent does not edit files.",
+      "files": [],
+      "expectations": [
+        "The review identifies Application referencing Infrastructure as a blocker",
+        "The review identifies SQL built in an API handler (or a repository call from Api) as a blocker",
+        "The review identifies the new request/response missing from the feature JsonSerializerContext as a blocker or major finding",
+        "The review identifies Thread.Sleep/Task.Delay in a test as a blocker or major finding",
+        "Each finding cites file:line, the hard rule or judgement check, and a fix",
+        "The review distinguishes blockers, major findings and minor suggestions",
+        "The agent did not modify any file",
+        "The summary states what was not reviewed"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Remove the Todo sample feature from this repository. Keep the solution building and the local environment starting; remove its tests, SQL, seed and local examples.",
+      "expected_output": "An ordered removal: API surface and registrations, Application, Domain, Infrastructure, SQL/seed, tests, Tests.Shared Todo helpers, local OpenAPI examples, docs, and the architecture-test anchors. The agent runs the build, AOT publish, tests and a local start check.",
+      "files": [],
+      "expectations": [
+        "The agent searched for every Todo reference before editing and reported the list",
+        "The API surface, OpenAPI tag/descriptors, JSON context, module registration and IGroupMap registration are removed",
+        "Application, Domain and Infrastructure Todo files are removed",
+        "The Todo SQL/seed is removed; db-init needs no change because it is feature-agnostic",
+        "The Todo tests and Tests.Shared helpers are removed; TestUser members that only existed for Todo are renamed or kept consistently",
+        "The local OpenAPI examples are removed; role profiles stay",
+        "The architecture-test anchors (typeof(TodoEntity), typeof(TodoRepository), typeof(TodoRoutes)) are replaced before the types are deleted",
+        "No orphan build error remains from a deleted type or a stale using",
+        "The agent ran build, AOT publish, tests and a local start check and reported the real results"
+      ]
+    }
+  ]
+}

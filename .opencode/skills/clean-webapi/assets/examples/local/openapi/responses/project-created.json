@@ -1,0 +1,10 @@
+{
+  "id": "01HWXHRB800010000000000005",
+  "name": "Created from the local Swagger examples",
+  "description": "Example request against the Aspire seed.",
+  "createdAt": "2026-10-28T09:30:00Z",
+  "updatedAt": "2026-10-28T09:30:00Z",
+  "status": 1,
+  "createdBy": "local.user@example.com",
+  "updatedBy": "local.user@example.com"
+}

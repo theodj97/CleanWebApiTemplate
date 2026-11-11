@@ -1,0 +1,167 @@
+{
+  "operations": {
+    "POST /api/projects": {
+      "requestBody": {
+        "examples": {
+          "new-project": {
+            "summary": "Create a project",
+            "description": "Returns 201 once. Change the name to create another one, or restart Aspire to rebuild the seed.",
+            "body": "bodies/project-create.json"
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "examples": {
+            "created": {
+              "summary": "The stored project",
+              "body": "responses/project-created.json"
+            }
+          }
+        },
+        "409": {
+          "examples": {
+            "duplicate": {
+              "summary": "The owner already has a project with that name",
+              "value": {
+                "type": "https://httpstatuses.io/409",
+                "title": "Conflict",
+                "status": 409,
+                "detail": "A Project with this name already exists for this owner."
+              }
+            }
+          }
+        }
+      }
+    },
+    "POST /api/projects/filter": {
+      "requestBody": {
+        "examples": {
+          "user": {
+            "summary": "Projects of the local user",
+            "description": "Authorize with the user profile.",
+            "body": "bodies/project-filter-user.json"
+          },
+          "operator": {
+            "summary": "Active and archived projects",
+            "description": "Matches projects 2 and 4. Authorize with the operator profile.",
+            "body": "bodies/project-filter-operator.json"
+          },
+          "admin": {
+            "summary": "Projects of several owners",
+            "description": "Matches projects 1, 2 and 4. Authorize with the admin profile.",
+            "body": "bodies/project-filter-admin.json"
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "examples": {
+            "user": {
+              "summary": "Project 1, owned by the user",
+              "body": "responses/projects-user.json"
+            },
+            "operator": {
+              "summary": "Projects 2 and 4, owned by the operator",
+              "body": "responses/projects-operator.json"
+            },
+            "admin": {
+              "summary": "Projects 1, 2 and 4 across both owners",
+              "body": "responses/projects.json"
+            }
+          }
+        }
+      }
+    },
+    "POST /api/projects/names": {
+      "requestBody": {
+        "examples": {
+          "first-page": {
+            "summary": "First page of names",
+            "body": "bodies/project-names.json"
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "examples": {
+            "first-page": {
+              "summary": "First page of names",
+              "body": "responses/project-names.json"
+            }
+          }
+        }
+      }
+    },
+    "GET /api/projects/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "value": "01HWXHRB800010000000000001"
+        }
+      ],
+      "responses": {
+        "200": {
+          "examples": {
+            "project": {
+              "summary": "Project 1, owned by the user",
+              "body": "responses/project-user.json"
+            }
+          }
+        },
+        "404": {
+          "examples": {
+            "missing": {
+              "summary": "No visible row for that id",
+              "value": {
+                "type": "https://httpstatuses.io/404",
+                "title": "Not Found",
+                "status": 404,
+                "detail": "ID was not found."
+              }
+            }
+          }
+        }
+      }
+    },
+    "PUT /api/projects/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "value": "01HWXHRB800010000000000003"
+        }
+      ],
+      "requestBody": {
+        "examples": {
+          "admin": {
+            "summary": "Activate the admin project",
+            "description": "Project 3, owned by local.admin@example.com. Authorize with the admin profile.",
+            "body": "bodies/project-update.json"
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "examples": {
+            "updated": {
+              "summary": "The updated project",
+              "body": "responses/project-updated.json"
+            }
+          }
+        }
+      }
+    },
+    "DELETE /api/projects/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "value": "01HWXHRB800010000000000004"
+        }
+      ],
+      "responses": {}
+    }
+  }
+}

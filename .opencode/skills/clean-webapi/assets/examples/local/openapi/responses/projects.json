@@ -1,0 +1,32 @@
+[
+  {
+    "id": "01HWXHRB800010000000000001",
+    "name": "Local developer portal",
+    "description": "Draft project owned by the local user.",
+    "createdAt": "2026-10-26T09:15:00Z",
+    "updatedAt": "2026-10-26T09:15:00Z",
+    "status": 1,
+    "createdBy": "local.user@example.com",
+    "updatedBy": "local.user@example.com"
+  },
+  {
+    "id": "01HWXHRB800010000000000002",
+    "name": "Billing migration",
+    "description": "Active project owned by the local operator.",
+    "createdAt": "2026-10-27T11:40:00Z",
+    "updatedAt": "2026-10-27T11:40:00Z",
+    "status": 2,
+    "createdBy": "local.operator@example.com",
+    "updatedBy": "local.operator@example.com"
+  },
+  {
+    "id": "01HWXHRB800010000000000004",
+    "name": "Legacy reporting",
+    "description": "Archived project owned by the local operator.",
+    "createdAt": "2026-10-28T06:20:00Z",
+    "updatedAt": "2026-10-28T06:20:00Z",
+    "status": 4,
+    "createdBy": "local.operator@example.com",
+    "updatedBy": "local.operator@example.com"
+  }
+]

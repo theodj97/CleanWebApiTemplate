@@ -1,0 +1,8 @@
+{
+  "owners": [
+    "local.user@example.com",
+    "local.operator@example.com"
+  ],
+  "pageNumber": 1,
+  "pageSize": 10
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "01HWXHRB800010000000000001",
+    "name": "Local developer portal",
+    "description": "Draft project owned by the local user.",
+    "createdAt": "2026-10-26T09:15:00Z",
+    "updatedAt": "2026-10-26T09:15:00Z",
+    "status": 1,
+    "createdBy": "local.user@example.com",
+    "updatedBy": "local.user@example.com"
+  }
+]

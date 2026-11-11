@@ -1,0 +1,10 @@
+{
+  "id": "01HWXHRB800010000000000003",
+  "name": "Release automation",
+  "description": "Completed project owned by the local admin.",
+  "createdAt": "2026-10-28T07:10:00Z",
+  "updatedAt": "2026-10-28T07:10:00Z",
+  "status": 2,
+  "createdBy": "local.admin@example.com",
+  "updatedBy": "local.admin@example.com"
+}
