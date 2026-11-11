@@ -1,6 +1,6 @@
 {
   "operations": {
-    "POST /api/Todo/filter": {
+    "POST /api/todos/filter": {
       "requestBody": {
         "examples": {
           "user": {
@@ -39,7 +39,7 @@
         }
       }
     },
-    "POST /api/Todo/titles": {
+    "POST /api/todos/titles": {
       "requestBody": {
         "examples": {
           "first-page": {
@@ -59,7 +59,7 @@
         }
       }
     },
-    "POST /api/Todo": {
+    "POST /api/todos": {
       "requestBody": {
         "examples": {
           "new-todo": {
@@ -80,7 +80,7 @@
         }
       }
     },
-    "GET /api/Todo/{id}": {
+    "GET /api/todos/{id}": {
       "parameters": [
         {
           "name": "id",
@@ -99,7 +99,7 @@
         }
       }
     },
-    "PUT /api/Todo/{id}": {
+    "PUT /api/todos/{id}": {
       "parameters": [
         {
           "name": "id",
@@ -127,7 +127,7 @@
         }
       }
     },
-    "DELETE /api/Todo/{id}": {
+    "DELETE /api/todos/{id}": {
       "parameters": [
         {
           "name": "id",
@@ -135,16 +135,7 @@
           "value": "01HWXHRB80000G000000000004"
         }
       ],
-      "responses": {
-        "200": {
-          "examples": {
-            "deleted": {
-              "summary": "The row was deleted",
-              "body": "responses/deleted.json"
-            }
-          }
-        }
-      }
+      "responses": {}
     }
   }
 }

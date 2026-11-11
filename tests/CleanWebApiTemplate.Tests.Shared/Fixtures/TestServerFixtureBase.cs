@@ -73,6 +73,8 @@ public abstract class TestServerFixtureBase : IAsyncLifetime
     /// <summary>Repository the tests use to arrange and assert Todo rows.</summary>
     public TodoTestRepository Todos { get; private set; } = null!;
 
+    private bool TodoTestRepositoryIsCreated { get; set; }
+
     public async ValueTask InitializeAsync()
     {
         using var startup = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
@@ -113,6 +115,7 @@ public abstract class TestServerFixtureBase : IAsyncLifetime
         // 4. Test-side data access.
         var connectionString = await RequiredConnectionStringAsync(Resources.PostgresDb, cancellationToken);
         Todos = new TodoTestRepository(connectionString);
+        TodoTestRepositoryIsCreated = true;
 
         // 4. The application under test.
         await StartApplicationAsync(cancellationToken);
@@ -191,6 +194,11 @@ public abstract class TestServerFixtureBase : IAsyncLifetime
 
     public virtual async ValueTask DisposeAsync()
     {
+        if (TodoTestRepositoryIsCreated)
+        {
+            await Todos.DisposeAsync();
+        }
+
         if (App is not null)
         {
             // Stops and removes the containers: they live exactly as long as the test session.

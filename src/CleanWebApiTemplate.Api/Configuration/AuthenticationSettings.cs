@@ -2,7 +2,7 @@ using System.Text;
 
 namespace CleanWebApiTemplate.Api.Configuration;
 
-/// <summary>How the API validates JWTs. Local development/tests use a symmetric HS256 key;
+/// <summary>How the API validates JWTs. Local development and tests use a symmetric HS256 key;
 /// deployed environments can delegate to an OIDC provider.</summary>
 internal enum AuthenticationMode
 {
@@ -27,8 +27,8 @@ internal sealed record AuthenticationSettings(
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(appSettings);
 
-        string? authority = configuration[Constants.AUTHORITY];
-        AuthenticationMode mode = ParseMode(configuration[Constants.AUTHENTICATION_MODE], authority);
+        string? authority = configuration[Constants.Authority];
+        AuthenticationMode mode = ParseMode(configuration[Constants.AuthenticationMode], authority);
 
         return mode switch
         {
@@ -54,7 +54,7 @@ internal sealed record AuthenticationSettings(
             "symmetric" or "local" => AuthenticationMode.Symmetric,
             "oidc" => AuthenticationMode.Oidc,
             _ => throw new InvalidOperationException(
-                $"'{Constants.AUTHENTICATION_MODE}' must be 'Symmetric' or 'Oidc'."),
+                $"'{Constants.AuthenticationMode}' must be 'Symmetric' or 'Oidc'."),
         };
     }
 
@@ -65,20 +65,20 @@ internal sealed record AuthenticationSettings(
         if (string.IsNullOrWhiteSpace(authority) is false)
         {
             throw new InvalidOperationException(
-                $"'{Constants.AUTHORITY}' must be empty when '{Constants.AUTHENTICATION_MODE}' is 'Symmetric'.");
+                $"'{Constants.Authority}' must be empty when '{Constants.AuthenticationMode}' is 'Symmetric'.");
         }
 
-        string? apiKey = configuration[Constants.API_KEY];
+        string? apiKey = configuration[Constants.ApiKey];
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             throw new InvalidOperationException(
-                $"'{Constants.API_KEY}' is required in Symmetric mode.");
+                $"'{Constants.ApiKey}' is required in Symmetric mode.");
         }
 
         if (Encoding.UTF8.GetByteCount(apiKey) < 32)
         {
             throw new InvalidOperationException(
-                $"'{Constants.API_KEY}' must be at least 32 UTF-8 bytes in Symmetric mode.");
+                $"'{Constants.ApiKey}' must be at least 32 UTF-8 bytes in Symmetric mode.");
         }
 
         return new AuthenticationSettings(AuthenticationMode.Symmetric,
@@ -93,14 +93,14 @@ internal sealed record AuthenticationSettings(
         if (string.IsNullOrWhiteSpace(authority))
         {
             throw new InvalidOperationException(
-                $"'{Constants.AUTHORITY}' is required in Oidc mode.");
+                $"'{Constants.Authority}' is required in Oidc mode.");
         }
 
         if (Uri.TryCreate(authority, UriKind.Absolute, out Uri? uri) is false ||
             uri.Scheme != Uri.UriSchemeHttps)
         {
             throw new InvalidOperationException(
-                $"'{Constants.AUTHORITY}' must be an absolute HTTPS URI in Oidc mode.");
+                $"'{Constants.Authority}' must be an absolute HTTPS URI in Oidc mode.");
         }
 
         // In OIDC mode the signing keys come from the provider metadata. A stray API_KEY is

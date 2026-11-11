@@ -1,6 +1,5 @@
+using System.Globalization;
 using System.Text.Json.Nodes;
-using CleanWebApiTemplate.Application.Todo.Sorting;
-using CleanWebApiTemplate.Domain.Models.Enums.Todo;
 using Microsoft.OpenApi;
 
 namespace CleanWebApiTemplate.Api.Configuration;
@@ -10,7 +9,7 @@ internal static class OpenApiSchemaHelpers
 {
     public static void DescribePaging(OpenApiSchema schema)
     {
-        var pageNumber = Property(schema, "pageNumber");
+        OpenApiSchema? pageNumber = Property(schema, "pageNumber");
         if (pageNumber is not null)
         {
             pageNumber.Description = "1-based page number. Required when pageSize is set.";
@@ -18,7 +17,7 @@ internal static class OpenApiSchemaHelpers
             pageNumber.Example = JsonValue.Create(1);
         }
 
-        var pageSize = Property(schema, "pageSize");
+        OpenApiSchema? pageSize = Property(schema, "pageSize");
         if (pageSize is not null)
         {
             pageSize.Description = "Page size. Required when pageNumber is set.";
@@ -27,32 +26,34 @@ internal static class OpenApiSchemaHelpers
         }
     }
 
-    public static void DescribeSort(OpenApiSchema? schema)
+    /// <summary>Describes a sort collection with the keys the feature accepts.</summary>
+    public static void DescribeSort(OpenApiSchema? schema, string keys)
     {
         if (schema is null)
             return;
 
-        schema.Description =
-            $"Sort keys and directions, applied in order. Supported keys: {TodoSortCatalog.Describe()}.";
+        schema.Description = $"Sort keys and directions, applied in order. Supported keys: {keys}.";
         schema.Example = JsonNode.Parse("""[{"key":"createdAt","value":false}]""");
     }
 
-    public static void DescribeStatus(OpenApiSchema? schema,
-                                      string? description = null,
-                                      bool withAllowedValues = true)
+    /// <summary>Describes a status property from its enum: names, allowed values and an example.</summary>
+    public static void DescribeStatus<TEnum>(OpenApiSchema? schema,
+                                             string? description = null,
+                                             bool withAllowedValues = true)
+        where TEnum : struct, Enum
     {
         if (schema is null)
             return;
 
-        string values = string.Join(", ", Enum.GetValues<ETodoStatus>()
-                                                    .Select(status => $"{(int)status} {status}"));
-        schema.Description = description is null ? $"Status: {values}." : $"{description} Values: {values}.";
-        schema.Example = JsonValue.Create((int)ETodoStatus.Pending);
+        TEnum[] values = [.. Enum.GetValues<TEnum>()];
+        string names = string.Join(", ", values.Select(status => $"{Convert.ToInt32(status, CultureInfo.InvariantCulture)} {status}"));
+        schema.Description = description is null ? $"Status: {names}." : $"{description} Values: {names}.";
+        schema.Example = JsonValue.Create(Convert.ToInt32(values[0], CultureInfo.InvariantCulture));
 
-        if (!withAllowedValues)
+        if (withAllowedValues is false)
             return;
 
-        schema.Enum = [.. Enum.GetValues<ETodoStatus>().Select(status => JsonValue.Create((int)status))];
+        schema.Enum = [.. values.Select(status => JsonValue.Create(Convert.ToInt32(status, CultureInfo.InvariantCulture)))];
     }
 
     public static void Describe(OpenApiSchema? schema,
@@ -77,7 +78,7 @@ internal static class OpenApiSchemaHelpers
     }
 
     public static OpenApiSchema? Property(OpenApiSchema schema, string name) =>
-        schema.Properties is not null && schema.Properties.TryGetValue(name, out var property)
+        schema.Properties is not null && schema.Properties.TryGetValue(name, out IOpenApiSchema? property)
             ? property as OpenApiSchema
             : null;
 
@@ -87,7 +88,7 @@ internal static class OpenApiSchemaHelpers
                              string name,
                              Action<OpenApiSchema> describe)
     {
-        if (schemas.TryGetValue(name, out var node) && node is OpenApiSchema schema)
+        if (schemas.TryGetValue(name, out IOpenApiSchema? node) && node is OpenApiSchema schema)
             describe(schema);
     }
 }

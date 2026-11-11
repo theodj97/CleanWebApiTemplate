@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using CleanWebApiTemplate.Domain.Models.Enums.Todo;
+using CleanWebApiTemplate.Domain.Todo;
 using CleanWebApiTemplate.Tests.Shared.Attributes;
 using CleanWebApiTemplate.Tests.Shared.Auth;
 using CleanWebApiTemplate.Tests.Shared.Data;
@@ -10,8 +10,8 @@ using CleanWebApiTemplate.Tests.Shared.Data;
 namespace CleanWebApiTemplate.Api.ComponentTests;
 
 /// <summary>
-/// HTTP contract at the edges: client errors are 400s, unmatched routes/methods are ProblemDetails
-/// and empty collections are 204.
+/// HTTP contract at the edges: client errors are 400s, unmatched routes and methods are ProblemDetails
+/// and empty collections are an empty 200 array.
 /// </summary>
 public class ApiContractTests(ComponentTestFixture fixture) : ComponentTestBase(fixture)
 {
@@ -29,7 +29,7 @@ public class ApiContractTests(ComponentTestFixture fixture) : ComponentTestBase(
     public async Task Get_UnsupportedMethod_ReturnsProblemDetails()
     {
         // Act
-        var response = await Client.GetAsync("/api/Todo/", CancellationToken);
+        var response = await Client.GetAsync("/api/todos/", CancellationToken);
 
         // Assert
         await AssertProblemDetailsAsync(response, HttpStatusCode.MethodNotAllowed, "Method Not Allowed");
@@ -44,7 +44,7 @@ public class ApiContractTests(ComponentTestFixture fixture) : ComponentTestBase(
         using var content = new StringContent("{", Encoding.UTF8, "application/json");
 
         // Act
-        var response = await Client.PostAsync("/api/Todo/", content, CancellationToken);
+        var response = await Client.PostAsync("/api/todos/", content, CancellationToken);
 
         // Assert
         await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest, "Bad Request");
@@ -56,7 +56,7 @@ public class ApiContractTests(ComponentTestFixture fixture) : ComponentTestBase(
     public async Task Create_WithMissingTitle_ReturnsBadRequest()
     {
         // Act
-        var response = await Client.PostAsJsonAsync("/api/Todo/", new { }, CancellationToken);
+        var response = await Client.PostAsJsonAsync("/api/todos/", new { }, CancellationToken);
 
         // Assert
         await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest, "Bad Request");
@@ -69,7 +69,7 @@ public class ApiContractTests(ComponentTestFixture fixture) : ComponentTestBase(
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/", new { title = (string?)null }, CancellationToken);
+            "/api/todos/", new { title = (string?)null }, CancellationToken);
 
         // Assert
         await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest, "Validation Errors");
@@ -86,42 +86,42 @@ public class ApiContractTests(ComponentTestFixture fixture) : ComponentTestBase(
 
         // Act
         var response = await Client.PutAsJsonAsync(
-            $"/api/Todo/{existing.Id}", new { status = 0 }, CancellationToken);
+            $"/api/todos/{existing.Id}", new { status = 0 }, CancellationToken);
 
         // Assert
         await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest, "Validation Errors");
         var stored = await Fixture.Todos.FindAsync(existing.Id);
         Assert.NotNull(stored);
-        Assert.Equal((int)ETodoStatus.Pending, stored!.Status);
+        Assert.Equal(ETodoStatus.Pending, stored!.Status);
     }
 
     [Fact]
     [ResetDatabase]
     [AuthenticatedAs(TestUser.TodoUser)]
-    public async Task Filter_WithNoMatches_ReturnsNoContent()
+    public async Task Filter_WithNoMatches_ReturnsEmptyArray()
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter",
+            "/api/todos/filter",
             new { ids = new[] { Ulid.NewUlid().ToString() } },
             CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Empty(await response.Content.ReadAsStringAsync(CancellationToken));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("[]", await response.Content.ReadAsStringAsync(CancellationToken));
     }
 
     [Fact]
     [ResetDatabase]
     [AuthenticatedAs(TestUser.TodoUser)]
-    public async Task Titles_WithNoRows_ReturnsNoContent()
+    public async Task Titles_WithNoRows_ReturnsEmptyArray()
     {
         // Act
-        var response = await Client.PostAsJsonAsync("/api/Todo/titles", new { }, CancellationToken);
+        var response = await Client.PostAsJsonAsync("/api/todos/titles", new { }, CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Empty(await response.Content.ReadAsStringAsync(CancellationToken));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("[]", await response.Content.ReadAsStringAsync(CancellationToken));
     }
 
     private static async Task AssertProblemDetailsAsync(HttpResponseMessage response,

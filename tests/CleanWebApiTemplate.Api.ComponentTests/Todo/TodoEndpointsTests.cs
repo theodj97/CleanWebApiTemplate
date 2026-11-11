@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using CleanWebApiTemplate.Api.Models.Responses.Todo;
-using CleanWebApiTemplate.Domain.Models.Enums.Todo;
+using CleanWebApiTemplate.Api.Todo;
+using CleanWebApiTemplate.Domain.Todo;
 using CleanWebApiTemplate.Tests.Shared.Attributes;
 using CleanWebApiTemplate.Tests.Shared.Auth;
 using CleanWebApiTemplate.Tests.Shared.Data;
@@ -22,19 +22,19 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
 
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/", new { title, description = "Created by a component test" }, CancellationToken);
+            "/api/todos/", new { title, description = "Created by a component test" }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<TodoResponse>(JsonSerializerOptions.Web, CancellationToken);
         Assert.NotNull(body);
         Assert.NotNull(response.Headers.Location);
-        Assert.EndsWith($"/api/Todo/{body!.Id}", response.Headers.Location.ToString(), StringComparison.Ordinal);
+        Assert.EndsWith($"/api/todos/{body!.Id}", response.Headers.Location.ToString(), StringComparison.Ordinal);
 
         var stored = await Fixture.Todos.FindByTitleAsync(title);
         Assert.NotNull(stored);
         Assert.Equal(TestUsers.Email(TestUser.TodoUser), stored!.CreatedBy);
-        Assert.Equal((int)ETodoStatus.Pending, stored.Status);
+        Assert.Equal(ETodoStatus.Pending, stored.Status);
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/", new { title = "" }, CancellationToken);
+            "/api/todos/", new { title = "" }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -61,7 +61,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
 
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/", new { title = existing.Title }, CancellationToken);
+            "/api/todos/", new { title = existing.Title }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -79,7 +79,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
 
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/", new { title }, CancellationToken);
+            "/api/todos/", new { title }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -98,7 +98,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
 
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/", new { title = $"  {title}  " }, CancellationToken);
+            "/api/todos/", new { title = $"  {title}  " }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -115,7 +115,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/", new { title = "   " }, CancellationToken);
+            "/api/todos/", new { title = "   " }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -131,7 +131,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
             new TodoBuilder().CreatedBy(TestUsers.Email(TestUser.TodoUser)).Build());
 
         // Act
-        var response = await Client.GetAsync($"/api/Todo/{existing.Id}", CancellationToken);
+        var response = await Client.GetAsync($"/api/todos/{existing.Id}", CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -143,13 +143,13 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
     [Fact]
     [ResetDatabase]
     [AuthenticatedAs(TestUser.TodoUser)]
-    public async Task GetById_WithUnknownId_ReturnsNoContent()
+    public async Task GetById_WithUnknownId_ReturnsNotFound()
     {
         // Act
-        var response = await Client.GetAsync($"/api/Todo/{Ulid.NewUlid()}", CancellationToken);
+        var response = await Client.GetAsync($"/api/todos/{Ulid.NewUlid()}", CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
@@ -163,7 +163,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
 
         // Act
         var response = await Client.PutAsJsonAsync(
-            $"/api/Todo/{existing.Id}",
+            $"/api/todos/{existing.Id}",
             new { description = "Updated by a component test", status = (int)ETodoStatus.Completed },
             CancellationToken);
 
@@ -172,7 +172,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
         var stored = await Fixture.Todos.FindAsync(existing.Id);
         Assert.NotNull(stored);
         Assert.Equal("Updated by a component test", stored!.Description);
-        Assert.Equal((int)ETodoStatus.Completed, stored.Status);
+        Assert.Equal(ETodoStatus.Completed, stored.Status);
         Assert.Equal(TestUsers.Email(TestUser.TodoUser), stored.UpdatedBy);
     }
 
@@ -183,7 +183,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
     {
         // Act
         var response = await Client.PutAsJsonAsync(
-            $"/api/Todo/{Ulid.NewUlid()}", new { description = "missing" }, CancellationToken);
+            $"/api/todos/{Ulid.NewUlid()}", new { description = "missing" }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -199,10 +199,10 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
             new TodoBuilder().CreatedBy(TestUsers.Email(TestUser.TodoOperator)).Build());
 
         // Act
-        var response = await Client.DeleteAsync($"/api/Todo/{existing.Id}", CancellationToken);
+        var response = await Client.DeleteAsync($"/api/todos/{existing.Id}", CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         Assert.Null(await Fixture.Todos.FindAsync(existing.Id));
     }
 
@@ -217,7 +217,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
         await Fixture.Todos.AddAsync(new TodoBuilder().CreatedBy(createdBy).Build());
 
         // Act
-        var response = await Client.PostAsJsonAsync("/api/Todo/filter", new { }, CancellationToken);
+        var response = await Client.PostAsJsonAsync("/api/todos/filter", new { }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -236,7 +236,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
             new TodoBuilder().CreatedBy(TestUsers.Email(TestUser.TodoUser)).Build());
 
         // Act
-        var response = await Client.PostAsJsonAsync("/api/Todo/titles", new { }, CancellationToken);
+        var response = await Client.PostAsJsonAsync("/api/todos/titles", new { }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -252,7 +252,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/", new { title = new string('a', 256) }, CancellationToken);
+            "/api/todos/", new { title = new string('a', 256) }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -265,7 +265,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/", new { title = TestData.Unique("long-description"), description = new string('a', 1001) }, CancellationToken);
+            "/api/todos/", new { title = TestData.Unique("long-description"), description = new string('a', 1001) }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -283,7 +283,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
 
         // Act
         var response = await Client.PutAsJsonAsync(
-            $"/api/Todo/{existing.Id}", new { title = newTitle }, CancellationToken);
+            $"/api/todos/{existing.Id}", new { title = newTitle }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -305,7 +305,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
 
         // Act
         var response = await Client.PutAsJsonAsync(
-            $"/api/Todo/{target.Id}", new { title = taken.Title }, CancellationToken);
+            $"/api/todos/{target.Id}", new { title = taken.Title }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -325,7 +325,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
 
         // Act
         var response = await Client.PutAsJsonAsync(
-            $"/api/Todo/{target.Id}", new { title }, CancellationToken);
+            $"/api/todos/{target.Id}", new { title }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -345,7 +345,7 @@ public class TodoEndpointsTests(ComponentTestFixture fixture) : ComponentTestBas
 
         // Act
         var response = await Client.PutAsJsonAsync(
-            $"/api/Todo/{existing.Id}", new { description = new string('a', 1001) }, CancellationToken);
+            $"/api/todos/{existing.Id}", new { description = new string('a', 1001) }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

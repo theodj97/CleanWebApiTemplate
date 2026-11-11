@@ -1,22 +1,10 @@
-using CleanWebApiTemplate.Api.Models.Interfaces;
-using CleanWebApiTemplate.Api.Routes.Todo;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using CleanWebApiTemplate.Api.Common.Abstractions;
 
 namespace CleanWebApiTemplate.Api.Extensions;
 
 public static class EndpointExtension
 {
-    /// <summary>
-    /// Explicit (no assembly scanning, Native AOT friendly) registration of route groups.
-    /// Register each <see cref="IGroupMap"/> implementation here.
-    /// </summary>
-    public static IServiceCollection RegisterMinimalEndpoints(this IServiceCollection services)
-    {
-        services.TryAddEnumerable(ServiceDescriptor.Transient<IGroupMap, TodoRoutes>());
-
-        return services;
-    }
-
+    /// <summary>Maps every route group a feature module registered.</summary>
     public static IApplicationBuilder MapRoutes(this WebApplication app)
     {
         IEnumerable<IGroupMap> endpoints = app.Services.GetRequiredService<IEnumerable<IGroupMap>>();

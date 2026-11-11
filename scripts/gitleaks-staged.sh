@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Escanea los cambios en staging con gitleaks. Si el binario no está instalado,
-# lo descarga en .tools/gitleaks con la versión fijada en install-gitleaks.sh.
+# Scans the staged changes with gitleaks. If the binary is not installed, it
+# downloads it into .tools/gitleaks with the version pinned in install-gitleaks.sh.
 set -euo pipefail
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)

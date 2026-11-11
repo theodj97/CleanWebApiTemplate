@@ -2,8 +2,8 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using CleanWebApiTemplate.Api.Models.Responses.Todo;
-using CleanWebApiTemplate.Domain.Models.Enums.Todo;
+using CleanWebApiTemplate.Api.Todo;
+using CleanWebApiTemplate.Domain.Todo;
 using CleanWebApiTemplate.Tests.Shared.Attributes;
 using CleanWebApiTemplate.Tests.Shared.Auth;
 using CleanWebApiTemplate.Tests.Shared.Data;
@@ -28,7 +28,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
 
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter",
+            "/api/todos/filter",
             new { ids = new[] { first.Id.ToString(), second.Id.ToString() } },
             CancellationToken);
 
@@ -56,8 +56,8 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
 
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter",
-            new { title = new[] { "alpha" } },
+            "/api/todos/filter",
+            new { titles = new[] { "alpha" } },
             CancellationToken);
 
         // Assert
@@ -75,8 +75,8 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter",
-            new { title = new[] { "   " } },
+            "/api/todos/filter",
+            new { titles = new[] { "   " } },
             CancellationToken);
 
         // Assert
@@ -97,8 +97,8 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
 
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter",
-            new { title = new[] { "100%" } },
+            "/api/todos/filter",
+            new { titles = new[] { "100%" } },
             CancellationToken);
 
         // Assert
@@ -123,15 +123,15 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
         var request = new
         {
             ids = new[] { matching.Id.ToString(), other.Id.ToString() },
-            title = new[] { matching.Title },
-            status = new[] { (int)ETodoStatus.InProgress },
-            createdBy = new[] { createdBy },
+            titles = new[] { matching.Title },
+            statuses = new[] { (int)ETodoStatus.InProgress },
+            owners = new[] { createdBy },
             startDate = DateTime.UtcNow.AddHours(-1).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
             endDate = DateTime.UtcNow.AddHours(1).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
         };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/api/Todo/filter", request, CancellationToken);
+        var response = await Client.PostAsJsonAsync("/api/todos/filter", request, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -142,14 +142,14 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     [Fact]
     [ResetDatabase]
     [AuthenticatedAs(TestUser.TodoUser)]
-    public async Task Filter_WithDateRangeOutsideTheTodo_ReturnsNoContent()
+    public async Task Filter_WithDateRangeOutsideTheTodo_ReturnsEmptyArray()
     {
         // Arrange
         await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
 
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter",
+            "/api/todos/filter",
             new
             {
                 startDate = DateTime.UtcNow.AddDays(-10).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
@@ -158,8 +158,8 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
             CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Empty(await response.Content.ReadAsStringAsync(CancellationToken));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("[]", await response.Content.ReadAsStringAsync(CancellationToken));
     }
 
     [Fact]
@@ -172,7 +172,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
 
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter",
+            "/api/todos/filter",
             new
             {
                 startDate = DateTime.Now.AddHours(-1).ToString("o"),
@@ -198,7 +198,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
 
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter",
+            "/api/todos/filter",
             new { sortProperties = new[] { new { key = "Title", value = true } } },
             CancellationToken);
 
@@ -222,7 +222,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
 
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter",
+            "/api/todos/filter",
             new
             {
                 sortProperties = new[] { new { key = "Title", value = false } },
@@ -240,14 +240,14 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     [Fact]
     [ResetDatabase]
     [AuthenticatedAs(TestUser.TodoUser)]
-    public async Task Filter_AsUser_WithoutCreatedBy_ReturnsOnlyOwnTodos()
+    public async Task Filter_AsUser_WithoutOwners_ReturnsOnlyOwnTodos()
     {
         // Arrange
         var own = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
         await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoAdmin).Build());
 
         // Act
-        var response = await Client.PostAsJsonAsync("/api/Todo/filter", new { }, CancellationToken);
+        var response = await Client.PostAsJsonAsync("/api/todos/filter", new { }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -258,7 +258,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     [Fact]
     [ResetDatabase]
     [AuthenticatedAs(TestUser.TodoUser)]
-    public async Task Filter_AsUser_WithAnotherUsersCreatedBy_ReturnsOnlyOwnTodos()
+    public async Task Filter_AsUser_WithAnotherUsersOwner_ReturnsOnlyOwnTodos()
     {
         // Arrange
         var own = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
@@ -266,8 +266,8 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
 
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter",
-            new { createdBy = new[] { TestUsers.Email(TestUser.TodoAdmin) } },
+            "/api/todos/filter",
+            new { owners = new[] { TestUsers.Email(TestUser.TodoAdmin) } },
             CancellationToken);
 
         // Assert
@@ -279,7 +279,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     [Fact]
     [ResetDatabase]
     [AuthenticatedAs(TestUser.TodoAdmin)]
-    public async Task Filter_AsAdmin_WithoutCreatedBy_ReturnsTodosFromEveryUser()
+    public async Task Filter_AsAdmin_WithoutOwners_ReturnsTodosFromEveryUser()
     {
         // Arrange
         var userTodo = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
@@ -287,7 +287,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
         var adminTodo = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoAdmin).Build());
 
         // Act
-        var response = await Client.PostAsJsonAsync("/api/Todo/filter", new { }, CancellationToken);
+        var response = await Client.PostAsJsonAsync("/api/todos/filter", new { }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -301,7 +301,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     [Fact]
     [ResetDatabase]
     [AuthenticatedAs(TestUser.TodoAdmin)]
-    public async Task Filter_AsAdmin_WithCreatedBy_ReturnsOnlyThatUsersTodos()
+    public async Task Filter_AsAdmin_WithOwner_ReturnsOnlyThatUsersTodos()
     {
         // Arrange
         var userTodo = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
@@ -309,8 +309,8 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
 
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter",
-            new { createdBy = new[] { TestUsers.Email(TestUser.TodoUser) } },
+            "/api/todos/filter",
+            new { owners = new[] { TestUsers.Email(TestUser.TodoUser) } },
             CancellationToken);
 
         // Assert
@@ -322,7 +322,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     [Fact]
     [ResetDatabase]
     [AuthenticatedAs(TestUser.TodoAdmin)]
-    public async Task Filter_AsAdmin_WithSeveralCreatedBy_ReturnsTheUnionOfTheirTodos()
+    public async Task Filter_AsAdmin_WithSeveralOwners_ReturnsTheUnionOfTheirTodos()
     {
         // Arrange
         var userTodo = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
@@ -331,10 +331,10 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
 
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter",
+            "/api/todos/filter",
             new
             {
-                createdBy = new[]
+                owners = new[]
                 {
                     TestUsers.Email(TestUser.TodoUser),
                     TestUsers.Email(TestUser.TodoOperator),
@@ -363,7 +363,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
 
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/titles",
+            "/api/todos/titles",
             new
             {
                 sortProperties = new[] { new { key = "Title", value = false } },
@@ -392,7 +392,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
 
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter", new { startDate, endDate }, CancellationToken);
+            "/api/todos/filter", new { startDate, endDate }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -404,7 +404,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter",
+            "/api/todos/filter",
             new { sortProperties = new[] { new { key = "Unknown", value = false } } },
             CancellationToken);
 
@@ -418,7 +418,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter", new { pageNumber = 1 }, CancellationToken);
+            "/api/todos/filter", new { pageNumber = 1 }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -430,7 +430,7 @@ public class TodoFilteredEndpointsTests(ComponentTestFixture fixture) : Componen
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/titles", new { pageSize = 1 }, CancellationToken);
+            "/api/todos/titles", new { pageSize = 1 }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

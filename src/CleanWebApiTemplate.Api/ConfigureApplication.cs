@@ -27,7 +27,7 @@ public static class ConfigureApplication
         });
 
         // After routing and before authorization; the policy allows no origin when none is configured.
-        app.UseCors(Constants.DEFAULT_CORS_POLICY_NAME);
+        app.UseCors(Constants.DefaultCorsPolicyName);
 
         app.UseAuthentication();
         app.UseAuthorization();

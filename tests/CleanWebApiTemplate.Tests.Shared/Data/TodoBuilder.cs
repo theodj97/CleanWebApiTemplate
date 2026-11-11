@@ -1,6 +1,5 @@
 using Bogus;
-using CleanWebApiTemplate.Domain.Models.Entities;
-using CleanWebApiTemplate.Domain.Models.Enums.Todo;
+using CleanWebApiTemplate.Domain.Todo;
 
 namespace CleanWebApiTemplate.Tests.Shared.Data;
 
@@ -13,14 +12,14 @@ public sealed class TodoBuilder
     private readonly Faker _faker = TestData.CreateFaker();
     private string _title;
     private string _description;
-    private string _createdBy;
-    private int _status = (int)ETodoStatus.Pending;
+    private string _owner;
+    private ETodoStatus _status = ETodoStatus.Pending;
 
     public TodoBuilder()
     {
         _title = TestData.Unique("todo");
         _description = _faker.Lorem.Sentence();
-        _createdBy = _faker.Internet.Email();
+        _owner = _faker.Internet.Email();
     }
 
     public TodoBuilder WithTitle(string title)
@@ -35,21 +34,22 @@ public sealed class TodoBuilder
         return this;
     }
 
+    /// <summary>Sets the owner (the stored CreatedBy/UpdatedBy).</summary>
     public TodoBuilder CreatedBy(string email)
     {
-        _createdBy = email;
+        _owner = email;
         return this;
     }
 
     public TodoBuilder WithStatus(ETodoStatus status)
     {
-        _status = (int)status;
+        _status = status;
         return this;
     }
 
     public TodoEntity Build()
     {
-        var now = DateTime.UtcNow;
+        DateTime now = DateTime.UtcNow;
         return new TodoEntity
         {
             Id = Ulid.NewUlid(),
@@ -58,8 +58,8 @@ public sealed class TodoBuilder
             CreatedAt = now,
             UpdatedAt = now,
             Status = _status,
-            CreatedBy = _createdBy,
-            UpdatedBy = _createdBy,
+            CreatedBy = _owner,
+            UpdatedBy = _owner,
         };
     }
 }

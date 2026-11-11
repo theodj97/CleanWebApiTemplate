@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using CleanWebApiTemplate.Api.Configuration;
-using CleanWebApiTemplate.Application.Abstractions.Identity;
+using CleanWebApiTemplate.Application.Common.Identity;
 
 namespace CleanWebApiTemplate.Api.Common;
 
@@ -11,7 +11,7 @@ public sealed class HttpContextCurrentUser(IHttpContextAccessor contextAccessor)
         ?? contextAccessor.HttpContext?.User.FindFirst("email")?.Value
         ?? throw new InvalidOperationException("The authenticated principal has no email claim.");
 
-    public bool IsAdmin => contextAccessor.HttpContext?.User.IsInRole(Constants.ADMIN_POLICY) ?? false;
+    public bool IsAdmin => contextAccessor.HttpContext?.User.IsInRole(Constants.AdminPolicy) ?? false;
 
     public OwnerScope Owner => new(Email, IsAdmin);
 }

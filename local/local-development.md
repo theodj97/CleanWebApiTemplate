@@ -11,7 +11,7 @@ Nothing here is required by deployed environments: `src/` never references anyth
 | Folder | Contents |
 |---|---|
 | `src/` | Application and shared runtime code for every environment: `Api`, `Application`, `Domain`, `Infrastructure`, `ServiceDefaults`. |
-| `tests/` | Test projects for `src/`: Api.UnitTests, Api.ComponentTests, Api.FunctionalTests, Tests.Shared. |
+| `tests/` | Test projects for `src/`: UnitTests, Api.ComponentTests, Api.FunctionalTests, Tests.Shared. |
 | `local/aspire/` | Local orchestration only: `CleanWebApiTemplate.AppHost`, `CleanWebApiTemplate.DbInitializer` and `CleanWebApiTemplate.OpenBaoInitializer`. |
 | `local/openapi/` | Local-only Swagger sidecar, the examples catalog (`examples.json`, `bodies/`, `responses/`), the dropdown users (`users.json`), the custom UI (`swagger/`) and its unit tests. |
 | `local/database/` | PostgreSQL schema scripts and `seed/` synthetic data. |

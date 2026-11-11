@@ -16,7 +16,7 @@ public class TodoValidationTests(ComponentTestFixture fixture) : ComponentTestBa
     [AuthenticatedAs(TestUser.TodoUser)]
     public async Task GetById_WithInvalidId_ReturnsBadRequest()
     {
-        var response = await Client.GetAsync("/api/Todo/not-a-ulid", CancellationToken);
+        var response = await Client.GetAsync("/api/todos/not-a-ulid", CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -26,7 +26,7 @@ public class TodoValidationTests(ComponentTestFixture fixture) : ComponentTestBa
     public async Task Update_WithInvalidId_ReturnsBadRequest()
     {
         var response = await Client.PutAsJsonAsync(
-            "/api/Todo/not-a-ulid", new { description = "ignored" }, CancellationToken);
+            "/api/todos/not-a-ulid", new { description = "ignored" }, CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -35,7 +35,7 @@ public class TodoValidationTests(ComponentTestFixture fixture) : ComponentTestBa
     [AuthenticatedAs(TestUser.TodoOperator)]
     public async Task Delete_WithInvalidId_ReturnsBadRequest()
     {
-        var response = await Client.DeleteAsync("/api/Todo/not-a-ulid", CancellationToken);
+        var response = await Client.DeleteAsync("/api/todos/not-a-ulid", CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -43,13 +43,11 @@ public class TodoValidationTests(ComponentTestFixture fixture) : ComponentTestBa
     [Fact]
     [AuthenticatedAs(TestUser.TodoOperator)]
     [ResetDatabase]
-    public async Task Delete_WithUnknownId_ReturnsOkAndFalse()
+    public async Task Delete_WithUnknownId_ReturnsNotFound()
     {
-        var response = await Client.DeleteAsync($"/api/Todo/{Ulid.NewUlid()}", CancellationToken);
+        var response = await Client.DeleteAsync($"/api/todos/{Ulid.NewUlid()}", CancellationToken);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.False(await response.Content.ReadFromJsonAsync<bool>(
-            TestContext.Current.CancellationToken));
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
@@ -57,7 +55,7 @@ public class TodoValidationTests(ComponentTestFixture fixture) : ComponentTestBa
     public async Task Filter_WithInvalidSortKey_ReturnsBadRequest()
     {
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter",
+            "/api/todos/filter",
             new { sortProperties = new[] { new { key = "Password", value = false } } },
             CancellationToken);
 
@@ -69,7 +67,7 @@ public class TodoValidationTests(ComponentTestFixture fixture) : ComponentTestBa
     public async Task Titles_WithInvalidSortKey_ReturnsBadRequest()
     {
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/titles",
+            "/api/todos/titles",
             new { sortProperties = new[] { new { key = "Password", value = false } } },
             CancellationToken);
 
@@ -85,7 +83,7 @@ public class TodoValidationTests(ComponentTestFixture fixture) : ComponentTestBa
     public async Task Filter_WithIncompleteOrZeroPaging_ReturnsBadRequest(int? pageNumber, int? pageSize)
     {
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter", new { pageNumber, pageSize }, CancellationToken);
+            "/api/todos/filter", new { pageNumber, pageSize }, CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -97,7 +95,7 @@ public class TodoValidationTests(ComponentTestFixture fixture) : ComponentTestBa
     public async Task Titles_WithIncompletePaging_ReturnsBadRequest(int? pageNumber, int? pageSize)
     {
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/titles", new { pageNumber, pageSize }, CancellationToken);
+            "/api/todos/titles", new { pageNumber, pageSize }, CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -111,7 +109,7 @@ public class TodoValidationTests(ComponentTestFixture fixture) : ComponentTestBa
     public async Task Filter_WithInvalidDateRange_ReturnsBadRequest(string? startDate, string? endDate)
     {
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter", new { startDate, endDate }, CancellationToken);
+            "/api/todos/filter", new { startDate, endDate }, CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -121,7 +119,7 @@ public class TodoValidationTests(ComponentTestFixture fixture) : ComponentTestBa
     public async Task Filter_WithUnknownStatus_ReturnsBadRequest()
     {
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter", new { status = new[] { 99 } }, CancellationToken);
+            "/api/todos/filter", new { statuses = new[] { 99 } }, CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -131,7 +129,7 @@ public class TodoValidationTests(ComponentTestFixture fixture) : ComponentTestBa
     public async Task Filter_WithInvalidId_ReturnsBadRequest()
     {
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter", new { ids = new[] { "not-a-ulid" } }, CancellationToken);
+            "/api/todos/filter", new { ids = new[] { "not-a-ulid" } }, CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -141,7 +139,7 @@ public class TodoValidationTests(ComponentTestFixture fixture) : ComponentTestBa
     public async Task Filter_WithInvalidOwnerEmail_ReturnsBadRequest()
     {
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter", new { createdBy = new[] { "not-an-email" } }, CancellationToken);
+            "/api/todos/filter", new { owners = new[] { "not-an-email" } }, CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -151,7 +149,7 @@ public class TodoValidationTests(ComponentTestFixture fixture) : ComponentTestBa
     public async Task Filter_WithOverlongTitleFragment_ReturnsBadRequest()
     {
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/filter", new { title = new[] { new string('a', 256) } }, CancellationToken);
+            "/api/todos/filter", new { titles = new[] { new string('a', 256) } }, CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -167,7 +165,7 @@ public class TodoValidationTests(ComponentTestFixture fixture) : ComponentTestBa
             new TodoBuilder().CreatedBy(TestUsers.Email(TestUser.TodoUser)).Build());
 
         var response = await Client.PutAsJsonAsync(
-            $"/api/Todo/{existing.Id}", new { title }, CancellationToken);
+            $"/api/todos/{existing.Id}", new { title }, CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -178,7 +176,7 @@ public class TodoValidationTests(ComponentTestFixture fixture) : ComponentTestBa
     {
         using var content = new StringContent("null", System.Text.Encoding.UTF8, "application/json");
 
-        var response = await Client.PostAsync("/api/Todo/", content, CancellationToken);
+        var response = await Client.PostAsync("/api/todos/", content, CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

@@ -2,7 +2,7 @@
 
 | Project | What it tests | Needs Docker | Runs in parallel |
 |---|---|---|---|
-| `CleanWebApiTemplate.Api.UnitTests` | Validators and other pure logic in isolation. Dependencies are substitutes; no Aspire, no containers. | No | Yes |
+| `CleanWebApiTemplate.UnitTests` | Validators and other pure logic in isolation. Dependencies are substitutes; no Aspire, no containers. | No | Yes |
 | `CleanWebApiTemplate.Api.ComponentTests` | The API in-process (`WebApplicationFactory<Program>`) against the real PostgreSQL and OpenBao containers started by the shared AppHost in `Component` mode. Covers endpoints, validation, database state and the authentication/authorization matrix. | Yes | No (shared database) |
 | `CleanWebApiTemplate.Api.FunctionalTests` | Complete flows with the API running as a separate process under the shared AppHost in `Functional` mode. Black box: HTTP only. | Yes | No (shared database) |
 | `CleanWebApiTemplate.ArchitectureTests` | Dependency rules between `src/` projects and structure conventions (ArchUnitNET). | No | Yes |
@@ -34,7 +34,7 @@ volumes, empty databases (schema only, no local seed) and a per-run OpenBao root
 dotnet test --solution CleanWebApiTemplate.slnx
 
 # One project
-dotnet test --project tests/CleanWebApiTemplate.Api.UnitTests/CleanWebApiTemplate.Api.UnitTests.csproj
+dotnet test --project tests/CleanWebApiTemplate.UnitTests/CleanWebApiTemplate.UnitTests.csproj
 ```
 
 The first component/functional run pulls the PostgreSQL and OpenBao images and can take a few minutes. Component and

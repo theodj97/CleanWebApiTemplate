@@ -1,4 +1,4 @@
-using CleanWebApiTemplate.Application.Results;
+using CleanWebApiTemplate.Application.Common.Results;
 using CleanWebApiTemplate.Tests.Shared.Attributes;
 using CleanWebApiTemplate.Tests.Shared.Data;
 

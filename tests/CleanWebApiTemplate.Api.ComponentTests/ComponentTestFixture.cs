@@ -24,6 +24,7 @@ namespace CleanWebApiTemplate.Api.ComponentTests;
 public sealed class ComponentTestFixture : TestServerFixtureBase
 {
     private Dictionary<string, string?> _settings = [];
+    private string _connectionString = string.Empty;
 
     public ComponentAppFactory Factory { get; private set; } = null!;
 
@@ -35,10 +36,10 @@ public sealed class ComponentTestFixture : TestServerFixtureBase
 
     protected override async Task StartApplicationAsync(CancellationToken cancellationToken)
     {
+        _connectionString = await RequiredConnectionStringAsync(Resources.PostgresDb, cancellationToken);
+
         _settings = new Dictionary<string, string?>
         {
-            [$"ConnectionStrings:{AppSettings.PostgresConnectionName}"] =
-                await RequiredConnectionStringAsync(Resources.PostgresDb, cancellationToken),
             // There is no appsettings.Testing.json: test-only values arrive as configuration, like the JWT trust below.
             // The API's appsettings.json logs at Trace for local development; a test run only keeps warnings and errors.
             ["Logging:LogLevel:Default"] = "Warning",
@@ -113,11 +114,17 @@ public sealed class ComponentTestFixture : TestServerFixtureBase
             }
         }
 
-        // The signing key must have arrived through OpenBao: it is in no other source this fixture sets.
+        // Both secrets must have arrived through OpenBao: neither is in any other source this fixture sets.
         if (configuration[AppSettings.ApiKey] != TokenIssuer.SigningKeyText)
         {
             throw new InvalidOperationException(
                 $"The application did not read '{AppSettings.ApiKey}' from OpenBao. Check the secrets initializer and '{OpenBao.PathKey}'.");
+        }
+
+        if (configuration[AppSettings.PostgresConnectionString] != _connectionString)
+        {
+            throw new InvalidOperationException(
+                $"The application did not read '{AppSettings.PostgresConnectionString}' from OpenBao. Check the secrets initializer and '{OpenBao.PathKey}'.");
         }
     }
 

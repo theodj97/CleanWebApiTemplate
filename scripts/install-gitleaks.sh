@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Instala la versión fijada de gitleaks en .tools/gitleaks (ignorado por git).
-# gitleaks no se distribuye como tool de .NET: se descarga el binario oficial
-# de GitHub Releases y se verifica su SHA-256.
+# Installs the pinned gitleaks version into .tools/gitleaks (ignored by git).
+# gitleaks is not distributed as a .NET tool: the official binary is downloaded
+# from GitHub Releases and its SHA-256 is verified.
 set -euo pipefail
 
 VERSION="8.30.1"
@@ -11,7 +11,7 @@ ROOT_DIR=$(dirname "$SCRIPT_DIR")
 TOOLS_DIR="$ROOT_DIR/.tools/gitleaks"
 
 if command -v curl >/dev/null 2>&1; then :; else
-    echo "curl es necesario para descargar gitleaks." >&2
+    echo "curl is required to download gitleaks." >&2
     exit 1
 fi
 
@@ -20,7 +20,7 @@ case "$(uname -s)" in
     Darwin*) os=darwin ;;
     MINGW*|MSYS*|CYGWIN*) os=windows ;;
     *)
-        echo "Sistema operativo no soportado: $(uname -s)" >&2
+        echo "Unsupported operating system: $(uname -s)" >&2
         exit 1
         ;;
 esac
@@ -29,7 +29,7 @@ case "$(uname -m)" in
     x86_64|amd64) arch=x64 ;;
     aarch64|arm64) arch=arm64 ;;
     *)
-        echo "Arquitectura no soportada: $(uname -m)" >&2
+        echo "Unsupported architecture: $(uname -m)" >&2
         exit 1
         ;;
 esac
@@ -45,7 +45,7 @@ fi
 bin="$TOOLS_DIR/$bin_name"
 
 if [ -x "$bin" ] && [ "$("$bin" version 2>/dev/null || true)" = "$VERSION" ]; then
-    echo "gitleaks $VERSION ya está instalado en $bin"
+    echo "gitleaks $VERSION is already installed at $bin"
     exit 0
 fi
 
@@ -53,13 +53,13 @@ base_url="https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
-echo "Descargando gitleaks $VERSION ($os/$arch)..."
+echo "Downloading gitleaks $VERSION ($os/$arch)..."
 curl -fsSL -o "$tmp/$asset" "$base_url/$asset"
 curl -fsSL -o "$tmp/checksums.txt" "$base_url/gitleaks_${VERSION}_checksums.txt"
 
 expected=$(awk -v asset="$asset" '$2 == asset { print $1 }' "$tmp/checksums.txt")
 if [ -z "$expected" ]; then
-    echo "No se encontró el checksum de $asset." >&2
+    echo "No checksum found for $asset." >&2
     exit 1
 fi
 
@@ -70,7 +70,7 @@ else
 fi
 
 if [ "$expected" != "$actual" ]; then
-    echo "Checksum inválido para $asset (esperado $expected, obtenido $actual)." >&2
+    echo "Invalid checksum for $asset (expected $expected, got $actual)." >&2
     exit 1
 fi
 
@@ -89,4 +89,4 @@ fi
 
 chmod +x "$bin"
 "$bin" version
-echo "gitleaks instalado en $bin"
+echo "gitleaks installed at $bin"

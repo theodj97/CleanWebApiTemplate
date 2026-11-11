@@ -14,7 +14,7 @@ public sealed class OpenApiExamplesMergerTests
         var catalog = Catalog("""
         {
           "operations": {
-            "POST /api/Todo": {
+            "POST /api/todos": {
               "requestBody": {
                 "examples": {
                   "from-file": { "summary": "From file", "body": "bodies/create.json" }
@@ -28,7 +28,7 @@ public sealed class OpenApiExamplesMergerTests
         var problems = OpenApiExamplesMerger.Merge(document, catalog, temp.Root);
 
         Assert.Empty(problems);
-        var example = document["paths"]!["/api/Todo/"]!["post"]!["requestBody"]!["content"]!["application/json"]!["examples"]!["from-file"]!;
+        var example = document["paths"]!["/api/todos/"]!["post"]!["requestBody"]!["content"]!["application/json"]!["examples"]!["from-file"]!;
         Assert.Equal("From file", example["summary"]!.GetValue<string>());
         Assert.Equal("from-file", example["value"]!["title"]!.GetValue<string>());
     }
@@ -41,7 +41,7 @@ public sealed class OpenApiExamplesMergerTests
           "openapi": "3.1.0",
           "info": { "title": "Test", "version": "1.0.0" },
           "paths": {
-            "/api/Todo/{id:ulid}": {
+            "/api/todos/{id:ulid}": {
               "get": {
                 "parameters": [
                   { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
@@ -56,7 +56,7 @@ public sealed class OpenApiExamplesMergerTests
         var catalog = Catalog("""
         {
           "operations": {
-            "GET /api/Todo/{id}": {
+            "GET /api/todos/{id}": {
               "parameters": [
                 { "name": "id", "in": "path", "value": "01HWXHRB80000G000000000001" }
               ]
@@ -70,7 +70,7 @@ public sealed class OpenApiExamplesMergerTests
         Assert.Empty(problems);
         Assert.Equal(
             "01HWXHRB80000G000000000001",
-            document["paths"]!["/api/Todo/{id:ulid}"]!["get"]!["parameters"]![0]!["example"]!.GetValue<string>());
+            document["paths"]!["/api/todos/{id:ulid}"]!["get"]!["parameters"]![0]!["example"]!.GetValue<string>());
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public sealed class OpenApiExamplesMergerTests
         var catalog = Catalog("""
         {
           "operations": {
-            "POST /api/Todo/": {
+            "POST /api/todos/": {
               "requestBody": {
                 "examples": {
                   "inline": { "summary": "Inline", "value": { "title": "inline" } }
@@ -94,7 +94,7 @@ public sealed class OpenApiExamplesMergerTests
         var problems = OpenApiExamplesMerger.Merge(document, catalog, ".");
 
         Assert.Empty(problems);
-        var example = document["paths"]!["/api/Todo/"]!["post"]!["requestBody"]!["content"]!["application/json"]!["examples"]!["inline"]!;
+        var example = document["paths"]!["/api/todos/"]!["post"]!["requestBody"]!["content"]!["application/json"]!["examples"]!["inline"]!;
         Assert.Equal("Inline", example["summary"]!.GetValue<string>());
         Assert.Equal("inline", example["value"]!["title"]!.GetValue<string>());
     }
@@ -107,7 +107,7 @@ public sealed class OpenApiExamplesMergerTests
           "openapi": "3.1.0",
           "info": { "title": "Test", "version": "1.0.0" },
           "paths": {
-            "/api/Todo/": {
+            "/api/todos/": {
               "post": {
                 "requestBody": {
                   "content": {
@@ -129,7 +129,7 @@ public sealed class OpenApiExamplesMergerTests
         var catalog = Catalog("""
         {
           "operations": {
-            "POST /api/Todo/": {
+            "POST /api/todos/": {
               "requestBody": {
                 "examples": {
                   "new": { "value": { "title": "new" } }
@@ -143,7 +143,7 @@ public sealed class OpenApiExamplesMergerTests
         var problems = OpenApiExamplesMerger.Merge(document, catalog, ".");
 
         Assert.Empty(problems);
-        var examples = document["paths"]!["/api/Todo/"]!["post"]!["requestBody"]!["content"]!["application/json"]!["examples"]!;
+        var examples = document["paths"]!["/api/todos/"]!["post"]!["requestBody"]!["content"]!["application/json"]!["examples"]!;
         Assert.NotNull(examples["existing"]);
         Assert.NotNull(examples["new"]);
     }
@@ -173,7 +173,7 @@ public sealed class OpenApiExamplesMergerTests
         var catalog = Catalog("""
         {
           "operations": {
-            "GET /api/Todo/{id}": {
+            "GET /api/todos/{id}": {
               "parameters": [
                 { "name": "page", "in": "query", "value": 1 }
               ]
@@ -196,7 +196,7 @@ public sealed class OpenApiExamplesMergerTests
           "openapi": "3.1.0",
           "info": { "title": "Test", "version": "1.0.0" },
           "paths": {
-            "/api/Todo/{id}": {
+            "/api/todos/{id}": {
               "get": {
                 "parameters": [
                   { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
@@ -212,7 +212,7 @@ public sealed class OpenApiExamplesMergerTests
         var catalog = Catalog("""
         {
           "operations": {
-            "GET /api/Todo/{id}": {
+            "GET /api/todos/{id}": {
               "parameters": [
                 { "name": "id", "value": "x" }
               ]
@@ -236,7 +236,7 @@ public sealed class OpenApiExamplesMergerTests
         var catalog = Catalog("""
         {
           "operations": {
-            "POST /api/Todo/": {
+            "POST /api/todos/": {
               "requestBody": {
                 "examples": {
                   "missing": { "body": "bodies/missing.json" }
@@ -260,7 +260,7 @@ public sealed class OpenApiExamplesMergerTests
         var catalog = Catalog("""
         {
           "operations": {
-            "POST /api/Todo/": {
+            "POST /api/todos/": {
               "requestBody": {
                 "examples": {
                   "bad": { "body": "bodies/x.json", "value": { "title": "x" } }
@@ -285,7 +285,7 @@ public sealed class OpenApiExamplesMergerTests
           "openapi": "3.1.0",
           "info": { "title": "Test", "version": "1.0.0" },
           "paths": {
-            "/api/Todo/{id}": {
+            "/api/todos/{id}": {
               "get": {
                 "parameters": [
                   { "$ref": "#/components/parameters/Id" }
@@ -305,7 +305,7 @@ public sealed class OpenApiExamplesMergerTests
         var catalog = Catalog("""
         {
           "operations": {
-            "GET /api/Todo/{id}": {
+            "GET /api/todos/{id}": {
               "parameters": [
                 { "name": "id", "in": "path", "value": "abc" }
               ]
@@ -328,7 +328,7 @@ public sealed class OpenApiExamplesMergerTests
           "openapi": "3.1.0",
           "info": { "title": "Test", "version": "1.0.0" },
           "paths": {
-            "/api/Todo/{id}": {
+            "/api/todos/{id}": {
               "parameters": [
                 { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
               ],
@@ -346,7 +346,7 @@ public sealed class OpenApiExamplesMergerTests
         var catalog = Catalog("""
         {
           "operations": {
-            "GET /api/Todo/{id}": {
+            "GET /api/todos/{id}": {
               "parameters": [
                 { "name": "id", "in": "path", "value": "abc" }
               ]
@@ -360,7 +360,7 @@ public sealed class OpenApiExamplesMergerTests
         Assert.Empty(problems);
         Assert.Equal(
             "abc",
-            document["paths"]!["/api/Todo/{id}"]!["get"]!["parameters"]![0]!["example"]!.GetValue<string>());
+            document["paths"]!["/api/todos/{id}"]!["get"]!["parameters"]![0]!["example"]!.GetValue<string>());
     }
 
     [Fact]
@@ -388,7 +388,7 @@ public sealed class OpenApiExamplesMergerTests
           "openapi": "3.1.0",
           "info": { "title": "Test", "version": "1.0.0" },
           "paths": {
-            "/api/Todo/{id}": {
+            "/api/todos/{id}": {
               "get": {
                 "responses": {
                   "400": {
@@ -410,7 +410,7 @@ public sealed class OpenApiExamplesMergerTests
         var problems = OpenApiExamplesMerger.Merge(document, catalog, ".");
 
         Assert.Empty(problems);
-        var example = document["paths"]!["/api/Todo/{id}"]!["get"]!["responses"]!["400"]!["content"]!["application/problem+json"]!["examples"]!["problem"]!;
+        var example = document["paths"]!["/api/todos/{id}"]!["get"]!["responses"]!["400"]!["content"]!["application/problem+json"]!["examples"]!["problem"]!;
         Assert.Equal(400, example["value"]!["status"]!.GetValue<int>());
         Assert.Equal("Bad Request", example["value"]!["title"]!.GetValue<string>());
         Assert.False(string.IsNullOrWhiteSpace(example["value"]!["detail"]!.GetValue<string>()));
@@ -424,7 +424,7 @@ public sealed class OpenApiExamplesMergerTests
           "openapi": "3.1.0",
           "info": { "title": "Test", "version": "1.0.0" },
           "paths": {
-            "/api/Todo/{id}": {
+            "/api/todos/{id}": {
               "get": {
                 "responses": {
                   "400": {
@@ -445,7 +445,7 @@ public sealed class OpenApiExamplesMergerTests
         var catalog = Catalog("""
         {
           "operations": {
-            "GET /api/Todo/{id}": {
+            "GET /api/todos/{id}": {
               "responses": {
                 "400": {
                   "examples": {
@@ -461,7 +461,7 @@ public sealed class OpenApiExamplesMergerTests
         var problems = OpenApiExamplesMerger.Merge(document, catalog, ".");
 
         Assert.Empty(problems);
-        var examples = document["paths"]!["/api/Todo/{id}"]!["get"]!["responses"]!["400"]!["content"]!["application/problem+json"]!["examples"]!;
+        var examples = document["paths"]!["/api/todos/{id}"]!["get"]!["responses"]!["400"]!["content"]!["application/problem+json"]!["examples"]!;
         Assert.NotNull(examples["custom"]);
         Assert.Null(examples["problem"]);
     }
@@ -477,7 +477,7 @@ public sealed class OpenApiExamplesMergerTests
           "openapi": "3.1.0",
           "info": { "title": "Test", "version": "1.0.0" },
           "paths": {
-            "/api/Todo/{id}": {
+            "/api/todos/{id}": {
               "get": {
                 "parameters": [
                   { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
@@ -497,7 +497,7 @@ public sealed class OpenApiExamplesMergerTests
         var catalog = Catalog("""
         {
           "operations": {
-            "GET /api/Todo/{id}": {
+            "GET /api/todos/{id}": {
               "responses": {
                 "200": {
                   "examples": {
@@ -513,7 +513,7 @@ public sealed class OpenApiExamplesMergerTests
         var problems = OpenApiExamplesMerger.Merge(document, catalog, temp.Root);
 
         Assert.Empty(problems);
-        var example = document["paths"]!["/api/Todo/{id}"]!["get"]!["responses"]!["200"]!["content"]!["application/json"]!["examples"]!["todo"]!;
+        var example = document["paths"]!["/api/todos/{id}"]!["get"]!["responses"]!["200"]!["content"]!["application/json"]!["examples"]!["todo"]!;
         Assert.Equal("A TODO", example["summary"]!.GetValue<string>());
         Assert.Equal("01HWXHRB80000G000000000001", example["value"]!["id"]!.GetValue<string>());
     }
@@ -525,7 +525,7 @@ public sealed class OpenApiExamplesMergerTests
         var catalog = Catalog("""
         {
           "operations": {
-            "GET /api/Todo/{id}": {
+            "GET /api/todos/{id}": {
               "responses": {
                 "404": {
                   "examples": {
@@ -552,7 +552,7 @@ public sealed class OpenApiExamplesMergerTests
           "openapi": "3.1.0",
           "info": { "title": "Test", "version": "1.0.0" },
           "paths": {
-            "/api/Todo/{id}": {
+            "/api/todos/{id}": {
               "get": {
                 "responses": { "204": { "description": "No Content" } }
               }
@@ -564,7 +564,7 @@ public sealed class OpenApiExamplesMergerTests
         var catalog = Catalog("""
         {
           "operations": {
-            "GET /api/Todo/{id}": {
+            "GET /api/todos/{id}": {
               "responses": {
                 "204": {
                   "examples": {
@@ -590,7 +590,7 @@ public sealed class OpenApiExamplesMergerTests
         var catalog = Catalog("""
         {
           "operations": {
-            "GET /api/Todo/{id}": {
+            "GET /api/todos/{id}": {
               "requestBody": {
                 "examples": {
                   "x": { "value": {} }
@@ -616,7 +616,7 @@ public sealed class OpenApiExamplesMergerTests
           "openapi": "3.1.0",
           "info": { "title": "Test", "version": "1.0.0" },
           "paths": {
-            "/api/Todo/{id}": {
+            "/api/todos/{id}": {
               "get": {
                 "parameters": [
                   { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
@@ -633,7 +633,7 @@ public sealed class OpenApiExamplesMergerTests
           "openapi": "3.1.0",
           "info": { "title": "Test", "version": "1.0.0" },
           "paths": {
-            "/api/Todo/": {
+            "/api/todos/": {
               "post": {
                 "requestBody": {
                   "content": {

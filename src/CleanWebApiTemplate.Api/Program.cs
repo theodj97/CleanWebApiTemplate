@@ -1,3 +1,5 @@
+using CleanWebApiTemplate.Api.Common.Composition;
+using CleanWebApiTemplate.Api.Configuration;
 using CleanWebApiTemplate.Api.Helpers;
 using CleanWebApiTemplate.ServiceDefaults;
 
@@ -9,8 +11,7 @@ public class Program
     {
         var builder = WebApplication.CreateSlimBuilder(args);
 
-        // A missing validator registration must fail at startup, not silently disable validation.
-        // The host validates the whole graph, including every handler's ValidatorSet.
+        // A missing registration must fail at startup, not on the first request.
         builder.Host.UseDefaultServiceProvider(options =>
         {
             options.ValidateScopes = true;
@@ -23,11 +24,15 @@ public class Program
 
         builder.AddServiceDefaults();
 
-        var appSettings = builder.LoadAppSettings(args);
+        AppSettings appSettings = builder.LoadAppSettings(args);
 
         builder.Services.AddApiServices(builder.Configuration, appSettings);
 
         var app = builder.Build();
+
+        // Builds every use case once: a handler without validators or a missing registration stops the host here.
+        app.Services.ValidateUseCases();
+
         app.ConfigureApiApplication(appSettings);
         app.MapDefaultEndpoints();
         app.Run();

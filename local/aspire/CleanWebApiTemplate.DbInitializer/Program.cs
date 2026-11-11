@@ -41,11 +41,22 @@ public static class Program
             else
                 Console.WriteLine($"Seed directory '{seedDirectory}' does not exist; skipping seed.");
 
+            // Feature-agnostic readiness: the schema applied at least one table in the public schema.
             await using var command = connection.CreateCommand();
-            command.CommandText = """SELECT COUNT(1) FROM "Todo";""";
-            var rows = (long)(await command.ExecuteScalarAsync())!;
+            command.CommandText = """
+                SELECT COUNT(1)
+                FROM information_schema.tables
+                WHERE table_schema = 'public' AND table_type = 'BASE TABLE';
+                """;
+            var tables = (long)(await command.ExecuteScalarAsync())!;
 
-            Console.WriteLine($"Database ready: table 'Todo' exists with {rows} row(s).");
+            if (tables is 0)
+            {
+                Console.Error.WriteLine("Database initialization failed: the schema created no tables.");
+                return 1;
+            }
+
+            Console.WriteLine($"Database ready: schema applied, {tables} table(s) in the public schema.");
             return 0;
         }
         catch (Exception exception) when (exception is NpgsqlException or IOException or InvalidOperationException or ArgumentException)

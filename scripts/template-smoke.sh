@@ -162,7 +162,7 @@ echo "==> Build"
 dotnet build Sample.slnx
 
 echo "==> Tests sin contenedores (unit, architecture y sidecar local)"
-dotnet test --project tests/Sample.Api.UnitTests/Sample.Api.UnitTests.csproj --no-build
+dotnet test --project tests/Sample.UnitTests/Sample.UnitTests.csproj --no-build
 dotnet test --project tests/Sample.ArchitectureTests/Sample.ArchitectureTests.csproj --no-build
 dotnet test --project local/openapi/Sample.OpenApiExamples.UnitTests/Sample.OpenApiExamples.UnitTests.csproj --no-build
 

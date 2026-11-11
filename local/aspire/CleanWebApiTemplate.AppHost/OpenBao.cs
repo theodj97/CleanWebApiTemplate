@@ -23,26 +23,33 @@ internal static class OpenBaoResources
                .WithHttpHealthCheck("/v1/sys/health", endpointName: "http");
 
     /// <summary>
-    /// Seeds OpenBao with <see cref="Secrets"/> before the applications start. The signing key reaches this job through
-    /// the AppHost parameter; the application reads it from OpenBao, never from its own environment.
+    /// Seeds OpenBao with the application's secrets before it starts: the JWT signing key and the PostgreSQL
+    /// connection string. Both reach this one-shot job as environment variables; the application reads them from
+    /// OpenBao, never from its own environment.
     /// </summary>
     public static IResourceBuilder<ProjectResource> AddOpenBaoInitializer(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<ContainerResource> openBao,
+        IResourceBuilder<PostgresDatabaseResource> database,
         string rootToken,
         string secretPath,
         LocalJwt localJwt)
     {
         return builder.AddProject<Projects.CleanWebApiTemplate_OpenBaoInitializer>(Resources.OpenBaoInitializer)
+                      .WithReference(database, connectionName: AppSettings.PostgresConnectionName)
                       .WithEnvironment(ToEnvironmentVariable(OpenBao.AddressKey), openBao.GetEndpoint("http"))
                       .WithEnvironment(ToEnvironmentVariable(OpenBao.TokenKey), rootToken)
                       .WithEnvironment(ToEnvironmentVariable(OpenBao.MountKey), OpenBao.Mount)
                       .WithEnvironment(ToEnvironmentVariable(OpenBao.PathKey), secretPath)
                       .WithEnvironment(AppSettings.ApiKey, localJwt.SigningKey)
-                      .WaitFor(openBao);
+                      .WaitFor(openBao)
+                      .WaitFor(database);
     }
 
-    /// <summary>Tells the application where OpenBao is and how to authenticate. Never the secret values themselves.</summary>
+    /// <summary>
+    /// Tells the application where OpenBao is and how to authenticate. The secret values themselves are never
+    /// passed to the application.
+    /// </summary>
     public static IResourceBuilder<ProjectResource> WithOpenBaoSecrets(
         this IResourceBuilder<ProjectResource> application,
         IResourceBuilder<ContainerResource> openBao,

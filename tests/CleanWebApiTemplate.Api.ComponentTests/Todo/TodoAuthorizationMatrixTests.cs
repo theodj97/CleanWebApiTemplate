@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
-using CleanWebApiTemplate.Domain.Models.Entities;
+using CleanWebApiTemplate.Domain.Todo;
 using CleanWebApiTemplate.Tests.Shared.Attributes;
 using CleanWebApiTemplate.Tests.Shared.Auth;
 using CleanWebApiTemplate.Tests.Shared.Data;
@@ -15,10 +15,10 @@ namespace CleanWebApiTemplate.Api.ComponentTests.Todo;
 public class TodoAuthorizationMatrixTests(ComponentTestFixture fixture) : ComponentTestBase(fixture)
 {
     [Theory]
-    [InlineData("GET", "/api/Todo/{id}", null)]
-    [InlineData("POST", "/api/Todo/filter", "{}")]
-    [InlineData("POST", "/api/Todo/titles", "{}")]
-    [InlineData("PUT", "/api/Todo/{id}", """{"description":"ignored"}""")]
+    [InlineData("GET", "/api/todos/{id}", null)]
+    [InlineData("POST", "/api/todos/filter", "{}")]
+    [InlineData("POST", "/api/todos/titles", "{}")]
+    [InlineData("PUT", "/api/todos/{id}", """{"description":"ignored"}""")]
     [ResetDatabase]
     public async Task UserGroup_Anonymous_ReturnsUnauthorized(string method, string path, string? body)
     {
@@ -30,10 +30,10 @@ public class TodoAuthorizationMatrixTests(ComponentTestFixture fixture) : Compon
     }
 
     [Theory]
-    [InlineData("GET", "/api/Todo/{id}", null)]
-    [InlineData("POST", "/api/Todo/filter", "{}")]
-    [InlineData("POST", "/api/Todo/titles", "{}")]
-    [InlineData("PUT", "/api/Todo/{id}", """{"description":"ignored"}""")]
+    [InlineData("GET", "/api/todos/{id}", null)]
+    [InlineData("POST", "/api/todos/filter", "{}")]
+    [InlineData("POST", "/api/todos/titles", "{}")]
+    [InlineData("PUT", "/api/todos/{id}", """{"description":"ignored"}""")]
     [AuthenticatedAs(TestUser.AuthenticatedWithoutRoles)]
     [ResetDatabase]
     public async Task UserGroup_WithoutRoles_ReturnsForbidden(string method, string path, string? body)
@@ -46,10 +46,10 @@ public class TodoAuthorizationMatrixTests(ComponentTestFixture fixture) : Compon
     }
 
     [Theory]
-    [InlineData("GET", "/api/Todo/{id}", null)]
-    [InlineData("POST", "/api/Todo/filter", "{}")]
-    [InlineData("POST", "/api/Todo/titles", "{}")]
-    [InlineData("PUT", "/api/Todo/{id}", """{"description":"ignored"}""")]
+    [InlineData("GET", "/api/todos/{id}", null)]
+    [InlineData("POST", "/api/todos/filter", "{}")]
+    [InlineData("POST", "/api/todos/titles", "{}")]
+    [InlineData("PUT", "/api/todos/{id}", """{"description":"ignored"}""")]
     [AuthenticatedAs(TestUser.TodoExternal)]
     [ResetDatabase]
     public async Task UserGroup_AsExternal_ReturnsForbidden(string method, string path, string? body)
@@ -62,10 +62,10 @@ public class TodoAuthorizationMatrixTests(ComponentTestFixture fixture) : Compon
     }
 
     [Theory]
-    [InlineData("GET", "/api/Todo/{id}", null)]
-    [InlineData("POST", "/api/Todo/filter", "{}")]
-    [InlineData("POST", "/api/Todo/titles", "{}")]
-    [InlineData("PUT", "/api/Todo/{id}", """{"description":"operator update"}""")]
+    [InlineData("GET", "/api/todos/{id}", null)]
+    [InlineData("POST", "/api/todos/filter", "{}")]
+    [InlineData("POST", "/api/todos/titles", "{}")]
+    [InlineData("PUT", "/api/todos/{id}", """{"description":"operator update"}""")]
     [AuthenticatedAs(TestUser.TodoOperator)]
     [ResetDatabase]
     public async Task UserGroup_AsOperator_ReturnsOk(string method, string path, string? body)

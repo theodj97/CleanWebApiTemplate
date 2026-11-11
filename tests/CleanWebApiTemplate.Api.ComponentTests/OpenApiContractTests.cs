@@ -4,8 +4,8 @@ using System.Text.Json;
 namespace CleanWebApiTemplate.Api.ComponentTests;
 
 /// <summary>
-/// The OpenAPI document is a contract too: the split schema descriptors must keep the
-/// metadata the explorer and the generated clients rely on.
+/// The OpenAPI document is a contract too: the shared schema descriptors and every feature module must
+/// keep the metadata the explorer and generated clients rely on.
 /// </summary>
 public class OpenApiContractTests(ComponentTestFixture fixture) : ComponentTestBase(fixture)
 {
@@ -21,7 +21,7 @@ public class OpenApiContractTests(ComponentTestFixture fixture) : ComponentTestB
         Assert.Equal("1.0.0", root.GetProperty("info").GetProperty("version").GetString());
 
         var tags = root.GetProperty("tags").EnumerateArray().Select(tag => tag.GetProperty("name").GetString());
-        Assert.Contains("Todo", tags);
+        Assert.Contains("Todos", tags);
 
         var securitySchemes = root.GetProperty("components").GetProperty("securitySchemes");
         var bearer = securitySchemes.GetProperty("Bearer");
@@ -64,18 +64,18 @@ public class OpenApiContractTests(ComponentTestFixture fixture) : ComponentTestB
         // Assert
         var paths = document.RootElement.GetProperty("paths");
 
-        AssertResponses(paths.GetProperty("/api/Todo").GetProperty("post"),
+        AssertResponses(paths.GetProperty("/api/todos").GetProperty("post"),
                         "201", "400", "401", "403", "409", "500");
-        AssertResponses(paths.GetProperty("/api/Todo/{id}").GetProperty("get"),
-                        "200", "204", "400", "401", "403", "500");
-        AssertResponses(paths.GetProperty("/api/Todo/{id}").GetProperty("put"),
+        AssertResponses(paths.GetProperty("/api/todos/{id}").GetProperty("get"),
+                        "200", "400", "401", "403", "404", "500");
+        AssertResponses(paths.GetProperty("/api/todos/{id}").GetProperty("put"),
                         "200", "400", "401", "403", "404", "409", "500");
-        AssertResponses(paths.GetProperty("/api/Todo/{id}").GetProperty("delete"),
+        AssertResponses(paths.GetProperty("/api/todos/{id}").GetProperty("delete"),
+                        "204", "400", "401", "403", "404", "500");
+        AssertResponses(paths.GetProperty("/api/todos/filter").GetProperty("post"),
                         "200", "400", "401", "403", "500");
-        AssertResponses(paths.GetProperty("/api/Todo/filter").GetProperty("post"),
-                        "200", "204", "400", "401", "403", "500");
-        AssertResponses(paths.GetProperty("/api/Todo/titles").GetProperty("post"),
-                        "200", "204", "400", "401", "403", "500");
+        AssertResponses(paths.GetProperty("/api/todos/titles").GetProperty("post"),
+                        "200", "400", "401", "403", "500");
     }
 
     [Fact]
@@ -103,14 +103,21 @@ public class OpenApiContractTests(ComponentTestFixture fixture) : ComponentTestB
                      create.GetProperty("title").GetProperty("description").GetString());
 
         var filter = schemas.GetProperty("FilteredTodoRequest").GetProperty("properties");
-        Assert.Contains("contains", filter.GetProperty("title").GetProperty("items")
+        Assert.Contains("contains", filter.GetProperty("titles").GetProperty("items")
             .GetProperty("description").GetString());
+        Assert.Equal("email", filter.GetProperty("owners").GetProperty("items").GetProperty("format").GetString());
+        Assert.Equal([1, 2, 3, 4], filter.GetProperty("statuses").GetProperty("items")
+            .GetProperty("enum").EnumerateArray().Select(value => value.GetInt32()).ToArray());
 
         var todo = schemas.GetProperty("TodoResponse").GetProperty("properties");
         Assert.Equal("#/components/schemas/Ulid", todo.GetProperty("id").GetProperty("$ref").GetString());
         Assert.Equal("email", todo.GetProperty("createdBy").GetProperty("format").GetString());
+        Assert.Equal("date-time", todo.GetProperty("updatedAt").GetProperty("format").GetString());
         Assert.Equal([1, 2, 3, 4], todo.GetProperty("status").GetProperty("enum")
             .EnumerateArray().Select(value => value.GetInt32()).ToArray());
+
+        var sort = filter.GetProperty("sortProperties").GetProperty("description").GetString();
+        Assert.Contains("createdAt", sort);
 
         var problem = schemas.GetProperty("ProblemDetails").GetProperty("properties");
         Assert.False(string.IsNullOrWhiteSpace(problem.GetProperty("title").GetProperty("description").GetString()));

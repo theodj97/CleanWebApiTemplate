@@ -89,7 +89,7 @@ if command -v unzip >/dev/null 2>&1; then
         "content/global.json" \
         "content/package.json" \
         "content/src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj" \
-        "content/tests/CleanWebApiTemplate.Api.UnitTests/CleanWebApiTemplate.Api.UnitTests.csproj" \
+        "content/tests/CleanWebApiTemplate.UnitTests/CleanWebApiTemplate.UnitTests.csproj" \
         "content/local/aspire/CleanWebApiTemplate.AppHost/CleanWebApiTemplate.AppHost.csproj" \
         "content/scripts/pre-push.sh"; do
         if has_file "$required"; then ok "package contains $required"; else fail "package is missing $required"; fi
@@ -148,7 +148,7 @@ SAMPLE="$OUT/Sample"
 echo "==> Generated content"
 for path in README.md .gitignore Sample.slnx AGENTS.md .config/dotnet-tools.json \
     src/Sample.Api/Sample.Api.csproj \
-    tests/Sample.Api.UnitTests/Sample.Api.UnitTests.csproj \
+    tests/Sample.UnitTests/Sample.UnitTests.csproj \
     local/aspire/Sample.AppHost/Sample.AppHost.csproj; do
     if [ -e "$SAMPLE/$path" ]; then ok "exists $path"; else fail "missing $path"; fi
 done
@@ -192,7 +192,7 @@ echo "==> Build"
 dotnet build Sample.slnx
 
 echo "==> Container-free tests (unit, architecture and local sidecar)"
-dotnet test --project tests/Sample.Api.UnitTests/Sample.Api.UnitTests.csproj --no-build
+dotnet test --project tests/Sample.UnitTests/Sample.UnitTests.csproj --no-build
 dotnet test --project tests/Sample.ArchitectureTests/Sample.ArchitectureTests.csproj --no-build
 dotnet test --project local/openapi/Sample.OpenApiExamples.UnitTests/Sample.OpenApiExamples.UnitTests.csproj --no-build
 

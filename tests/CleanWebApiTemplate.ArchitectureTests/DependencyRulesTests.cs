@@ -3,9 +3,9 @@ using ArchUnitNET.Fluent;
 using ArchUnitNET.Loader;
 using ArchUnitNET.xUnitV3;
 using CleanWebApiTemplate.Api;
-using CleanWebApiTemplate.Application.Results;
-using CleanWebApiTemplate.Domain.Models.Entities;
-using CleanWebApiTemplate.Infrastructure.Repositories.Todo;
+using CleanWebApiTemplate.Application.Common.Results;
+using CleanWebApiTemplate.Domain.Todo;
+using CleanWebApiTemplate.Infrastructure.Todo;
 using CleanWebApiTemplate.ServiceDefaults;
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
 

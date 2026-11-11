@@ -2,34 +2,20 @@ using System.Security.Claims;
 using System.Text;
 using CleanWebApiTemplate.Api.Common;
 using CleanWebApiTemplate.Api.Configuration;
-using CleanWebApiTemplate.Api.Extensions;
-using CleanWebApiTemplate.Application.Abstractions.Handlers;
-using CleanWebApiTemplate.Application.Abstractions.Identity;
-using CleanWebApiTemplate.Application.Abstractions.Repositories;
-using CleanWebApiTemplate.Application.Dtos.Todo;
-using CleanWebApiTemplate.Application.Todo.Handlers.Create;
-using CleanWebApiTemplate.Application.Todo.Handlers.Delete;
-using CleanWebApiTemplate.Application.Todo.Handlers.Filtered;
-using CleanWebApiTemplate.Application.Todo.Handlers.GetById;
-using CleanWebApiTemplate.Application.Todo.Handlers.GetTitles;
-using CleanWebApiTemplate.Application.Todo.Handlers.Update;
-using CleanWebApiTemplate.Application.Todo.Projections;
-using CleanWebApiTemplate.Application.Validation;
-using CleanWebApiTemplate.Infrastructure.Data;
-using CleanWebApiTemplate.Infrastructure.Repositories.Todo;
-using FluentValidation;
+using CleanWebApiTemplate.Api.Todo;
+using CleanWebApiTemplate.Application.Common.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 
 namespace CleanWebApiTemplate.Api;
 
 /// <summary>
-/// Composition root for this executable: every service the API needs is registered here, including
-/// the Application and Infrastructure implementations. Layer libraries do not self-register, so each
-/// host takes only the pieces it actually uses.
+/// Composition root for this executable: every service the API needs is registered here or in a feature
+/// module. Layer libraries do not self-register, so each host takes only the pieces it actually uses.
 /// </summary>
 public static class ConfigureServices
 {
@@ -37,10 +23,10 @@ public static class ConfigureServices
                                                    IConfiguration configuration,
                                                    AppSettings appSettings)
     {
-        services.AddPersistence(appSettings.ConnectionStrings);
-        services.ConfigureServicesAndValidators();
+        services.AddPostgres(appSettings.ConnectionStrings.Postgres);
+        services.AddTodoModule();
 
-        var healthChecksBuilder = services.AddHealthChecks()
+        IHealthChecksBuilder healthChecksBuilder = services.AddHealthChecks()
                 .AddCheck("api-health-check", () => HealthCheckResult.Healthy("API is up and running"), tags: ["api"]);
         healthChecksBuilder.AddNpgSql(
             appSettings.ConnectionStrings.Postgres,
@@ -58,10 +44,7 @@ public static class ConfigureServices
         services.ConfigureAuth(appSettings, configuration);
 
         if (appSettings.OpenApiEnabled)
-        {
-            services.AddEndpointsApiExplorer();
             services.AddApiOpenApi();
-        }
 
         services.AddHttpContextAccessor();
         // Stateless adapter over IHttpContextAccessor: it reads the request per property access. Transient keeps
@@ -71,52 +54,18 @@ public static class ConfigureServices
         services.ConfigureHttpJsonOptions(options =>
             options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default));
 
-        services.RegisterMinimalEndpoints();
-
-        return services;
-    }
-
-    private static IServiceCollection AddPersistence(this IServiceCollection services,
-                                                     ConnectionStringsSection connectionStrings)
-    {
-        services.AddSingleton<INpgsqlConnectionFactory>(new NpgsqlConnectionFactory(connectionStrings.Postgres));
-        services.AddScoped<ITodoRepository, TodoRepository>();
-
         return services;
     }
 
     /// <summary>
-    /// Validators and application handlers. Registered one by one on purpose: no assembly scanning,
-    /// so every type stays statically visible to the Native AOT analyzer.
+    /// One data source for the process. It owns the connection pool, so repositories open a connection per
+    /// operation instead of building a connection string each time.
     /// </summary>
-    private static IServiceCollection ConfigureServicesAndValidators(this IServiceCollection services)
+    private static IServiceCollection AddPostgres(this IServiceCollection services, string connectionString)
     {
-        // Validators
-        services.AddTransient<IValidator<CreateTodoInput>, CreateTodoInputValidator>();
-        services.AddTransient<IValidator<UpdateTodoInput>, UpdateTodoInputValidator>();
-        services.AddTransient<IValidator<DeleteTodoInput>, DeleteTodoInputValidator>();
-        services.AddTransient<IValidator<GetTodoByIdInput>, GetTodoByIdInputValidator>();
-        services.AddTransient<IValidator<GetTodoTitlesInput>, GetTodoTitlesInputValidator>();
-        services.AddTransient<IValidator<FilteredTodoInput>, FilteredTodoInputValidator>();
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
-        // One set per input: resolving a handler with no validators fails at startup through
-        // UseDefaultServiceProvider(ValidateOnBuild). Keep these explicit for Native AOT.
-        services.AddTransient<ValidatorSet<CreateTodoInput>>();
-        services.AddTransient<ValidatorSet<UpdateTodoInput>>();
-        services.AddTransient<ValidatorSet<DeleteTodoInput>>();
-        services.AddTransient<ValidatorSet<GetTodoByIdInput>>();
-        services.AddTransient<ValidatorSet<GetTodoTitlesInput>>();
-        services.AddTransient<ValidatorSet<FilteredTodoInput>>();
-
-        // Handlers
-        services.AddTransient<IHandler<CreateTodoInput, TodoDto?>, CreateTodoHandler>();
-        services.AddTransient<IHandler<UpdateTodoInput, TodoDto?>, UpdateTodoHandler>();
-        services.AddTransient<IHandler<DeleteTodoInput, bool>, DeleteTodoHandler>();
-        services.AddTransient<IHandler<GetTodoByIdInput, TodoDto?>, GetTodoByIdHandler>();
-        services.AddTransient<IHandler<GetTodoTitlesInput, IEnumerable<TodoTitle>>, GetTodoTitlesHandler>();
-        services.AddTransient<IHandler<FilteredTodoInput, IEnumerable<TodoDto?>>, FilteredTodoHandler>();
-
-        return services;
+        return services.AddSingleton(_ => NpgsqlDataSource.Create(connectionString));
     }
 
     /// <summary>
@@ -128,7 +77,7 @@ public static class ConfigureServices
                                                     bool allowCredentials)
     {
         services.AddCors(opts =>
-            opts.AddPolicy(Constants.DEFAULT_CORS_POLICY_NAME, builder =>
+            opts.AddPolicy(Constants.DefaultCorsPolicyName, builder =>
             {
                 builder.AllowAnyMethod()
                        .AllowAnyHeader()
@@ -161,17 +110,17 @@ public static class ConfigureServices
         AuthenticationSettings authentication = AuthenticationSettings.Load(configuration, appSettings);
 
         services.AddAuthorizationBuilder()
-            .AddPolicy(Constants.ADMIN_POLICY, policy => policy
-                .RequireRole(Constants.ADMIN_POLICY)
+            .AddPolicy(Constants.AdminPolicy, policy => policy
+                .RequireRole(Constants.AdminPolicy)
                 .RequireAssertion(HasEmailClaim))
-            .AddPolicy(Constants.OPERATOR_POLICY, policy => policy
-                .RequireRole(Constants.OPERATOR_POLICY, Constants.ADMIN_POLICY)
+            .AddPolicy(Constants.OperatorPolicy, policy => policy
+                .RequireRole(Constants.OperatorPolicy, Constants.AdminPolicy)
                 .RequireAssertion(HasEmailClaim))
-            .AddPolicy(Constants.USER_POLICY, policy => policy
-                .RequireRole(Constants.USER_POLICY, Constants.ADMIN_POLICY, Constants.OPERATOR_POLICY)
+            .AddPolicy(Constants.UserPolicy, policy => policy
+                .RequireRole(Constants.UserPolicy, Constants.AdminPolicy, Constants.OperatorPolicy)
                 .RequireAssertion(HasEmailClaim))
-            .AddPolicy(Constants.EXTERNAL_POLICY, policy => policy
-                .RequireRole(Constants.EXTERNAL_POLICY, Constants.ADMIN_POLICY, Constants.OPERATOR_POLICY)
+            .AddPolicy(Constants.ExternalPolicy, policy => policy
+                .RequireRole(Constants.ExternalPolicy, Constants.AdminPolicy, Constants.OperatorPolicy)
                 .RequireAssertion(HasEmailClaim));
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

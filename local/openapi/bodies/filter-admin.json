@@ -1,8 +1,8 @@
 {
-  "createdBy": [
+  "pageNumber": 1,
+  "pageSize": 10,
+  "owners": [
     "local.user@example.com",
     "local.operator@example.com"
-  ],
-  "pageNumber": 1,
-  "pageSize": 10
+  ]
 }

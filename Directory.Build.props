@@ -1,8 +1,8 @@
 <Project>
 
   <!--
-    Propiedades comunes a todos los proyectos del repositorio. Cada proyecto
-    conserva las que son específicas (AOT, Aspire, tests, documentación XML).
+    Properties shared by every project in the repository. Each project keeps the ones that are
+    specific to it (AOT, Aspire, tests, XML documentation).
   -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -10,18 +10,17 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!--
-      Respeta en `dotnet build`/`dotnet publish` las severidades de las reglas de
-      estilo de .editorconfig (IDE0060 = error, entre otras).
+      Makes `dotnet build` and `dotnet publish` honour the .editorconfig style severities
+      (IDE0060 = error, among others).
     -->
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <NuGetAudit>true</NuGetAudit>
     <NuGetAuditMode>all</NuGetAuditMode>
     <!--
-      IDE0005 (using innecesario) necesita un fichero de documentación para
-      analizarse en build. Las librerías no lo generan: la regla sigue
-      aplicándose con `dotnet format` y en el IDE. La API sí lo genera porque
-      Microsoft.AspNetCore.OpenApi lee los comentarios XML para el documento.
+      IDE0005 (unnecessary using) needs a documentation file to be analysed during build. Libraries do
+      not generate one, so the rule still applies through `dotnet format` and the IDE. The API does
+      generate it because Microsoft.AspNetCore.OpenApi reads XML comments for the document.
     -->
     <NoWarn>$(NoWarn);EnableGenerateDocumentationFile</NoWarn>
   </PropertyGroup>

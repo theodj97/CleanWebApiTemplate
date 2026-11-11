@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Falla si `dotnet list package --vulnerable` encuentra algún paquete
-# vulnerable, incluidos los transitivos. `dotnet list` devuelve 0 aunque haya
-# hallazgos, así que el código de salida no sirve como gate.
+# Fails when `dotnet list package --vulnerable` finds any vulnerable package,
+# including transitive ones. `dotnet list` exits 0 even when it reports
+# findings, so its exit code is not a usable gate.
 set -euo pipefail
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -10,18 +10,19 @@ SOLUTION="CleanWebApiTemplate.slnx"
 
 cd "$ROOT_DIR"
 
-echo "Comprobando paquetes vulnerables (incluidos transitivos)..."
+echo "Checking vulnerable packages (including transitive ones)..."
 
 table=$(dotnet list "$SOLUTION" package --vulnerable --include-transitive)
 json=$(dotnet list "$SOLUTION" package --vulnerable --include-transitive --format json)
 
-# Si hay vulnerabilidades, el JSON contiene objetos dentro de "vulnerabilities".
-# Se aplana para que el formato (una o varias líneas) no afecte a la detección.
+# When there are vulnerabilities, the JSON contains objects inside
+# "vulnerabilities". It is flattened so the formatting (one or more lines) does
+# not affect the detection.
 flat=$(printf '%s' "$json" | tr -d '\n\r')
 if printf '%s' "$flat" | grep -Eq '"vulnerabilities"[[:space:]]*:[[:space:]]*\[[[:space:]]*\{'; then
     printf '%s\n' "$table" >&2
-    echo "Hay paquetes vulnerables: actualiza o elimina la dependencia antes de pushear." >&2
+    echo "There are vulnerable packages: update or remove the dependency before pushing." >&2
     exit 1
 fi
 
-echo "Sin paquetes vulnerables."
+echo "No vulnerable packages."

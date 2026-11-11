@@ -1,16 +1,24 @@
 M:System.Activator.CreateInstance(System.Type);Activator.CreateInstance is not AOT-safe;AOT001
+M:System.Activator.CreateInstance(System.Type,System.Object[]);Activator.CreateInstance is not AOT-safe;AOT001
 M:System.Type.GetType(System.String);Type.GetType is not AOT-safe;AOT001
 M:System.Type.GetMethod(System.String);Reflection-based method lookup is not AOT-safe;AOT001
 M:System.Type.GetMethod(System.String,System.Type[]);Reflection-based method lookup is not AOT-safe;AOT001
 M:System.Type.GetProperty(System.String);Reflection-based property lookup is not AOT-safe;AOT001
 M:System.Type.GetProperty(System.String,System.Type);Reflection-based property lookup is not AOT-safe;AOT001
 M:System.Type.GetMember(System.String);Reflection-based member lookup is not AOT-safe;AOT001
+M:System.Type.MakeGenericType(System.Type[]);MakeGenericType is not AOT-safe;AOT001
 M:System.Reflection.Assembly.Load(System.String);Assembly.Load is not AOT-safe;AOT001
 M:System.Reflection.Assembly.Load(System.Reflection.AssemblyName);Assembly.Load is not AOT-safe;AOT001
 M:System.Reflection.Assembly.GetType(System.String);Assembly.GetType is not AOT-safe;AOT001
+M:System.Reflection.Assembly.GetTypes;Assembly.GetTypes is not AOT-safe;AOT001
+M:System.Reflection.Assembly.GetExportedTypes;Assembly.GetExportedTypes is not AOT-safe;AOT001
 M:System.Reflection.MethodInfo.Invoke(System.Object,System.Object[]);Reflection-based invocation is not AOT-safe;AOT001
 M:System.Reflection.MethodInfo.MakeGenericMethod(System.Type[]);MakeGenericMethod is not AOT-safe;AOT001
 M:System.Reflection.PropertyInfo.GetValue(System.Object);Reflection-based property access is not AOT-safe;AOT001
 M:System.Reflection.PropertyInfo.SetValue(System.Object,System.Object);Reflection-based property access is not AOT-safe;AOT001
+M:System.Enum.GetValues(System.Type);The non-generic Enum.GetValues(Type) is not AOT-safe; use Enum.GetValues<TEnum>();AOT001
+M:System.Enum.GetNames(System.Type);The non-generic Enum.GetNames(Type) is not AOT-safe; use Enum.GetNames<TEnum>();AOT001
 M:System.Text.Json.JsonSerializer.Serialize(System.Object,System.Type,System.Text.Json.JsonSerializerOptions);Use the source-generated JsonSerializerContext;AOT002
 M:System.Text.Json.JsonSerializer.Deserialize(System.String,System.Type,System.Text.Json.JsonSerializerOptions);Use the source-generated JsonSerializerContext;AOT002
+M:System.Text.Json.JsonSerializer.Serialize``1(``0,System.Text.Json.JsonSerializerOptions);Use the source-generated JsonSerializerContext;AOT002
+M:System.Text.Json.JsonSerializer.Deserialize``1(System.String,System.Text.Json.JsonSerializerOptions);Use the source-generated JsonSerializerContext;AOT002

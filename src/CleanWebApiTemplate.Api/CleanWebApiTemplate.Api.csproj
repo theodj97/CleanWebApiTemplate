@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="CleanWebApiTemplate.Api.UnitTests" />
+    <InternalsVisibleTo Include="CleanWebApiTemplate.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>

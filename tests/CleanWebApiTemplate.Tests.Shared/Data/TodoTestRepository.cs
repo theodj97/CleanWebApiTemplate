@@ -1,10 +1,9 @@
-using CleanWebApiTemplate.Application.Abstractions.Repositories;
-using CleanWebApiTemplate.Application.Results;
-using CleanWebApiTemplate.Application.Todo.Handlers.Queries;
-using CleanWebApiTemplate.Domain.Models.Entities;
-using CleanWebApiTemplate.Infrastructure.Data;
-using CleanWebApiTemplate.Infrastructure.Repositories.Todo;
+using CleanWebApiTemplate.Application.Common.Results;
+using CleanWebApiTemplate.Application.Todo;
+using CleanWebApiTemplate.Domain.Todo;
+using CleanWebApiTemplate.Infrastructure.Todo;
 using CleanWebApiTemplate.Tests.Shared.Fixtures;
+using Npgsql;
 
 namespace CleanWebApiTemplate.Tests.Shared.Data;
 
@@ -13,13 +12,20 @@ namespace CleanWebApiTemplate.Tests.Shared.Data;
 /// Uses the application's own ADO.NET repository (there is no EF Core in this repository), bypassing the HTTP
 /// endpoints on purpose.
 /// </summary>
-public sealed class TodoTestRepository(string connectionString)
+public sealed class TodoTestRepository : IAsyncDisposable
 {
-    private readonly ITodoRepository _repository = new TodoRepository(new NpgsqlConnectionFactory(connectionString));
+    private readonly NpgsqlDataSource _dataSource;
+    private readonly ITodoRepository _repository;
+
+    public TodoTestRepository(string connectionString)
+    {
+        _dataSource = NpgsqlDataSource.Create(connectionString);
+        _repository = new TodoRepository(_dataSource);
+    }
 
     public async Task<TodoEntity> AddAsync(TodoEntity entity)
     {
-        var result = await _repository.InsertAsync(entity, TestCancellation.Token);
+        Result<TodoEntity> result = await _repository.InsertAsync(entity, TestCancellation.Token);
         if (result.IsFailure)
             throw new InvalidOperationException(result.Error?.Description);
 
@@ -32,21 +38,24 @@ public sealed class TodoTestRepository(string connectionString)
 
     public Task<TodoEntity?> FindAsync(Ulid id) => _repository.GetByIdAsync(id, cancellationToken: TestCancellation.Token);
 
-    public async Task<TodoEntity?> FindByTitleAsync(string title, string? createdBy = null)
+    public async Task<TodoEntity?> FindByTitleAsync(string title, string? owner = null)
     {
-        var matches = await _repository.SearchAsync(
+        IReadOnlyList<TodoEntity> matches = await _repository.SearchAsync(
             new TodoFilter
             {
                 Titles = [title],
-                CreatedBys = createdBy is null ? null : [createdBy],
+                Owners = owner is null ? null : [owner],
             },
             TestCancellation.Token);
+
         return matches.SingleOrDefault();
     }
 
     public async Task<int> CountAsync()
     {
-        var all = await _repository.SearchAsync(new TodoFilter(), TestCancellation.Token);
+        IReadOnlyList<TodoEntity> all = await _repository.SearchAsync(new TodoFilter(), TestCancellation.Token);
         return all.Count;
     }
+
+    public ValueTask DisposeAsync() => _dataSource.DisposeAsync();
 }

@@ -8,5 +8,7 @@ public sealed class AppSettings
     public required bool OpenApiEnabled { get; init; }
     public required string[] ValidIssuers { get; init; }
     public required string Audience { get; init; }
-    internal const string SECTION_EXTENSION = "Section";
+
+    /// <summary>Suffix every section class carries so <see cref="SectionBase"/> can derive its name.</summary>
+    internal const string SectionSuffix = "Section";
 }

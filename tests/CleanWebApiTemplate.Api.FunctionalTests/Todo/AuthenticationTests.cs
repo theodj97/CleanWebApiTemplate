@@ -19,7 +19,7 @@ public class AuthenticationTests(FunctionalTestFixture fixture) : FunctionalTest
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/", new { title = TestData.Unique("fn-auth") }, CancellationToken);
+            "/api/todos/", new { title = TestData.Unique("fn-auth") }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -31,7 +31,7 @@ public class AuthenticationTests(FunctionalTestFixture fixture) : FunctionalTest
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/", new { title = TestData.Unique("fn-anon") }, CancellationToken);
+            "/api/todos/", new { title = TestData.Unique("fn-anon") }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -52,7 +52,7 @@ public class AuthenticationTests(FunctionalTestFixture fixture) : FunctionalTest
 
         // Act
         var response = await client.PostAsJsonAsync(
-            "/api/Todo/", new { title = TestData.Unique("fn-invalid") }, CancellationToken);
+            "/api/todos/", new { title = TestData.Unique("fn-invalid") }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -64,7 +64,7 @@ public class AuthenticationTests(FunctionalTestFixture fixture) : FunctionalTest
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/", new { title = TestData.Unique("fn-norole") }, CancellationToken);
+            "/api/todos/", new { title = TestData.Unique("fn-norole") }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);

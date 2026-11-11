@@ -6,29 +6,33 @@ namespace CleanWebApiTemplate.Api.Helpers;
 
 public static class AppConfigurationHelper
 {
+    /// <summary>
+    /// Loads <see cref="AppSettings"/> from the configuration sources and validates them before anything
+    /// else starts. Binding is manual: the reflection-based ConfigurationBinder is not Native AOT friendly.
+    /// </summary>
     public static AppSettings LoadAppSettings(this WebApplicationBuilder builder, string[] args)
     {
         ConfigureSources(builder, builder.Environment.EnvironmentName, args);
 
-        // Manual binding (no reflection-based ConfigurationBinder, Native AOT friendly).
         var appSettings = new AppSettings
         {
             ConnectionStrings = new ConnectionStringsSection
             {
                 Postgres = builder.Configuration.GetSection(nameof(AppSettings.ConnectionStrings))
-                                              [nameof(ConnectionStringsSection.Postgres)] ?? string.Empty
+                                              [nameof(ConnectionStringsSection.Postgres)] ?? string.Empty,
             },
-            CorsAllowedOrigins = GetStringArray(builder.Configuration, Constants.CORS_ALLOWED_ORIGINS),
-            CorsAllowCredentials = GetBoolean(builder.Configuration, Constants.CORS_ALLOW_CREDENTIALS),
-            OpenApiEnabled = GetBoolean(builder.Configuration, Constants.OPENAPI_ENABLED),
+            CorsAllowedOrigins = GetStringArray(builder.Configuration, Constants.CorsAllowedOrigins),
+            CorsAllowCredentials = GetBoolean(builder.Configuration, Constants.CorsAllowCredentials),
+            OpenApiEnabled = GetBoolean(builder.Configuration, Constants.OpenApiEnabled),
             ValidIssuers = GetStringArray(builder.Configuration, nameof(AppSettings.ValidIssuers)),
-            Audience = builder.Configuration[Constants.AUDIENCE] ?? string.Empty
+            Audience = builder.Configuration[Constants.Audience] ?? string.Empty,
         };
 
         var validator = new AppSettingsValidator();
-        var validationResult = validator.Validate(null, appSettings);
+        ValidateOptionsResult validationResult = validator.Validate(null, appSettings);
 
-        if (validationResult.Failed) throw new OptionsValidationException(nameof(AppSettings), typeof(AppSettings), validationResult.Failures!);
+        if (validationResult.Failed)
+            throw new OptionsValidationException(nameof(AppSettings), typeof(AppSettings), validationResult.Failures!);
 
         return appSettings;
     }
@@ -36,7 +40,7 @@ public static class AppConfigurationHelper
     /// <summary>
     /// Builds the configuration sources deterministically: files that ship next to the binary, Development-only
     /// user secrets, OpenBao, environment variables and command line. Later sources win. OpenBao is located through
-    /// a bootstrap configuration so its address/token can come from the environment or the command line.
+    /// a bootstrap configuration so its address and token can come from the environment or the command line.
     /// </summary>
     private static void ConfigureSources(WebApplicationBuilder builder,
                                          string environment,
@@ -77,5 +81,5 @@ public static class AppConfigurationHelper
                          .OfType<string>()];
 
     private static bool GetBoolean(ConfigurationManager configuration, string key) =>
-        bool.TryParse(configuration[key], out var value) && value;
+        bool.TryParse(configuration[key], out bool value) && value;
 }

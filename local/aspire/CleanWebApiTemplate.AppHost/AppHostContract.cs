@@ -56,6 +56,12 @@ static class AppHostContract
         /// <summary>Connection string NAME read by the API (ConnectionStrings:Postgres).</summary>
         public const string PostgresConnectionName = "Postgres";
 
+        /// <summary>
+        /// Configuration key the API reads for PostgreSQL. OpenBao stores it under this name, so the value never
+        /// reaches the application as an environment variable.
+        /// </summary>
+        public const string PostgresConnectionString = "ConnectionStrings:Postgres";
+
         /// <summary>JWT signing key read by the API. The AppHost seeds it into OpenBao instead of passing it as an environment variable.</summary>
         public const string ApiKey = "API_KEY";
 

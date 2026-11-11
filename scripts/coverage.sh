@@ -29,7 +29,7 @@ collect() {
         dotnet test --project "$project" --no-build
 }
 
-collect unit tests/CleanWebApiTemplate.Api.UnitTests/CleanWebApiTemplate.Api.UnitTests.csproj
+collect unit tests/CleanWebApiTemplate.UnitTests/CleanWebApiTemplate.UnitTests.csproj
 collect component tests/CleanWebApiTemplate.Api.ComponentTests/CleanWebApiTemplate.Api.ComponentTests.csproj
 collect functional tests/CleanWebApiTemplate.Api.FunctionalTests/CleanWebApiTemplate.Api.FunctionalTests.csproj
 

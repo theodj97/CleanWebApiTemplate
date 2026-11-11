@@ -1,66 +1,65 @@
-# Convenciones de formato y estilo para todo el repositorio.
-# Las aplica el SDK con `dotnet format` y las valida el hook
-# `.husky/pre-commit` (Husky.Net).
-# EditorConfig es el formato estándar que entienden Visual Studio, VS Code, Rider y MSBuild.
+# Formatting and style conventions for the whole repository.
+# The SDK applies them with `dotnet format` and the `.husky/pre-commit` hook (Husky.Net) enforces them.
+# EditorConfig is the standard format understood by Visual Studio, VS Code, Rider and MSBuild.
 root = true
 
 # ==========================================================================
-# Valores por defecto para cualquier fichero
+# Defaults for every file
 # ==========================================================================
 [*]
 indent_style = space
 indent_size = 4
-# LF en todo el repositorio: el mismo resultado en Windows, WSL y Linux.
-# .gitattributes fuerza también LF en el árbol de trabajo para los .cs.
+# LF everywhere: the same result on Windows, WSL and Linux.
+# .gitattributes also forces LF in the working tree for .cs files.
 end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
 # ==========================================================================
-# Proyectos, solución y ficheros de configuración (XML/JSON/YAML)
+# Projects, solution and configuration files (XML/JSON/YAML)
 # ==========================================================================
 [*.{csproj,fsproj,vbproj,proj,slnx,props,targets,nuspec,config,xml,json,yml,yaml}]
 indent_size = 2
 
-# Markdown: los dos espacios finales son un salto de línea intencionado, así que
-# no se recortan. La indentación de listas/anidaciones es de 2.
+# Markdown: two trailing spaces are an intentional line break, so they are kept.
+# List and nesting indentation is 2.
 [*.{md,markdown}]
 indent_size = 2
 trim_trailing_whitespace = false
 
-# Scripts de shell: misma indentación que el resto del repositorio.
+# Shell scripts: same indentation as the rest of the repository.
 [*.{sh,bash}]
 indent_size = 4
 
 # ==========================================================================
-# C#: estilo
+# C#: style
 # ==========================================================================
 [*.cs]
 
-# --- using ---
+# --- usings ---
 dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = false
 csharp_using_directive_placement = outside_namespace:silent
-# IDE0005: `using` innecesario. Se aplica con `dotnet format` y también en build
-# (EnforceCodeStyleInBuild en Directory.Build.props).
+# IDE0005: unnecessary using. Applied by `dotnet format` and during build
+# (EnforceCodeStyleInBuild in Directory.Build.props).
 dotnet_diagnostic.IDE0005.severity = warning
 
-# --- parámetros sin usar ---
-# IDE0060: parámetro sin usar. Error en el IDE y en build.
-# No analiza lambdas, overrides, implementaciones de interfaz, virtual/abstract,
-# accessors, event handlers, métodos usados como delegado ni constructores primarios.
-# Si la firma es obligatoria, renombrar a `_` o `_1` (no `_algo`).
+# --- unused parameters ---
+# IDE0060: unused parameter. Error in the IDE and in build.
+# It does not analyse lambdas, overrides, interface implementations, virtual/abstract
+# members, accessors, event handlers, methods used as delegates or primary constructors.
+# When the signature is required, rename the parameter to `_` or `_1` (never `_name`).
 dotnet_code_quality_unused_parameters = all
 dotnet_diagnostic.IDE0060.severity = error
 
-# --- namespaces: siempre con ámbito de fichero ---
+# --- namespaces: always file-scoped ---
 csharp_style_namespace_declarations = file_scoped:warning
 dotnet_diagnostic.IDE0161.severity = warning
 
-# --- formato (espacios en blanco) ---
+# --- formatting (whitespace) ---
 dotnet_diagnostic.IDE0055.severity = warning
 
-# --- preferencias documentadas (no bloquean la compilación) ---
+# --- documented preferences (they do not block the build) ---
 dotnet_style_qualification_for_field = false:silent
 dotnet_style_qualification_for_property = false:silent
 dotnet_style_qualification_for_method = false:silent
@@ -69,7 +68,7 @@ dotnet_style_predefined_type_for_locals_parameters_members = true:silent
 dotnet_style_predefined_type_for_member_access = true:silent
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:silent
 
-# --- reglas de formato que aplica `dotnet format whitespace` ---
+# --- formatting rules applied by `dotnet format whitespace` ---
 csharp_new_line_before_open_brace = all
 csharp_new_line_before_else = true
 csharp_new_line_before_catch = true
@@ -107,29 +106,22 @@ csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = true
 
 # ==========================================================================
-# Excepciones documentadas de análisis (AnalysisMode=Recommended)
+# Documented analysis exceptions (AnalysisMode=Recommended)
 # ==========================================================================
-# CA1000: `Result<T>.Success/Failure` son la API pública del tipo; moverlas a
-# una clase no genérica no aporta nada y rompería todos los llamadores.
+# CA1000: `Result<T>.Success/Failure` are the public API of the type; moving them to a
+# non-generic class adds nothing and would break every caller.
 dotnet_diagnostic.CA1000.severity = none
-# CA1716: `Error` es el concepto del dominio. El rename (y el de sus parámetros)
-# se evalúa en QUAL-016 (P3); no es un cambio de un batch de guardarraíles.
+# CA1716: `Error` and `Result` are the domain vocabulary; renaming them would obscure it.
 dotnet_diagnostic.CA1716.severity = none
 
-# Las claves de configuración se escriben como en appsettings (API_KEY); el
-# rename de las constantes está en QUAL-009 (P3).
-[src/**/Configuration/Constants.cs]
-dotnet_diagnostic.CA1707.severity = none
-
-# El sidecar local de OpenAPI no es código de producción: su migración a
-# LoggerMessage (CA1848/CA1873) está en QUAL-015 (Batch 11).
+# The local OpenAPI sidecar is not production code: its migration to
+# LoggerMessage (CA1848/CA1873) is tracked separately.
 [local/openapi/**/*.cs]
 dotnet_diagnostic.CA1848.severity = none
 dotnet_diagnostic.CA1873.severity = none
 
-# Los nombres de los tests siguen Method_Scenario_ExpectedResult: los guiones
-# bajos son intencionados. El resto son reglas de rendimiento/disposición que
-# no aplican a código de test.
+# Test names follow Method_Scenario_ExpectedResult: the underscores are intentional.
+# The rest are performance/disposal rules that do not apply to test code.
 [tests/**/*.cs]
 dotnet_diagnostic.CA1707.severity = none
 dotnet_diagnostic.CA1861.severity = none

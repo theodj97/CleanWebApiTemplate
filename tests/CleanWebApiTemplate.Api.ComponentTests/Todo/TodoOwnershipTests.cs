@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using CleanWebApiTemplate.Api.Models.Responses.Todo;
+using CleanWebApiTemplate.Api.Todo;
 using CleanWebApiTemplate.Tests.Shared.Attributes;
 using CleanWebApiTemplate.Tests.Shared.Auth;
 using CleanWebApiTemplate.Tests.Shared.Data;
@@ -17,16 +17,16 @@ public class TodoOwnershipTests(ComponentTestFixture fixture) : ComponentTestBas
     [Fact]
     [ResetDatabase]
     [AuthenticatedAs(TestUser.TodoUser)]
-    public async Task GetById_AsUser_WithAnotherUsersTodo_ReturnsNoContent()
+    public async Task GetById_AsUser_WithAnotherUsersTodo_ReturnsNotFound()
     {
         // Arrange
         var other = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoAdmin).Build());
 
         // Act
-        var response = await Client.GetAsync($"/api/Todo/{other.Id}", CancellationToken);
+        var response = await Client.GetAsync($"/api/todos/{other.Id}", CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class TodoOwnershipTests(ComponentTestFixture fixture) : ComponentTestBas
         var other = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
 
         // Act
-        var response = await Client.GetAsync($"/api/Todo/{other.Id}", CancellationToken);
+        var response = await Client.GetAsync($"/api/todos/{other.Id}", CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -57,7 +57,7 @@ public class TodoOwnershipTests(ComponentTestFixture fixture) : ComponentTestBas
         await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoAdmin).Build());
 
         // Act
-        var response = await Client.PostAsJsonAsync("/api/Todo/titles", new { }, CancellationToken);
+        var response = await Client.PostAsJsonAsync("/api/todos/titles", new { }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -76,7 +76,7 @@ public class TodoOwnershipTests(ComponentTestFixture fixture) : ComponentTestBas
         var operatorTodo = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoOperator).Build());
 
         // Act
-        var response = await Client.PostAsJsonAsync("/api/Todo/titles", new { }, CancellationToken);
+        var response = await Client.PostAsJsonAsync("/api/todos/titles", new { }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -96,7 +96,7 @@ public class TodoOwnershipTests(ComponentTestFixture fixture) : ComponentTestBas
 
         // Act
         var response = await Client.PutAsJsonAsync(
-            $"/api/Todo/{other.Id}",
+            $"/api/todos/{other.Id}",
             new { description = "must not be applied" },
             CancellationToken);
 
@@ -117,7 +117,7 @@ public class TodoOwnershipTests(ComponentTestFixture fixture) : ComponentTestBas
 
         // Act
         var response = await Client.PutAsJsonAsync(
-            $"/api/Todo/{other.Id}",
+            $"/api/todos/{other.Id}",
             new { description = "updated by the admin" },
             CancellationToken);
 
@@ -138,11 +138,10 @@ public class TodoOwnershipTests(ComponentTestFixture fixture) : ComponentTestBas
         var other = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
 
         // Act
-        var response = await Client.DeleteAsync($"/api/Todo/{other.Id}", CancellationToken);
+        var response = await Client.DeleteAsync($"/api/todos/{other.Id}", CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.False(await ReadDeletedAsync(response));
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         Assert.NotNull(await Fixture.Todos.FindAsync(other.Id));
     }
 
@@ -155,11 +154,10 @@ public class TodoOwnershipTests(ComponentTestFixture fixture) : ComponentTestBas
         var other = await Fixture.Todos.AddAsync(TodoOwnedBy(TestUser.TodoUser).Build());
 
         // Act
-        var response = await Client.DeleteAsync($"/api/Todo/{other.Id}", CancellationToken);
+        var response = await Client.DeleteAsync($"/api/todos/{other.Id}", CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.True(await ReadDeletedAsync(response));
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         Assert.Null(await Fixture.Todos.FindAsync(other.Id));
     }
 
@@ -169,8 +167,4 @@ public class TodoOwnershipTests(ComponentTestFixture fixture) : ComponentTestBas
     private static async Task<List<TodoTitleResponse>> ReadTitlesAsync(HttpResponseMessage response) =>
         await response.Content.ReadFromJsonAsync<List<TodoTitleResponse>>(
             JsonSerializerOptions.Web, TestContext.Current.CancellationToken) ?? [];
-
-    private static async Task<bool> ReadDeletedAsync(HttpResponseMessage response) =>
-        await response.Content.ReadFromJsonAsync<bool>(
-            JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
 }

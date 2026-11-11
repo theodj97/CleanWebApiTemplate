@@ -106,7 +106,7 @@ Health: `/health` (aggregate status), `/alive`, `/health/api`, `/health/postgres
 
 ```bash
 dotnet test --solution CleanWebApiTemplate.slnx                       # everything (Docker for component/functional)
-dotnet test --project tests/CleanWebApiTemplate.Api.UnitTests/CleanWebApiTemplate.Api.UnitTests.csproj   # no Docker
+dotnet test --project tests/CleanWebApiTemplate.UnitTests/CleanWebApiTemplate.UnitTests.csproj   # no Docker
 npm run coverage                                                       # coverage report + thresholds
 ```
 

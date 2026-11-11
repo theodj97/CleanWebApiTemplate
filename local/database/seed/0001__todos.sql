@@ -1,5 +1,6 @@
 -- Synthetic seed data for local development only (never production data).
--- Applied by CleanWebApiTemplate.DbInitializer after the schema, only when the AppHost passes Seed__Path.
+-- Applied by CleanWebApiTemplate.DbInitializer after the schema, only when the AppHost passes Seed__Path
+-- (Local mode; the test modes start from an empty schema).
 --
 -- CreatedBy matches the email claim of the devtoken profiles so that every profile owns rows
 -- and the filter endpoint returns meaningful results for each identity.

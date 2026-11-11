@@ -1,17 +1,17 @@
 ###############################################################################
-# Comportamiento por defecto: normalizar finales de línea automáticamente y
-# usar LF en el árbol de trabajo para todo el texto. Así `dotnet format
-# --verify-no-changes` y los hooks dan el mismo resultado en Windows, WSL y
-# Linux, independientemente de core.autocrlf.
+# Default behaviour: normalise line endings automatically and use LF in the
+# working tree for every text file. This way `dotnet format --verify-no-changes`
+# and the hooks give the same result on Windows, WSL and Linux, regardless of
+# core.autocrlf.
 ###############################################################################
 * text=auto eol=lf
 
-# C# y scripts siempre con LF (los hooks se ejecutan con sh/Git Bash).
+# C# and scripts always with LF (the hooks run with sh/Git Bash).
 *.cs text eol=lf
 *.sh text eol=lf
 
 ###############################################################################
-# Binarios: nunca normalizar ni convertir.
+# Binaries: never normalise or convert.
 ###############################################################################
 *.png binary
 *.jpg binary
@@ -33,7 +33,7 @@
 *.woff2 binary
 
 ###############################################################################
-# Scripts de Windows (si se añaden): conservan CRLF.
+# Windows scripts (if added): keep CRLF.
 ###############################################################################
 *.bat text eol=crlf
 *.cmd text eol=crlf

@@ -49,20 +49,19 @@ if (!isTest)
 
 var localJwt = LocalJwt.Create(builder, requireKeys: !isTest);
 
-// The applications never receive the signing key: it is seeded into OpenBao in every mode. The root token is
-// generated per start, so nothing is persisted and nothing is committed. A test can supply its own through
-// Parameters:openbao-root-token.
+// The applications never receive a secret as an environment variable: the signing key and the connection string
+// are seeded into OpenBao in every mode. The root token is generated per start, so nothing is persisted and
+// nothing is committed; a test can supply its own through Parameters:openbao-root-token.
 var openBaoToken = builder.Configuration[OpenBao.RootTokenParameterKey]
                    ?? Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
 var openBao = builder.AddOpenBao(openBaoToken);
-var openBaoInitializer = builder.AddOpenBaoInitializer(openBao, openBaoToken, OpenBao.SecretsPath(mode), localJwt);
+var openBaoInitializer = builder.AddOpenBaoInitializer(openBao, todoDb, openBaoToken, OpenBao.SecretsPath(mode), localJwt);
 
 // Component mode stops here: the API under test runs in-process inside the component tests.
 if (mode != Modes.Component)
 {
     var api = AddApplication<Projects.CleanWebApiTemplate_Api>(Resources.Api)
         .WithOpenBaoSecrets(openBao, openBaoToken, OpenBao.SecretsPath(mode))
-        .WithReference(todoDb, connectionName: AppSettings.PostgresConnectionName)
         .WaitFor(todoDb)
         .WaitFor(openBao)
         .WaitForCompletion(openBaoInitializer)

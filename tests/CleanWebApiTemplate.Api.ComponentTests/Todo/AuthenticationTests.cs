@@ -20,7 +20,7 @@ public class AuthenticationTests(ComponentTestFixture fixture) : ComponentTestBa
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/", new { title = TestData.Unique("auth-user"), description = "ok" }, CancellationToken);
+            "/api/todos/", new { title = TestData.Unique("auth-user"), description = "ok" }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -31,7 +31,7 @@ public class AuthenticationTests(ComponentTestFixture fixture) : ComponentTestBa
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/", new { title = TestData.Unique("auth-anon") }, CancellationToken);
+            "/api/todos/", new { title = TestData.Unique("auth-anon") }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -53,7 +53,7 @@ public class AuthenticationTests(ComponentTestFixture fixture) : ComponentTestBa
 
         // Act
         var response = await client.PostAsJsonAsync(
-            "/api/Todo/", new { title = TestData.Unique("auth-invalid") }, CancellationToken);
+            "/api/todos/", new { title = TestData.Unique("auth-invalid") }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -65,7 +65,7 @@ public class AuthenticationTests(ComponentTestFixture fixture) : ComponentTestBa
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/", new { title = TestData.Unique("auth-norole") }, CancellationToken);
+            "/api/todos/", new { title = TestData.Unique("auth-norole") }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -77,7 +77,7 @@ public class AuthenticationTests(ComponentTestFixture fixture) : ComponentTestBa
     {
         // Act
         var response = await Client.PostAsJsonAsync(
-            "/api/Todo/", new { title = TestData.Unique("auth-noemail") }, CancellationToken);
+            "/api/todos/", new { title = TestData.Unique("auth-noemail") }, CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -88,7 +88,7 @@ public class AuthenticationTests(ComponentTestFixture fixture) : ComponentTestBa
     public async Task DeleteTodo_WithUserToken_ReturnsForbidden()
     {
         // Act
-        var response = await Client.DeleteAsync($"/api/Todo/{Ulid.NewUlid()}", CancellationToken);
+        var response = await Client.DeleteAsync($"/api/todos/{Ulid.NewUlid()}", CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -96,24 +96,24 @@ public class AuthenticationTests(ComponentTestFixture fixture) : ComponentTestBa
 
     [Fact]
     [AuthenticatedAs(TestUser.TodoOperator)]
-    public async Task DeleteTodo_WithOperatorToken_ReturnsOk()
+    public async Task DeleteTodo_WithOperatorToken_ReturnsNotFoundForUnknownId()
     {
         // Act
-        var response = await Client.DeleteAsync($"/api/Todo/{Ulid.NewUlid()}", CancellationToken);
+        var response = await Client.DeleteAsync($"/api/todos/{Ulid.NewUlid()}", CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
     [AuthenticatedAs(TestUser.TodoAdmin)]
-    public async Task DeleteTodo_WithAdminToken_ReturnsOk()
+    public async Task DeleteTodo_WithAdminToken_ReturnsNotFoundForUnknownId()
     {
         // Act
-        var response = await Client.DeleteAsync($"/api/Todo/{Ulid.NewUlid()}", CancellationToken);
+        var response = await Client.DeleteAsync($"/api/todos/{Ulid.NewUlid()}", CancellationToken);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
@@ -121,7 +121,7 @@ public class AuthenticationTests(ComponentTestFixture fixture) : ComponentTestBa
     public async Task DeleteTodo_WithExternalToken_ReturnsForbidden()
     {
         // Act
-        var response = await Client.DeleteAsync($"/api/Todo/{Ulid.NewUlid()}", CancellationToken);
+        var response = await Client.DeleteAsync($"/api/todos/{Ulid.NewUlid()}", CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);

@@ -1,16 +1,16 @@
 #!/bin/sh
-# Formatea los .cs que están en staging y, si ha cambiado algo, aborta el commit
-# para que revises el resultado y vuelvas a commitear.
-# También bloquea el commit si queda algún error de estilo no corregible (IDE0060),
-# sin modificar los ficheros.
-# No hace `git add`: los arreglos se quedan en el working tree a propósito.
-# Saltar el hook: HUSKY=0 git commit ... (o git commit --no-verify).
+# Formats the staged .cs files and aborts the commit when something changed, so
+# you can review the result and commit again.
+# It also blocks the commit when a style error that cannot be fixed (IDE0060)
+# remains, without modifying the files.
+# It never runs `git add`: the fixes stay in the working tree on purpose.
+# Skip the hook: HUSKY=0 git commit ... (or git commit --no-verify).
 set -eu
 
 solution="CleanWebApiTemplate.slnx"
 
-# Solo ficheros añadidos/copiados/modificados/renombrados: no hay nada que
-# formatear en los borrados. La lista con NUL soporta rutas con espacios.
+# Only added/copied/modified/renamed files: there is nothing to format in
+# deletions. The NUL-separated list supports paths with spaces.
 staged=$(git diff --cached --name-only --diff-filter=ACMR -- '*.cs')
 [ -n "$staged" ] || exit 0
 
@@ -18,9 +18,9 @@ list=$(mktemp)
 trap 'rm -f "$list"' EXIT
 git diff --cached --name-only -z --diff-filter=ACMR -- '*.cs' > "$list"
 
-# Huella del contenido actual para detectar si `dotnet format` toca algo.
-# Se usa `git hash-object` (sin filtros de path) para no depender de sha256sum
-# ni de shasum, que no existen en todas las plataformas.
+# Fingerprint of the current content to detect whether `dotnet format` changes
+# anything. `git hash-object` is used (without path filters) so the script does
+# not depend on sha256sum or shasum, which are not available everywhere.
 fingerprint() {
     printf '%s\n' "$staged" | while IFS= read -r file; do
         if [ -f "$file" ]; then
@@ -31,11 +31,11 @@ fingerprint() {
 
 before=$(fingerprint)
 
-# `xargs -0` pasa cada ruta como un argumento distinto: los espacios no rompen
-# la lista. `--include` va al final para que consuma exactamente esas rutas.
+# `xargs -0` passes each path as a separate argument: spaces do not break the
+# list. `--include` goes last so it consumes exactly those paths.
 xargs -0 dotnet format whitespace "$solution" --no-restore --verbosity minimal --include < "$list"
-# IDE0060 se excluye a propósito: no debe modificarse ni eliminarse ningún
-# parámetro. La regla se comprueba después con `--verify-no-changes`.
+# IDE0060 is excluded on purpose: no parameter should be modified or removed.
+# The rule is checked afterwards with `--verify-no-changes`.
 xargs -0 dotnet format style "$solution" --no-restore --verbosity minimal \
     --exclude-diagnostics IDE0060 --include < "$list"
 
@@ -43,15 +43,15 @@ after=$(fingerprint)
 
 if [ "$before" != "$after" ]; then
     printf '\n' >&2
-    printf 'Husky ha aplicado cambios de formato en los .cs que ibas a commitear.\n' >&2
-    printf 'Revisalos con:            git diff\n' >&2
-    printf 'Y vuelve a commitear con: git add -u && git commit\n' >&2
+    printf 'Husky applied formatting changes to the .cs files you were about to commit.\n' >&2
+    printf 'Review them with:      git diff\n' >&2
+    printf 'Then commit again:     git add -u && git commit\n' >&2
     printf '\n' >&2
     exit 1
 fi
 
-# Si el working tree no coincide con el index en esos ficheros, el commit
-# llevaría la versión sin formatear: mejor bloquear.
+# If the working tree does not match the index for those files, the commit
+# would carry the unformatted version: block it instead.
 unstaged=$(printf '%s\n' "$staged" | while IFS= read -r file; do
     if ! git diff --quiet -- "$file"; then
         printf '%s\n' "$file"
@@ -60,25 +60,25 @@ done)
 
 if [ -n "$unstaged" ]; then
     printf '\n' >&2
-    printf 'Husky no puede formatear: estos .cs tienen cambios sin stagear:\n' >&2
+    printf 'Husky cannot format: these .cs files have unstaged changes:\n' >&2
     printf '%s\n' "$unstaged" | while IFS= read -r file; do
         printf '    %s\n' "$file" >&2
     done
-    printf 'Stagealos (git add -u) o descarta esos cambios (git restore) y reintenta.\n' >&2
+    printf 'Stage them (git add -u) or discard those changes (git restore) and retry.\n' >&2
     printf '\n' >&2
     exit 1
 fi
 
-# IDE0060 (parámetro sin usar) no tiene code fix: `dotnet format` no puede
-# corregirlo. Se verifica aparte para bloquear el commit sin tocar el fichero:
-# `--verify-no-changes` solo analiza. `--diagnostics` limita la comprobación a
-# IDE0060 para que el mensaje no acuse a otras reglas de severidad error.
+# IDE0060 (unused parameter) has no code fix: `dotnet format` cannot correct
+# it. It is verified separately to block the commit without touching the file:
+# `--verify-no-changes` only analyses. `--diagnostics` limits the check to
+# IDE0060 so the message does not blame other error-severity rules.
 if ! xargs -0 dotnet format style "$solution" --no-restore \
         --diagnostics IDE0060 --severity error --verify-no-changes --verbosity minimal \
         --include < "$list"; then
     printf '\n' >&2
-    printf 'Husky ha detectado parámetros sin usar (IDE0060) en los .cs staged.\n' >&2
-    printf 'No se ha modificado ningún fichero: elimina el parámetro o renómbralo a `_`/`_1`.\n' >&2
+    printf 'Husky found unused parameters (IDE0060) in the staged .cs files.\n' >&2
+    printf 'No file was modified: remove the parameter or rename it to `_`/`_1`.\n' >&2
     printf '\n' >&2
     exit 1
 fi

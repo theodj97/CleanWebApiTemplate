@@ -3,44 +3,30 @@ using Microsoft.OpenApi;
 namespace CleanWebApiTemplate.Api.Configuration;
 
 /// <summary>
-/// Shapes the OpenAPI document: a stable title, the resource tag and bearer security. Schema metadata
-/// lives in <see cref="CommonOpenApiSchemas"/> and <see cref="TodoOpenApiSchemas"/>. Everything is
-/// static, so this stays Native AOT safe: no reflection and no schemas downloaded at runtime.
+/// Shapes the document every feature shares: a stable title, bearer security and the common schemas.
+/// Everything is static, so this stays Native AOT safe: no reflection and no schemas downloaded at runtime.
 /// </summary>
 internal static class OpenApiConfiguration
 {
-    private const string TodoTag = "Todo";
+    /// <summary>Name of the only document the API serves. Feature modules add their transformers to it.</summary>
+    internal const string DocumentName = "v1";
 
     public static IServiceCollection AddApiOpenApi(this IServiceCollection services)
     {
-        services.AddOpenApi(options =>
-        {
-            options.AddDocumentTransformer((document, _, _) =>
+        services.AddOpenApi(DocumentName, options => options.AddDocumentTransformer(
+            (document, _, _) =>
             {
                 document.Info.Title = "CleanWebApiTemplate API";
                 document.Info.Version = "1.0.0";
                 document.Info.Description =
-                    "TODO API built with .NET 10 Minimal APIs, JWT bearer authentication and Native AOT. "
-                    + "Owners only see their own TODOs; the Admin and Operator roles unlock broader access.";
-
-                document.Tags = new HashSet<OpenApiTag>
-                {
-                    new()
-                    {
-                        Name = TodoTag,
-                        Description =
-                            "Create, read, filter, update and delete TODO items. Every operation requires a JWT; "
-                            + "the ownership and role rules are listed on each operation.",
-                    },
-                };
+                    "API built with .NET 10 Minimal APIs, JWT bearer authentication and Native AOT. "
+                    + "Callers only see their own items; the Admin role unlocks every owner.";
 
                 AddBearerSecurity(document);
                 CommonOpenApiSchemas.DescribeSchemas(document);
-                TodoOpenApiSchemas.DescribeSchemas(document);
 
                 return Task.CompletedTask;
-            });
-        });
+            }));
 
         return services;
     }
