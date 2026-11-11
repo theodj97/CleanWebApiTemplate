@@ -487,10 +487,6 @@ coverage-report/
 # Herramientas locales descargadas por scripts/install-gitleaks.sh
 .tools/
 
-# Opencode
-.agents/
-skills-lock.json
-
 # Taste skill
 .task-skill/
 
