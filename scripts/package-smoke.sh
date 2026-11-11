@@ -86,6 +86,12 @@ if command -v unzip >/dev/null 2>&1; then
         "content/.template.config/dotnetcli.host.json" \
         "content/README.template.md" \
         "content/AGENTS.md" \
+        "content/GLOSSARY.md" \
+        "content/docs/adr/0001-native-aot.md" \
+        "content/.opencode/skills/clean-webapi/SKILL.md" \
+        "content/.opencode/skills/clean-webapi/assets/examples/README.md" \
+        "content/.opencode/commands/feature.md" \
+        "content/.opencode/agents/reviewer.md" \
         "content/global.json" \
         "content/package.json" \
         "content/src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj" \
@@ -99,6 +105,7 @@ if command -v unzip >/dev/null 2>&1; then
         "content/build/" \
         "content/.git/" \
         "content/.agents/" \
+        "content/.opencode/skills/template-maintainer/" \
         "content/.tools/" \
         "content/coverage-report/" \
         "content/docs/audit/" \
@@ -146,7 +153,11 @@ dotnet new clean-webapi -n Sample -o "$OUT/Sample" \
 SAMPLE="$OUT/Sample"
 
 echo "==> Generated content"
-for path in README.md .gitignore Sample.slnx AGENTS.md .config/dotnet-tools.json \
+for path in README.md .gitignore Sample.slnx AGENTS.md GLOSSARY.md .config/dotnet-tools.json \
+    .opencode/skills/clean-webapi/SKILL.md \
+    .opencode/commands/feature.md \
+    .opencode/agents/reviewer.md \
+    docs/adr/0001-native-aot.md \
     src/Sample.Api/Sample.Api.csproj \
     tests/Sample.UnitTests/Sample.UnitTests.csproj \
     local/aspire/Sample.AppHost/Sample.AppHost.csproj; do
@@ -154,6 +165,7 @@ for path in README.md .gitignore Sample.slnx AGENTS.md .config/dotnet-tools.json
 done
 
 for path in build artifacts CHANGELOG.md LICENSE README.nuget.md .agents .tools \
+    .opencode/skills/template-maintainer \
     coverage-report docs/audit README.template.md .template.config \
     scripts/template-smoke.sh scripts/package-smoke.sh; do
     if [ -e "$SAMPLE/$path" ]; then fail "should not exist $path"; else ok "does not exist $path"; fi

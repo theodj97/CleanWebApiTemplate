@@ -26,32 +26,45 @@ dotnet local/tools/devtoken.cs init        # local JWT signing key in the AppHos
 aspire start                               # API + PostgreSQL + OpenBao + Swagger sidecar + dashboard
 ```
 
-`aspire start` prints the dashboard link. The API listens on `https://localhost:5001`; open the `swagger` resource in
-the dashboard for the local Swagger UI with examples and a profile picker. Full guide:
+`aspire start` prints the dashboard link. The API listens on `https://localhost:5001`; open the `swagger` resource
+in the dashboard for the local Swagger UI with examples and a profile picker. Full guide:
 [`local/local-development.md`](local/local-development.md).
 
 ## Architecture
 
 ```text
 src/
-├── CleanWebApiTemplate.Api              Minimal API: routes, auth, ProblemDetails, OpenAPI (Native AOT)
-├── CleanWebApiTemplate.Application      Use cases, validators, Result<T>, repository abstractions
-├── CleanWebApiTemplate.Domain           Entities and domain constraints, no framework dependencies
-├── CleanWebApiTemplate.Infrastructure   PostgreSQL repositories (Npgsql), OpenBao configuration source
+├── CleanWebApiTemplate.Api              Composition root and HTTP: routes, auth, ProblemDetails, OpenAPI (AOT)
+├── CleanWebApiTemplate.Application      Use cases, validators, Result<T>, DTOs, ports, sort catalogs
+├── CleanWebApiTemplate.Domain           Entities, enums and business constraints, no framework dependencies
+├── CleanWebApiTemplate.Infrastructure   ADO.NET/Npgsql repositories, OpenBao configuration source
 └── CleanWebApiTemplate.ServiceDefaults  OpenTelemetry and base health checks
 local/                                   Aspire AppHost, DB/OpenBao initializers, Swagger sidecar, devtoken
 tests/                                   Unit, component, functional and architecture tests
 ```
 
-Dependency rule: `Api → Application → Domain` and `Api → Infrastructure → Application`. `Application` never references
-`Infrastructure`, and `Domain` references nothing. `tests/CleanWebApiTemplate.ArchitectureTests` enforces it, and
-`BannedSymbols.txt` blocks reflection-based APIs.
+Dependency rule: `Api → Application → Domain` and `Api → Infrastructure → Application`. `Application` never
+references `Infrastructure`, and `Domain` references nothing but `System.*` and `Ulid`.
+`tests/CleanWebApiTemplate.ArchitectureTests` enforces it, and `BannedSymbols.txt` blocks reflection-based APIs.
+
+A feature is one folder with its name in each layer:
+
+```text
+Domain/Todo/                 TodoEntity, ETodoStatus, TodoConstraints
+Application/Todo/            ITodoRepository, TodoDto, TodoFilter, TodoTitle, TodoSortCatalog, TodoValidator
+Application/Todo/Create/     CreateTodoInput, CreateTodoInputValidator, CreateTodoHandler
+Infrastructure/Todo/         TodoRepository, TodoTable, TodoSortColumns
+Api/Todo/                    TodoModule, TodoRoutes, TodoEndpoints, requests, responses, JSON context, OpenAPI
+```
+
+The module registers everything the feature needs (`AddTodoModule()`), and `ConfigureServices` calls one module per
+feature. Adding a feature is one folder per layer plus that call; removing it is the reverse.
 
 ### Native AOT
 
-The API is published as Native AOT. No reflection, no `dynamic`, JSON only through the generated
-`AppJsonSerializerContext`, and AOT/trimming warnings are fixed at their cause, never suppressed. See
-[`AGENTS.md`](AGENTS.md). Before considering a change done:
+The API is published as Native AOT. No reflection, no `dynamic`, JSON only through the source-generated contexts, and
+AOT/trimming warnings are fixed at their cause, never suppressed. See [`AGENTS.md`](AGENTS.md) and, for the detailed
+rules, the `clean-webapi` skill in `.opencode/skills`. Before considering a change done:
 
 ```bash
 dotnet build CleanWebApiTemplate.slnx                      # 0 warnings, 0 errors
@@ -59,43 +72,66 @@ dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj \
   -c Release -r linux-x64 --self-contained                 # Native AOT, 0 warnings
 ```
 
+## Working with AI agents
+
+The generated project ships everything an agent needs:
+
+| Path | Content |
+|---|---|
+| `AGENTS.md` | The non-negotiables and the pointer to the skill. |
+| `GLOSSARY.md` | Domain language (owner, visibility, roles, the sample feature). |
+| `docs/adr/` | The decisions that are hard to reverse and why. |
+| `.opencode/skills/clean-webapi/` | The detailed rules, the touch list for a feature, the review checklist and a complete `Project` example. |
+| `.opencode/commands/` | `/feature`, `/endpoint`, `/verify`, `/remove-sample`. |
+| `.opencode/agents/reviewer.md` | A read-only review subagent. |
+
+OpenCode loads `AGENTS.md` automatically and advertises the skill. Other agents can read the same files: `AGENTS.md`
+is plain Markdown and the skill is a `SKILL.md` directory.
+
 ## Configuration and secrets
 
 `appsettings*.json` hold no secrets and no connection strings. Sources, in increasing precedence:
 `appsettings*.json` → user secrets → OpenBao → environment variables → command line.
 
+Every secret comes from OpenBao in every mode. By environment the application receives only `OpenBao:*`; the
+one-shot `openbao-init` job writes the JWT key and the PostgreSQL connection string into the store.
+
 | Setting | Purpose |
 |---|---|
-| `ConnectionStrings__Postgres` | PostgreSQL connection string (injected by the AppHost locally). |
 | `OpenBao__Address`, `OpenBao__Token`, `OpenBao__Mount`, `OpenBao__Path` | Secrets store read once at startup. Empty address disables the source. |
-| `API_KEY` | HS256 signing key (Symmetric mode), read from OpenBao. At least 32 UTF-8 bytes; the API refuses to start otherwise. |
+| `ConnectionStrings:Postgres` | PostgreSQL connection string, **read from OpenBao**. |
+| `API_KEY` | HS256 signing key (Symmetric mode), **read from OpenBao**. At least 32 UTF-8 bytes; the API refuses to start otherwise. |
 | `Authentication__Mode` | `Symmetric` (local/tests) or `Oidc` (deployed). Inferred from `Authentication__Authority` when empty. |
 | `Authentication__Authority` | OIDC authority, absolute HTTPS URI. Must be empty in Symmetric mode. |
 | `ValidIssuers`, `Audience` | Accepted JWT issuers and audience. |
 | `Cors__AllowedOrigins__N`, `Cors__AllowCredentials` | Browser origins. An empty list disables CORS. |
-| `OpenApi__Enabled` | Serves `/openapi/v1.json` (`false` in `appsettings.PRODUCTION.json`). |
+| `OpenApi__Enabled` | Serves `/openapi/v1.json` (`false` in `appsettings.Production.json`). |
 
 Invalid authentication settings fail at startup with a clear message instead of returning 500 per request.
+Environment files are named after `ASPNETCORE_ENVIRONMENT` (`Production`, `Staging`, `Integration`); the name is
+case-sensitive on Linux.
 
 ## API
 
 All routes need a JWT. Policies are role based: `User` (User, Operator, Admin), `Operator` (Operator, Admin), `Admin`
-(Admin) and `External` (External, Operator, Admin; no route uses it yet). A token without the `email` claim gets `403`.
+(Admin) and `External` (External, Operator, Admin; no route uses it yet). A token without the `email` claim gets
+`403`.
 
 | Method | Route | Policy | Success |
 |---|---|---|---|
-| `GET` | `/api/Todo/{id}` | User | `200`; `204` when missing or not owned |
-| `POST` | `/api/Todo/filter` | User | `200`; `204` when empty |
-| `POST` | `/api/Todo/titles` | User | `200`; `204` when empty |
-| `POST` | `/api/Todo/` | User | `201` with `Location`; `409` for a duplicate title |
-| `PUT` | `/api/Todo/{id}` | User | `200`; `404`, `400` or `409` |
-| `DELETE` | `/api/Todo/{id}` | Operator | `200` with `true`, or `false` when no visible row matched |
+| `GET` | `/api/todos/{id}` | User | `200`; `404` when missing or not owned |
+| `POST` | `/api/todos/filter` | User | `200`; `200 []` when nothing matches |
+| `POST` | `/api/todos/titles` | User | `200`; `200 []` when nothing matches |
+| `POST` | `/api/todos/` | User | `201` with `Location`; `409` for a duplicate title |
+| `PUT` | `/api/todos/{id}` | User | `200`; `404`, `400` or `409` |
+| `DELETE` | `/api/todos/{id}` | Operator | `204`; `404` when no visible row matched |
 
 Contract rules:
 
 - Non-admin callers only see and change their own TODOs (`CreatedBy` = token `email`); admins see every owner.
 - Titles are trimmed, 1–255 characters and **unique per owner** (database unique index); a duplicate returns `409`.
-- The `title` filter is a case-insensitive **contains** match; `%`, `_` and `\` are matched literally.
+- The filter's `titles` is a case-insensitive **contains** match; `%`, `_` and `\` are matched literally.
+  The request fields are `ids`, `titles`, `statuses` and `owners`.
 - `status` must be 1 Pending, 2 InProgress, 3 Completed or 4 Cancelled; `0` or unknown values return `400`.
 - Errors are RFC 9457 ProblemDetails with `traceId`, including `404`/`405` and malformed JSON (`400`).
 
@@ -107,7 +143,7 @@ Health: `/health` (aggregate status), `/alive`, `/health/api`, `/health/postgres
 ```bash
 dotnet test --solution CleanWebApiTemplate.slnx                       # everything (Docker for component/functional)
 dotnet test --project tests/CleanWebApiTemplate.UnitTests/CleanWebApiTemplate.UnitTests.csproj   # no Docker
-npm run coverage                                                       # coverage report + thresholds
+npm run coverage                                                      # coverage report + thresholds
 ```
 
 `global.json` selects the Microsoft Testing Platform runner, so `dotnet test` needs `--solution` or `--project`.

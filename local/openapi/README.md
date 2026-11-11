@@ -26,11 +26,11 @@ Open the `swagger` resource in the Aspire dashboard; it is the only Swagger UI. 
 ```json
 {
   "operations": {
-    "POST /api/Todo/filter": {
+    "POST /api/todos/filter": {
       "requestBody": {
         "examples": {
           "user": {
-            "summary": "TODOs of the local user",
+            "summary": "Todos of the local user",
             "body": "bodies/filter-user.json"
           }
         }
@@ -39,14 +39,14 @@ Open the `swagger` resource in the Aspire dashboard; it is the only Swagger UI. 
         "200": {
           "examples": {
             "user": {
-              "summary": "TODO 1, owned by the user",
+              "summary": "Todo 1, owned by the user",
               "body": "responses/todos-user.json"
             }
           }
         }
       }
     },
-    "GET /api/Todo/{id}": {
+    "GET /api/todos/{id}": {
       "parameters": [
         { "name": "id", "in": "path", "value": "01HWXHRB80000G000000000001" }
       ]
@@ -56,8 +56,8 @@ Open the `swagger` resource in the Aspire dashboard; it is the only Swagger UI. 
 ```
 
 - `body` is a file relative to this directory; `value` is an inline JSON value. Use one or the other.
-- `parameters` is an array; each entry needs `name` and `value`. `in` is optional unless the same name exists in more
-  than one location.
+- `parameters` is an **array**; each entry needs `name` and `value`. `in` is optional unless the same name exists in
+  more than one location. The object form (`{ "id": { ... } }`) is rejected.
 - `requestBody.examples` and `responses.<status>.examples` accept the same shape: `summary`, `description` and one of
   `body` or `value`.
 - The path template in the key uses `{id}`. The sidecar normalizes route constraints (`{id:ulid}`) and trailing
@@ -69,7 +69,12 @@ Open the `swagger` resource in the Aspire dashboard; it is the only Swagger UI. 
   Swagger UI's schema defaults. The catalog can override it like any other response.
 
 The current catalog covers the Todo endpoints and the fixed ids of `local/database/seed/0001__todos.sql`. If the seed
-changes, update the ids in `examples.json` and `responses/`.
+changes, update the ids in `examples.json` and `responses/`. Request fields are `ids`, `titles`, `statuses` and
+`owners`; a delete returns `204` and needs no response example.
+
+The `clean-webapi` skill ships a second catalog for the `Project` example
+(`.opencode/skills/clean-webapi/assets/examples/local/openapi/`); merge its `operations` object into this file if you
+copy that feature.
 
 ## Users and login
 
@@ -129,7 +134,8 @@ They cover the catalog merger, `users.json`, the JWT claims/signature and the cu
 - Swagger executes requests; it does not run assertions. Use a test for that.
 - Only `/api/*` is proxied. The API's health and OpenAPI endpoints are not part of the examples UI.
 - No templating: examples are static files.
-- Only the happy-path response examples are catalogued; error responses get a generic `ProblemDetails` example.
+- Only the responses the catalog names have examples; the rest get a generic `ProblemDetails` example. Delete (`204`)
+  needs no example.
 - Local only: the sidecar is not started by the Component/Functional tests and is not published.
 
 ## Troubleshooting

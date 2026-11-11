@@ -1,6 +1,6 @@
 {
   "$schema": "http://json.schemastore.org/template",
-  "author": "Theo Delvas Játiva",
+  "author": "Theo Delvas J\u00e1tiva",
   "repository": {
     "url": "https://github.com/theodj97/CleanWebApiTemplate",
     "type": "GitHub"
@@ -57,6 +57,7 @@
             ".git/**",
             ".husky/_/**",
             ".agents/**",
+            ".opencode/skills/template-maintainer/**",
             ".task-skill/**",
             ".tools/**",
             ".vs/**",

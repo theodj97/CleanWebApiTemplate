@@ -44,7 +44,8 @@ dotnet new uninstall CleanWebApiTemplate
 | `--allow-scripts yes` | Runs `dotnet tool restore` without prompting (it is a script post-action). |
 
 The generated project is self-contained: it does not include the template repository's audit, coverage reports,
-agent skills or local tools.
+maintainer skill or local tools. It does include the agent layer: `AGENTS.md`, `GLOSSARY.md`, `docs/adr/` and the
+`clean-webapi` skill with its commands and reviewer.
 
 ## What you get
 
@@ -57,6 +58,8 @@ agent skills or local tools.
   examples and a profile picker, and the dashboard.
 - Unit, component, functional and architecture tests on Microsoft Testing Platform, with coverage thresholds.
 - Husky.Net hooks: gitleaks, formatting, conventional commits and the pre-push gates.
+- An agent layer: `AGENTS.md`, `GLOSSARY.md`, the ADRs and the `clean-webapi` skill (architecture, conventions,
+  feature slice, API, persistence, security, tests, AOT, gates and a complete second feature).
 
 ## Requirements
 

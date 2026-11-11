@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
-# Smoke test del template de `dotnet new`. Instala este directorio en un hive de
-# templates temporal (no toca la lista global), genera dos proyectos y comprueba
-# que el resultado es un proyecto limpio, compilable, testeable y publicable AOT.
+# Smoke test for the `dotnet new` template. Installs this directory in a temporary template hive (the global
+# list is untouched), generates two projects and checks that the result is a clean, buildable, testable and
+# AOT-publishable project.
 #
-# Uso: bash scripts/template-smoke.sh [--keep] [--no-aot]
-#   --keep    conserva el directorio de salida para inspeccionarlo.
-#   --no-aot  omite el `dotnet publish` Native AOT (el paso más lento).
+# It also injects the Project worked example from the clean-webapi skill and builds it, so the example cannot
+# drift from the code.
 #
-# Requisitos: .NET SDK, git. No necesita Docker: solo ejecuta tests sin contenedores.
-# Este script se excluye del proyecto generado (.template.config/template.json).
+# Usage: bash scripts/template-smoke.sh [--keep] [--no-aot]
+#   --keep    keeps the output directory for inspection.
+#   --no-aot  skips the Native AOT publish (the slowest step).
+#
+# Requirements: .NET SDK, git, python3. Docker is not required: only container-free tests run.
+# This script is excluded from the generated project (.template.config/template.json).
 set -euo pipefail
 
 KEEP=0
@@ -18,8 +21,8 @@ for arg in "$@"; do
         --keep) KEEP=1 ;;
         --no-aot) AOT=0 ;;
         *)
-            echo "Opción desconocida: $arg" >&2
-            echo "Uso: bash scripts/template-smoke.sh [--keep] [--no-aot]" >&2
+            echo "Unknown option: $arg" >&2
+            echo "Usage: bash scripts/template-smoke.sh [--keep] [--no-aot]" >&2
             exit 2
             ;;
     esac
@@ -34,7 +37,7 @@ OUT="$WORK_DIR/out"
 
 cleanup() {
     if [ "$KEEP" -eq 1 ]; then
-        echo "Salida conservada en $WORK_DIR"
+        echo "Output kept at $WORK_DIR"
     else
         rm -rf "$WORK_DIR"
     fi
@@ -43,11 +46,11 @@ trap cleanup EXIT
 
 failures=0
 fail() {
-    echo "  ✗ $1" >&2
+    echo "  x $1" >&2
     failures=$((failures + 1))
 }
 ok() {
-    echo "  ✓ $1"
+    echo "  + $1"
 }
 
 case "$(uname -s)-$(uname -m)" in
@@ -58,10 +61,10 @@ case "$(uname -s)-$(uname -m)" in
     *) RID=linux-x64 ;;
 esac
 
-echo "==> Instalación del template (hive aislado: $HIVE)"
+echo "==> Installing the template (isolated hive: $HIVE)"
 dotnet new install "$ROOT_DIR" --debug:custom-hive "$HIVE"
 
-echo "==> Generación: Sample (con restore) y Sample2 (--no-restore)"
+echo "==> Generating: Sample (with restore) and Sample2 (--no-restore)"
 dotnet new clean-webapi -n Sample -o "$OUT/Sample" \
     --debug:custom-hive "$HIVE" --allow-scripts yes
 dotnet new clean-webapi -n Sample2 -o "$OUT/Sample2" \
@@ -69,50 +72,55 @@ dotnet new clean-webapi -n Sample2 -o "$OUT/Sample2" \
 
 SAMPLE="$OUT/Sample"
 
-echo "==> Contenido generado"
-for path in README.md .gitignore Sample.slnx AGENTS.md .config/dotnet-tools.json; do
-    if [ -e "$SAMPLE/$path" ]; then ok "existe $path"; else fail "falta $path"; fi
+echo "==> Generated content"
+for path in README.md .gitignore Sample.slnx AGENTS.md GLOSSARY.md .config/dotnet-tools.json \
+    .opencode/skills/clean-webapi/SKILL.md \
+    .opencode/commands/feature.md \
+    .opencode/agents/reviewer.md \
+    docs/adr/0001-native-aot.md; do
+    if [ -e "$SAMPLE/$path" ]; then ok "exists $path"; else fail "missing $path"; fi
 done
 
 for path in coverage-report .agents .tools .task-skill skills-lock.json docs/audit \
+    .opencode/skills/template-maintainer \
     build artifacts CHANGELOG.md LICENSE README.nuget.md \
     README.template.md scripts/template-smoke.sh scripts/package-smoke.sh .template.config .husky/_; do
-    if [ -e "$SAMPLE/$path" ]; then fail "no debería existir $path"; else ok "no existe $path"; fi
+    if [ -e "$SAMPLE/$path" ]; then fail "should not exist $path"; else ok "does not exist $path"; fi
 done
 
 if grep -q '^# Sample$' "$SAMPLE/README.md"; then
-    ok "README.md con el nombre del proyecto"
+    ok "README.md starts with the project name"
 else
-    fail "README.md no empieza por '# Sample'"
+    fail "README.md does not start with '# Sample'"
 fi
 
 leftover_names=$(find "$SAMPLE" -path '*/.git' -prune -o -path '*/bin' -prune -o -path '*/obj' -prune \
     -o -iname '*cleanwebapitemplate*' -print)
 if [ -z "$leftover_names" ]; then
-    ok "ningún nombre de fichero contiene CleanWebApiTemplate"
+    ok "no file name contains CleanWebApiTemplate"
 else
-    fail "nombres sin sustituir:"$'\n'"$leftover_names"
+    fail "unreplaced names:"$'\n'"$leftover_names"
 fi
 
 leftover_content=$(grep -rIil --exclude-dir=.git --exclude-dir=bin --exclude-dir=obj \
     'cleanwebapitemplate' "$SAMPLE" || true)
 if [ -z "$leftover_content" ]; then
-    ok "ningún fichero contiene CleanWebApiTemplate"
+    ok "no file content contains CleanWebApiTemplate"
 else
-    fail "contenido sin sustituir:"$'\n'"$leftover_content"
+    fail "unreplaced content:"$'\n'"$leftover_content"
 fi
 
 if grep -q '"name": "sample"' "$SAMPLE/package.json"; then
-    ok "package.json usa el nombre en minúsculas"
+    ok "package.json uses the lower-case name"
 else
-    fail "package.json no usa 'sample' como nombre"
+    fail "package.json does not use 'sample' as its name"
 fi
 
 secrets_id() {
     sed -n 's:.*<UserSecretsId>\(.*\)</UserSecretsId>.*:\1:p' "$1"
 }
 
-# GUIDs del template (los que cada generación debe sustituir).
+# Template GUIDs (each generation must replace them).
 template_api_id=$(secrets_id "$ROOT_DIR/src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj")
 template_apphost_id=$(secrets_id "$ROOT_DIR/local/aspire/CleanWebApiTemplate.AppHost/CleanWebApiTemplate.AppHost.csproj")
 
@@ -123,26 +131,26 @@ apphost2_id=$(secrets_id "$OUT/Sample2/local/aspire/Sample2.AppHost/Sample2.AppH
 
 guid_re='^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
 for id in "$api_id" "$apphost_id" "$api2_id" "$apphost2_id"; do
-    if [[ "$id" =~ $guid_re ]]; then ok "UserSecretsId válido: $id"; else fail "UserSecretsId inválido: '$id'"; fi
+    if [[ "$id" =~ $guid_re ]]; then ok "valid UserSecretsId: $id"; else fail "invalid UserSecretsId: '$id'"; fi
     if [ "$id" = "$template_api_id" ] || [ "$id" = "$template_apphost_id" ]; then
-        fail "UserSecretsId no regenerado: $id"
+        fail "UserSecretsId not regenerated: $id"
     fi
 done
 
 unique_ids=$(printf '%s\n' "$api_id" "$apphost_id" "$api2_id" "$apphost2_id" | sort -u | wc -l | tr -d ' ')
 if [ "$unique_ids" -eq 4 ]; then
-    ok "UserSecretsId distintos por proyecto y por generación"
+    ok "UserSecretsId distinct per project and per generation"
 else
-    fail "UserSecretsId repetidos entre proyectos o generaciones"
+    fail "repeated UserSecretsId across projects or generations"
 fi
 
 for hook in .husky/pre-commit .husky/commit-msg .husky/pre-push scripts/pre-push.sh scripts/commit-msg.sh \
     scripts/coverage.sh scripts/gitleaks-staged.sh scripts/install-gitleaks.sh scripts/check-vulnerable-packages.sh; do
-    if [ -x "$SAMPLE/$hook" ]; then ok "ejecutable: $hook"; else fail "no ejecutable: $hook"; fi
+    if [ -x "$SAMPLE/$hook" ]; then ok "executable: $hook"; else fail "not executable: $hook"; fi
 done
 
 if [ "$failures" -ne 0 ]; then
-    echo "Smoke test del template: $failures comprobaciones fallidas." >&2
+    echo "Template smoke test: $failures failed check(s)." >&2
     exit 1
 fi
 
@@ -153,29 +161,81 @@ git init --quiet
 dotnet tool restore
 dotnet husky install
 if [ "$(git config --get core.hooksPath)" = ".husky" ] && [ -f .husky/_/husky.sh ]; then
-    ok "Husky instalado (core.hooksPath=.husky)"
+    ok "Husky installed (core.hooksPath=.husky)"
 else
-    fail "Husky no quedó instalado"
+    fail "Husky was not installed"
 fi
 
 echo "==> Build"
 dotnet build Sample.slnx
 
-echo "==> Tests sin contenedores (unit, architecture y sidecar local)"
+echo "==> Container-free tests (unit, architecture and local sidecar)"
 dotnet test --project tests/Sample.UnitTests/Sample.UnitTests.csproj --no-build
 dotnet test --project tests/Sample.ArchitectureTests/Sample.ArchitectureTests.csproj --no-build
 dotnet test --project local/openapi/Sample.OpenApiExamples.UnitTests/Sample.OpenApiExamples.UnitTests.csproj --no-build
+
+echo "==> Injecting the Project worked example from the clean-webapi skill"
+EXAMPLES="$SAMPLE/.opencode/skills/clean-webapi/assets/examples"
+cp -r "$EXAMPLES/src/." "$SAMPLE/src/"
+cp -r "$EXAMPLES/tests/." "$SAMPLE/tests/"
+cp -r "$EXAMPLES/local/." "$SAMPLE/local/"
+
+python3 - "$SAMPLE" <<'PY'
+import pathlib
+import sys
+
+sample = pathlib.Path(sys.argv[1])
+
+
+def edit(relative, replacements):
+    path = sample / relative
+    text = path.read_text()
+    for old, new in replacements:
+        if old not in text:
+            raise SystemExit(f"anchor not found in {relative}: {old[:60]!r}")
+        text = text.replace(old, new, 1)
+    path.write_text(text)
+
+
+edit('src/Sample.Api/ConfigureServices.cs', [
+    ('using Sample.Api.Common;', 'using Sample.Api.Common;\nusing Sample.Api.Project;'),
+    ('        services.AddTodoModule();\n', '        services.AddTodoModule();\n        services.AddProjectModule();\n'),
+])
+
+edit('tests/Sample.Tests.Shared/Fixtures/TestServerFixtureBase.cs', [
+    ('    public TodoTestRepository Todos { get; private set; } = null!;\n',
+     '    public TodoTestRepository Todos { get; private set; } = null!;\n\n'
+     '    public ProjectTestRepository Projects { get; private set; } = null!;\n'),
+    ('        Todos = new TodoTestRepository(connectionString);\n',
+     '        Todos = new TodoTestRepository(connectionString);\n'
+     '        ProjectTestRepositoryIsCreated = true;\n'
+     '        Projects = new ProjectTestRepository(connectionString);\n'),
+    ('        if (TodoTestRepositoryIsCreated)\n        {\n            await Todos.DisposeAsync();\n        }\n',
+     '        if (TodoTestRepositoryIsCreated)\n        {\n            await Todos.DisposeAsync();\n        }\n\n'
+     '        if (ProjectTestRepositoryIsCreated)\n        {\n            await Projects.DisposeAsync();\n        }\n'),
+    ('    private bool TodoTestRepositoryIsCreated { get; set; }',
+     '    private bool TodoTestRepositoryIsCreated { get; set; }\n\n'
+     '    private bool ProjectTestRepositoryIsCreated { get; set; }'),
+])
+PY
+
+echo "==> Build with the injected example"
+dotnet build Sample.slnx
+
+echo "==> Container-free tests with the injected example"
+dotnet test --project tests/Sample.UnitTests/Sample.UnitTests.csproj --no-build
+dotnet test --project tests/Sample.ArchitectureTests/Sample.ArchitectureTests.csproj --no-build
 
 if [ "$AOT" -eq 1 ]; then
     echo "==> Publish Native AOT ($RID)"
     dotnet publish src/Sample.Api/Sample.Api.csproj -c Release -r "$RID" --self-contained
 else
-    echo "==> Publish Native AOT omitido (--no-aot)"
+    echo "==> Native AOT publish skipped (--no-aot)"
 fi
 
 if [ "$failures" -ne 0 ]; then
-    echo "Smoke test del template: $failures comprobaciones fallidas." >&2
+    echo "Template smoke test: $failures failed check(s)." >&2
     exit 1
 fi
 
-echo "==> Smoke test del template OK"
+echo "==> Template smoke test OK"

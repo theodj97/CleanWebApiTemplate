@@ -76,6 +76,10 @@ projects with `dotnet-coverage`, merges it and writes the report to `coverage-re
 - Insert data with the test repository (`Fixture.Todos.AddAsync(new TodoBuilder().Build())`) and never rely on
   concrete id values.
 - Wait for eventual effects with `Eventually.AssertAsync(...)`; never with `Thread.Sleep` or a fixed `Task.Delay`.
+- `JsonContractTests` (unit) asserts every `*Request`/`*Response` in a feature has source-generated JSON metadata: a
+  new contract without a `JsonSerializable` entry fails there.
+- The HTTP contract is 404 for a missing or invisible row, `200 []` for an empty list, 204 for a successful delete and
+  409 for a duplicate.
 
 ## Test identities
 

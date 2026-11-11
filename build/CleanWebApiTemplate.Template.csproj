@@ -66,9 +66,16 @@
     <Content Include="..\.vscode\**\*"
              Pack="true"
              PackagePath="content\.vscode\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\docs\adr\**\*"
+             Pack="true"
+             PackagePath="content\docs\adr\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\.opencode\**\*"
+             Exclude="..\.opencode\skills\template-maintainer\**"
+             Pack="true"
+             PackagePath="content\.opencode\%(RecursiveDir)%(Filename)%(Extension)" />
 
     <!-- Root files that belong to the generated project. -->
-    <Content Include="..\.editorconfig;..\.gitattributes;..\.gitignore;..\.gitleaks.toml;..\AGENTS.md;..\BannedSymbols.txt;..\CleanWebApiTemplate.slnx;..\Directory.Build.props;..\Directory.Packages.props;..\README.template.md;..\aspire.config.json;..\global.json;..\package.json;..\package-lock.json"
+    <Content Include="..\.editorconfig;..\.gitattributes;..\.gitignore;..\.gitleaks.toml;..\AGENTS.md;..\GLOSSARY.md;..\BannedSymbols.txt;..\CleanWebApiTemplate.slnx;..\Directory.Build.props;..\Directory.Packages.props;..\README.template.md;..\aspire.config.json;..\global.json;..\package.json;..\package-lock.json"
              Pack="true"
              PackagePath="content\%(Filename)%(Extension)" />
   </ItemGroup>

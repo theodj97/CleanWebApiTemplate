@@ -16,6 +16,8 @@ What a generated project gets:
   examples and a profile picker, and the dashboard with logs and traces.
 - Unit, component, functional and architecture tests on Microsoft Testing Platform, with coverage thresholds.
 - Husky.Net hooks: gitleaks + format on `pre-commit`, conventional subjects on `commit-msg`, full gates on `pre-push`.
+- An agent layer: `AGENTS.md`, `GLOSSARY.md`, the ADRs, the `clean-webapi` skill with a complete second feature,
+  the `/feature`-style commands and a read-only reviewer subagent.
 
 ## Use the template
 
@@ -55,8 +57,9 @@ Post-actions: restore NuGet packages, `dotnet tool restore` and, on Linux/macOS,
 
 Every generation gets new `UserSecretsId` values for the API and the AppHost, so two generated projects never share
 user secrets. The generated project ships its own [`README.md`](README.template.md), `.gitignore`, `AGENTS.md`,
-hooks and scripts; it does not include this repository's audit (`docs/audit/`), coverage reports, local tools, agent
-skills or the NuGet packaging project (`build/`).
+`GLOSSARY.md`, `docs/adr/`, `.opencode/` (the `clean-webapi` skill, commands and reviewer), hooks and scripts. It does
+not include this repository's audit (`docs/audit/`), the maintainer skill (`.opencode/skills/template-maintainer/`),
+coverage reports, local tools or the NuGet packaging project (`build/`).
 
 Uninstall the package with `dotnet new uninstall CleanWebApiTemplate`, or the source install with
 `dotnet new uninstall <path-to-this-repository>`.
@@ -89,12 +92,15 @@ aspire start
 
 1. Installs this folder in a temporary `--debug:custom-hive`.
 2. Generates `Sample` (with restore) and `Sample2` (`--no-restore`).
-3. Checks the output: `README.md` and `.gitignore` present; no `coverage-report/`, `.agents/`, `.tools/`,
-   `docs/audit/`, `skills-lock.json`, `README.template.md`, `build/`, `CHANGELOG.md`, `LICENSE`, `README.nuget.md` or
+3. Checks the output: `README.md`, `AGENTS.md`, `GLOSSARY.md`, `docs/adr/` and `.opencode/skills/clean-webapi/`
+   present; no `coverage-report/`, `.agents/`, `.tools/`, `docs/audit/`, `.opencode/skills/template-maintainer/`,
+   `skills-lock.json`, `README.template.md`, `build/`, `CHANGELOG.md`, `LICENSE`, `README.nuget.md` or
    `scripts/package-smoke.sh`; no `CleanWebApiTemplate`/`cleanwebapitemplate` left in names or content; distinct
    `UserSecretsId` per project and per generation; executable hook scripts.
 4. Runs `git init` + `dotnet husky install` and checks `core.hooksPath`.
 5. Builds the solution, runs the unit and architecture tests and publishes the API as Native AOT.
+6. Injects the `Project` example from the skill into the generated project (module call and fixture property
+   included), builds it and runs the unit and architecture tests again, so the example cannot drift.
 
 Options: `--keep` keeps the output directory, `--no-aot` skips the AOT publish. The script itself is excluded from
 the generated project.
@@ -104,9 +110,9 @@ the generated project.
 `scripts/package-smoke.sh` validates the NuGet package end to end:
 
 1. Packs `build/CleanWebApiTemplate.Template.csproj` into a temporary `artifacts/` directory.
-2. Inspects the `.nupkg`: the template config, `README.template.md`, source, tests and local projects are present;
-   `build/`, audit, coverage, agent skills and the smoke scripts are absent; the package readme, license and
-   changelog are at the package root.
+2. Inspects the `.nupkg`: the template config, `README.template.md`, `AGENTS.md`, `GLOSSARY.md`, `docs/adr/`, the
+   `clean-webapi` skill, source, tests and local projects are present; `build/`, audit, coverage, the maintainer
+   skill and the smoke scripts are absent; the package readme, license and changelog are at the package root.
 3. Installs the `.nupkg` in a temporary `--debug:custom-hive`, generates `Sample`, and checks the generated files.
 4. Builds the generated solution, runs the unit, architecture and sidecar tests, and publishes Native AOT unless
    `--no-aot` is passed.
@@ -138,7 +144,11 @@ For a private feed, publish the same `.nupkg` to GitHub Packages or Azure Artifa
 | [`local/local-development.md`](local/local-development.md) | Aspire topology, OpenBao, local JWTs, database, Swagger sidecar and troubleshooting. |
 | [`tests/README.md`](tests/README.md) | Test projects, identities, conventions and coverage. |
 | [`local/openapi/README.md`](local/openapi/README.md) | Swagger sidecar, examples catalog and profile picker. |
-| [`AGENTS.md`](AGENTS.md) | Rules for coding agents: Native AOT constraints and hooks. |
+| [`AGENTS.md`](AGENTS.md) | Rules for coding agents: non-negotiables, layers, gates and secrets. |
+| [`GLOSSARY.md`](GLOSSARY.md) | Domain language: owner, visibility, roles and the sample feature. |
+| [`docs/adr/`](docs/adr/0001-native-aot.md) | The decisions that are hard to reverse, with their trade-offs. |
+| [`.opencode/`](.opencode/skills/clean-webapi/SKILL.md) | The `clean-webapi` skill, commands and reviewer subagent. |
+| [`.opencode/skills/template-maintainer/SKILL.md`](.opencode/skills/template-maintainer/SKILL.md) | Maintainer-only skill (not shipped). |
 | [`README.nuget.md`](README.nuget.md) | Install and quickstart displayed on NuGet.org for the template package. |
 | [`build/CleanWebApiTemplate.Template.csproj`](build/CleanWebApiTemplate.Template.csproj) | NuGet template packaging project (`PackageType=Template`). |
 | [`CHANGELOG.md`](CHANGELOG.md) | Version history of the template package. |

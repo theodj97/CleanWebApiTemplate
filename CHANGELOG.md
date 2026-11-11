@@ -7,6 +7,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Agent layer shipped with the template: `AGENTS.md`, `GLOSSARY.md`, `docs/adr/`, the `clean-webapi` skill with a
+  complete `Project` example, the `/feature`, `/endpoint`, `/verify` and `/remove-sample` commands and a read-only
+  reviewer subagent. The maintainer-only `template-maintainer` skill stays in the template repository.
+- `AddUseCase<TInput, TResult, THandler, TValidator>()`, one composition module per feature and startup checks that
+  build every use case before the first request.
+- One `JsonSerializerContext` per feature and `JsonContractTests` to keep the contracts registered.
+- `Project` example (CRUD, projection, SQL, seed, OpenAPI examples and tests) verified by the template smoke test.
+
+### Changed
+
+- Every layer is organised feature-first (`Domain/Todo`, `Application/Todo/...`, `Infrastructure/Todo`,
+  `Api/Todo`) with shared code under `Common`; the architecture tests follow the convention instead of naming Todo.
+- The contract uses 404 for a missing or invisible row, `200 []` for an empty list and 204 for a successful delete;
+  routes are lowercase and plural (`/api/todos`).
+- `Api.UnitTests` is now `UnitTests` and mirrors the production path.
+- The PostgreSQL connection string is read from OpenBao in every mode; `NpgsqlDataSource` replaces the connection
+  factory.
+- Environment files are named after `ASPNETCORE_ENVIRONMENT` (`appsettings.Production.json`, …); the previous
+  upper-case names did not load on Linux.
+- Aspire packages are 13.6.5 (GHSA-f7vh-h5g3-7jrh).
+
+### Fixed
+
+- The startup comment promised `ValidateOnBuild` would reject an empty validator set; the startup check now really
+  does.
+- `DbInitializer` no longer queries the `Todo` table, so removing the sample does not break `aspire start`.
+- The OpenAPI helpers no longer hardcode Todo sort keys or statuses.
+- `BannedSymbols.txt` covers `MakeGenericType`, `Assembly.GetTypes`, `Enum.GetValues(Type)` and the reflection JSON
+  overloads.
+- `Enum.IsDefined` is generic, the ULID validator reports one failure, the failure message typo and the stale
+  comments are gone.
+
 ## [1.1.0] - 2026-11-03
 
 ### Added
