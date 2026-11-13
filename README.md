@@ -27,7 +27,7 @@ Install the published package:
 
 ```bash
 dotnet new install CleanWebApiTemplate             # latest published version
-dotnet new install CleanWebApiTemplate::1.1.0      # a pinned version
+dotnet new install CleanWebApiTemplate::2.0.0      # a pinned version
 dotnet new clean-webapi -n MyCompany.Orders -o MyCompany.Orders
 cd MyCompany.Orders
 git init
@@ -126,7 +126,7 @@ The package is built from `build/CleanWebApiTemplate.Template.csproj`:
 
 ```bash
 dotnet pack build/CleanWebApiTemplate.Template.csproj -c Release -o artifacts
-dotnet nuget push artifacts/CleanWebApiTemplate.1.1.0.nupkg \
+dotnet nuget push artifacts/CleanWebApiTemplate.2.0.0.nupkg \
   --api-key "$NUGET_API_KEY" \
   --source https://api.nuget.org/v3/index.json
 ```

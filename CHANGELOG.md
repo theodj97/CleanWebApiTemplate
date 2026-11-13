@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-12
+
 ### Added
 
 - Agent layer shipped with the template: `AGENTS.md`, `GLOSSARY.md`, `docs/adr/`, the `clean-webapi` skill with a
@@ -78,6 +80,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Husky.Net hooks: gitleaks, formatting, conventional commits and the pre-push gates.
 - NuGet packaging project (`build/CleanWebApiTemplate.Template.csproj`) and package smoke test.
 
-[Unreleased]: https://github.com/theodj97/CleanWebApiTemplate/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/theodj97/CleanWebApiTemplate/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/theodj97/CleanWebApiTemplate/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/theodj97/CleanWebApiTemplate/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/theodj97/CleanWebApiTemplate/releases/tag/v1.0.0
