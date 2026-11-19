@@ -80,7 +80,8 @@ aspire start
 | `dotnet build CleanWebApiTemplate.slnx` | Build, 0 warnings (`TreatWarningsAsErrors`). |
 | `dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj -c Release -r linux-x64 --self-contained` | Native AOT publish, 0 warnings. |
 | `dotnet test --solution CleanWebApiTemplate.slnx` | All tests (Docker for component/functional). |
-| `npm run verify` | Same gates as `pre-push`. |
+| `npm run test:fast` | Unit, architecture and OpenAPI tests without Docker. |
+| `npm run verify` | Same gates as `pre-push`, with the independent phases in parallel. |
 | `npm run coverage` | Coverage report and thresholds. |
 | `bash scripts/template-smoke.sh` | Installs the template in an isolated hive, generates two projects and checks them. |
 | `dotnet pack build/CleanWebApiTemplate.Template.csproj -c Release -o artifacts` | Builds the NuGet template package. |

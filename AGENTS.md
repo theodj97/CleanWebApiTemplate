@@ -50,6 +50,7 @@ Shared code lives under `{Layer}/Common`. Tests mirror the production path under
 dotnet build CleanWebApiTemplate.slnx
 dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj -c Release -r linux-x64 --self-contained
 dotnet test --solution CleanWebApiTemplate.slnx
+npm run test:fast   # unit, architecture and OpenAPI; no Docker
 npm run verify      # the pre-push gates
 npm run coverage    # coverage report and thresholds
 aspire start        # PostgreSQL + OpenBao + API + Swagger UI

@@ -17,10 +17,33 @@ if (mode is not (Modes.Local or Modes.Component or Modes.Functional))
 var isTest = mode != Modes.Local;
 var outboundProxy = builder.Configuration[OutboundProxyKey] ?? "http://127.0.0.1:9";
 
-// Ephemeral by design in every mode: no data volumes, no persistent lifetime.
-// Every start begins with empty containers, rebuilds the schema (and the seed in Local mode) and reseeds the secrets.
-var postgres = builder.AddPostgres(Resources.Postgres);
+// Test modes reuse one PostgreSQL container per mode and checkout, so image layers, the schema and the
+// startup cost survive between runs. The container name, volume and password are derived from the checkout
+// path and the machine name: stable across runs and never committed. Set TESTCONTAINERS_REUSE=0 to go back
+// to a fresh container (and an Aspire-generated password) on every run.
+// Local mode stays ephemeral: its seed and schema are rebuilt on every `aspire start`.
+var reuseTestContainers = isTest
+    && Environment.GetEnvironmentVariable("TESTCONTAINERS_REUSE") is not "0";
+var testContainerSuffix = reuseTestContainers ? TestContainerSuffix(builder.AppHostDirectory) : null;
+var postgresPassword = reuseTestContainers
+    ? builder.AddParameter(
+        "postgres-password",
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+            $"{builder.AppHostDirectory}|{Environment.MachineName}|{mode}|postgres"))),
+        secret: true)
+    : null;
+
+var postgres = builder.AddPostgres(Resources.Postgres, password: postgresPassword);
 var todoDb = postgres.AddDatabase(Resources.PostgresDb);
+
+if (testContainerSuffix is not null)
+{
+    var name = $"clean-webapi-postgres-{mode.ToLowerInvariant()}-{testContainerSuffix}";
+    postgres
+        .WithContainerName(name)
+        .WithDataVolume(name)
+        .WithLifetime(ContainerLifetime.Persistent);
+}
 
 var dbInitializer = builder.AddProject<Projects.CleanWebApiTemplate_DbInitializer>(Resources.DbInitializer)
     .WithReference(todoDb, connectionName: AppSettings.PostgresConnectionName)
@@ -92,6 +115,12 @@ if (mode != Modes.Component)
 }
 
 builder.Build().Run();
+
+// Stable per checkout and machine: two clones never share a persistent container, and a checkout keeps
+// reusing the same one until TESTCONTAINERS_REUSE=0.
+static string TestContainerSuffix(string appHostDirectory) =>
+    Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+        $"{appHostDirectory}|{Environment.MachineName}")))[..12].ToLowerInvariant();
 
 IResourceBuilder<ProjectResource> AddApplication<TProject>(string name) where TProject : IProjectMetadata, new()
 {

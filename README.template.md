@@ -142,13 +142,15 @@ Health: `/health` (aggregate status), `/alive`, `/health/api`, `/health/postgres
 
 ```bash
 dotnet test --solution CleanWebApiTemplate.slnx                       # everything (Docker for component/functional)
-dotnet test --project tests/CleanWebApiTemplate.UnitTests/CleanWebApiTemplate.UnitTests.csproj   # no Docker
+npm run test:fast                                                     # unit + architecture + OpenAPI, no Docker
+npm run test:component                                                # one Docker-backed suite
 npm run coverage                                                      # coverage report + thresholds
 ```
 
 `global.json` selects the Microsoft Testing Platform runner, so `dotnet test` needs `--solution` or `--project`.
-Component and functional tests start their own containers through the AppHost; no external service is called. Details
-in [`tests/README.md`](tests/README.md).
+Component and functional tests start their own containers through the AppHost; no external service is called.
+Test-mode PostgreSQL is reused between runs for speed (`TESTCONTAINERS_REUSE=0` opts out). Details in
+[`tests/README.md`](tests/README.md).
 
 ## Git hooks
 

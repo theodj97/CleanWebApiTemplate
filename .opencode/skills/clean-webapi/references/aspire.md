@@ -29,8 +29,10 @@ The AppHost SDK is `Aspire.AppHost.Sdk/13.6.5`; the hosting and testing packages
 | `Component` | infrastructure + schema only | in-process `WebApplicationFactory` | no | off | no |
 | `Functional` | infrastructure + schema + API | separate process, HTTP, `Testing`, explicit start | no | off | no |
 
-Containers are ephemeral in every mode: no volumes, no fixed lifetimes. Every start begins with empty
-containers, rebuilds the schema and (Local only) the seed, and reseeds the secrets.
+Local mode and OpenBao are ephemeral: no volumes, session lifetime. Test modes reuse one PostgreSQL container per
+mode and checkout (stable name, volume and derived password), so the fixture startup is ~10 s instead of ~13 s;
+the schema scripts are idempotent and the fixture clears rows once at startup. `TESTCONTAINERS_REUSE=0` restores
+the ephemeral behaviour for tests.
 
 ## Resources
 

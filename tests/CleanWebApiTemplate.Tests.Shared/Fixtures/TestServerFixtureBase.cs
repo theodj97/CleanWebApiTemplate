@@ -24,7 +24,8 @@ namespace CleanWebApiTemplate.Tests.Shared.Fixtures;
 /// 3. the secrets initializer wrote the application's secrets into OpenBao;
 /// 4. the test repository;
 /// 5. the application (in-process factory or Aspire project resource);
-/// 6. database resetters, which read the final schema;
+/// 6. database resetters, which read the final schema, and the one reset that clears rows left by a
+///    previous run when test-mode PostgreSQL is reused;
 /// 7. surviving data and readiness checks.
 /// </remarks>
 public abstract class TestServerFixtureBase : IAsyncLifetime
@@ -128,7 +129,11 @@ public abstract class TestServerFixtureBase : IAsyncLifetime
 
         await RegisterDatabaseResettersAsync(connectionString, cancellationToken);
 
-        // 6. Surviving data (none today) and readiness.
+        // Test modes reuse PostgreSQL between runs (AppHost.cs; TESTCONTAINERS_REUSE=0 disables it):
+        // clear rows a previous run could have left before the first test asserts an empty database.
+        await Databases.ResetAsync([], [], cancellationToken);
+
+        // 7. Surviving data (none today) and readiness.
         await SeedPersistentDataAsync(cancellationToken);
         await WaitUntilApplicationIsReadyAsync(cancellationToken);
     }
@@ -201,7 +206,8 @@ public abstract class TestServerFixtureBase : IAsyncLifetime
 
         if (App is not null)
         {
-            // Stops and removes the containers: they live exactly as long as the test session.
+            // Stops the session containers (OpenBao) and leaves the persistent test PostgreSQL container
+            // for the next run; TESTCONTAINERS_REUSE=0 restores the one-session lifetime.
             await App.DisposeAsync();
         }
 

@@ -12,8 +12,10 @@ Tests for local-only code (`local/openapi/`) live under `local/openapi/`, next t
 contains tests of `src/`.
 
 The AppHost is `local/aspire/CleanWebApiTemplate.AppHost` (the one `aspire run` uses). The fixtures start it with
-`--RunMode=Component|Functional`: same topology, separate containers, random ports, no dashboard, no telemetry, no
-volumes, empty databases (schema only, no local seed) and a per-run OpenBao root token passed as an argument.
+`--RunMode=Component|Functional`: same topology, random ports, no dashboard, no telemetry, an ephemeral OpenBao and a
+PostgreSQL container that the harness reuses between runs per mode and checkout (`TESTCONTAINERS_REUSE=0` restores a
+fresh one). The schema is applied on every start (the scripts are idempotent) and one Respawn reset clears rows a
+previous run could have left before the first test. Each run gets its own OpenBao root token.
 
 ## Requirements
 
@@ -33,14 +35,26 @@ volumes, empty databases (schema only, no local seed) and a per-run OpenBao root
 # Everything (unit, component and functional)
 dotnet test --solution CleanWebApiTemplate.slnx
 
-# One project
-dotnet test --project tests/CleanWebApiTemplate.UnitTests/CleanWebApiTemplate.UnitTests.csproj
+# Fast loop: unit, architecture and OpenAPI sidecar tests, no Docker (~4 s warm)
+npm run test:fast
+npm run test:unit
+npm run test:architecture
+npm run test:openapi
+
+# One integration suite (Docker)
+npm run test:component
+npm run test:functional
 ```
 
 The first component/functional run pulls the PostgreSQL and OpenBao images and can take a few minutes. Component and
 functional tests run one after another inside each project because they share one database per run; the projects can
 run at the same time, and while the local environment is running, because each starts its own containers on random
 ports.
+
+Test-mode PostgreSQL is persistent per mode and checkout: after the first run the fixture startup drops from ~13 s to
+~10 s. Set `TESTCONTAINERS_REUSE=0` to create fresh containers (first run cost) when you need a clean engine, when
+the PostgreSQL image changed or when two runs of the same mode share the machine. The fixture clears rows from a
+previous run once at startup; `[ResetDatabase]` still resets per test.
 
 ## Coverage
 
@@ -49,8 +63,9 @@ npm run coverage   # or: bash scripts/coverage.sh
 ```
 
 The script restores the local tools, builds the solution, collects coverage for the unit, component and functional
-projects with `dotnet-coverage`, merges it and writes the report to `coverage-report/coverage/report/` (`Summary.txt`,
-`SummaryGithub.md`, `Cobertura.xml`). Only `src/` assemblies are measured. It fails when a threshold is not met:
+projects in parallel with `dotnet-coverage`, merges it and writes the report to `coverage-report/coverage/report/`
+(`Summary.txt`, `SummaryGithub.md`, `Cobertura.xml`). Only `src/` assemblies are measured. It fails when a threshold
+is not met:
 
 | Scope | Lines | Branches |
 |---|---:|---:|
@@ -102,6 +117,9 @@ plus an authenticated identity without roles:
 | Container runtime unhealthy / cannot connect to Docker | Start Docker Desktop or Podman and retry. |
 | Podman installed but Aspire looks for Docker | Set `ASPIRE_CONTAINER_RUNTIME=podman` in the environment that runs `dotnet test`. |
 | Fixture times out on the first run | Image pull on a slow connection: run again, or raise `StartupTimeout` in `TestServerFixtureBase`. |
+| PostgreSQL image changed or the volume is stale | Run with `TESTCONTAINERS_REUSE=0` to create a fresh container, or remove the `clean-webapi-postgres-*` container and volume. |
+| Two runs of the same mode interfere | They share the persistent PostgreSQL container. Set `TESTCONTAINERS_REUSE=0` in at least one run. |
+| Rows from a crashed run are still there | The fixture resets once at startup; rerun. If it persists, opt out and remove the volume. |
 | `'db-init' ended … with exit code 1` | The schema could not be applied: reproduce with `aspire run` and read `aspire logs db-init`. |
 | `'openbao-init' ended … with exit code 1` | The secrets could not be written: reproduce with `aspire run` and read `aspire logs openbao-init`. |
 | `'API_KEY' is required` | The application read OpenBao but the secret was not there: check that `openbao-init` finished with exit code 0 and that `OpenBao:Path` matches. |

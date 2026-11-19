@@ -9,9 +9,8 @@ a warning is a failure.
 dotnet build CleanWebApiTemplate.slnx
 dotnet publish src/CleanWebApiTemplate.Api/CleanWebApiTemplate.Api.csproj -c Release -r linux-x64 --self-contained
 dotnet test --solution CleanWebApiTemplate.slnx
-dotnet format whitespace CleanWebApiTemplate.slnx --verify-no-changes
-dotnet format style CleanWebApiTemplate.slnx --verify-no-changes
-dotnet format analyzers CleanWebApiTemplate.slnx --verify-no-changes --exclude-diagnostics IL2026 IL3050
+npm run test:fast
+dotnet format CleanWebApiTemplate.slnx --verify-no-changes --exclude-diagnostics IL2026 IL3050
 dotnet list CleanWebApiTemplate.slnx package --vulnerable --include-transitive
 npm run verify
 npm run coverage
@@ -19,8 +18,11 @@ npm run coverage
 
 | npm script | What it runs |
 |---|---|
-| `npm run verify` | `scripts/pre-push.sh`: build, format (whitespace + style), analyzers, every test (`--no-build`) and the vulnerable-package check. Same as the `pre-push` hook. |
-| `npm run coverage` | `scripts/coverage.sh`: `dotnet tool restore`, build, coverage for unit/component/functional, merge, report and thresholds. |
+| `npm run verify` | `scripts/pre-push.sh`: build, then the format/analyzer pass, every test (`--no-build`) and the vulnerable-package check **concurrently**, replaying their output. Same as the `pre-push` hook. |
+| `npm run coverage` | `scripts/coverage.sh`: `dotnet tool restore`, build, coverage for unit/component/functional **in parallel**, merge, report and thresholds. |
+| `npm run test:fast` | Unit + architecture + OpenAPI sidecar tests, no Docker; builds once and runs the three suites concurrently. |
+| `npm run test:unit` / `test:architecture` / `test:openapi` | One Docker-free suite. |
+| `npm run test:component` / `test:functional` | One Docker-backed suite. |
 | `npm run format` | `dotnet format whitespace` + `dotnet format style` over the solution (writes). |
 | `npm run format:check` | The same two commands with `--verify-no-changes`. |
 | `npm run test` | `dotnet test --solution`. |
@@ -30,8 +32,11 @@ npm run coverage
 ## Build
 
 `TreatWarningsAsErrors` is repository-wide and `AnalysisLevel=latest`/`AnalysisMode=Recommended` applies to
-`src/`. A warning in `src/` or in the tests fails the build. `dotnet format analyzers` is run separately
-because IDE analyzers and the compiler do not report the same set.
+`src/`. A warning in `src/` or in the tests fails the build. One `dotnet format` invocation runs whitespace,
+style and the analyzers over a single Roslyn workspace; `verify` runs it concurrently with the tests and the
+vulnerable-package audit, because `--verify-no-changes` is read-only. `--exclude-diagnostics IL2026 IL3050`
+keeps the AOT false positives out of the analyzer pass; the build and the AOT publish remain the real AOT
+gates.
 
 On Windows use `win-x64` in the publish RID. The publish is the AOT gate; the build is not.
 
@@ -50,6 +55,7 @@ when a staged file has unstaged edits, because the commit would carry the unform
 
 ```bash
 dotnet test --solution CleanWebApiTemplate.slnx
+npm run test:fast
 dotnet test --project tests/CleanWebApiTemplate.UnitTests/CleanWebApiTemplate.UnitTests.csproj
 dotnet test --project tests/CleanWebApiTemplate.Api.ComponentTests/CleanWebApiTemplate.Api.ComponentTests.csproj
 ```
@@ -58,13 +64,17 @@ dotnet test --project tests/CleanWebApiTemplate.Api.ComponentTests/CleanWebApiTe
 project path is rejected. Component and functional tests need Docker (or Podman with
 `ASPIRE_CONTAINER_RUNTIME=podman`). Unit and architecture tests need neither.
 
+Test-mode PostgreSQL is persistent per mode and checkout; the fixture reapplies the idempotent schema and resets
+rows once at startup. Set `TESTCONTAINERS_REUSE=0` for a fresh container (image change, stale volume, or two runs
+of the same mode on one machine). OpenBao is always ephemeral.
+
 If Docker is unavailable, say exactly which projects could not run. Never report a suite as passed without
 running it.
 
 ## Coverage
 
-`npm run coverage` writes `coverage-report/coverage/report/` (`Summary.txt`, `SummaryGithub.md`,
-`Cobertura.xml`) and fails below:
+`npm run coverage` collects the unit, component and functional suites in parallel, then writes
+`coverage-report/coverage/report/` (`Summary.txt`, `SummaryGithub.md`, `Cobertura.xml`) and fails below:
 
 | Scope | Lines | Branches |
 |---|---:|---:|

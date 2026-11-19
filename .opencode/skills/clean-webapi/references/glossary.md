@@ -168,3 +168,4 @@ The reasons behind the patterns are recorded as ADRs in `docs/adr/`:
 | 0007 | ULID stored as `bytea` |
 | 0008 | Forward-only SQL scripts |
 | 0009 | Owner identified by the email claim |
+| 0010 | Reused PostgreSQL container in test modes |

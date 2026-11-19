@@ -1,5 +1,8 @@
 # Ephemeral Aspire environment
 
+> Superseded in part by [0010](0010-reused-test-postgres.md): test modes reuse a PostgreSQL container. Local mode
+> and OpenBao remain ephemeral.
+
 PostgreSQL and OpenBao run as containers without volumes. Every AppHost start (Local or test mode) begins with
 empty containers, `db-init` reapplies the schema and, in Local mode, the seed; `openbao-init` rewrites the
 secrets. Tests therefore never depend on state left by a previous run, and a SQL script can be validated by

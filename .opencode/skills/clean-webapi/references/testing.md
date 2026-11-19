@@ -18,6 +18,9 @@ what to write where and which helpers already exist.
 ```bash
 dotnet test --solution CleanWebApiTemplate.slnx
 dotnet test --project tests/CleanWebApiTemplate.UnitTests/CleanWebApiTemplate.UnitTests.csproj
+npm run test:fast        # unit + architecture + OpenAPI, no Docker
+npm run test:component   # Docker
+npm run test:functional  # Docker
 npm run coverage
 ```
 
@@ -51,11 +54,15 @@ Helpers: `CreateClient(TestUser)` (several identities in one test), `CreateAnony
 
 1. `DistributedApplicationTestingBuilder` with `RunMode=Component|Functional`, the OpenBao root token and the
    JWT trust arguments.
-2. Waits for `postgres`, `postgresdb` and `openbao` to be healthy.
-3. Waits for `db-init` and `openbao-init` to exit 0.
+2. Waits for `postgres`, `postgresdb` and `openbao` to be healthy. Test-mode PostgreSQL is persistent per mode
+   and checkout (stable container name, volume and derived password); `TESTCONTAINERS_REUSE=0` restores a fresh
+   container, and OpenBao is always ephemeral.
+3. Waits for `db-init` and `openbao-init` to exit 0. The schema scripts are idempotent, so they reapply to the
+   reused database.
 4. Builds the test repository over the Aspire connection string.
 5. Derived fixture starts the application (in-process factory or explicit AppHost start).
-6. Registers the Respawn resetters (after the schema exists).
+6. Registers the Respawn resetters (after the schema exists) and resets once, clearing rows a previous run could
+   have left in the reused database.
 7. Seeds persistent data and waits until the application answers `/health/api`.
 
 `ComponentTestFixture` builds `ComponentAppFactory` with in-memory settings: log levels, JWT trust, OpenBao
@@ -108,8 +115,8 @@ Component test conventions:
 
 ## Coverage
 
-`npm run coverage` builds, collects unit, component and functional coverage with `dotnet-coverage`, merges it
-and writes `coverage-report/coverage/report/`. Architecture and sidecar tests are not collected. Thresholds:
+`npm run coverage` builds, collects unit, component and functional coverage in parallel with `dotnet-coverage`,
+merges it and writes `coverage-report/coverage/report/`. Architecture and sidecar tests are not collected. Thresholds:
 
 | Scope | Lines | Branches |
 |---|---:|---:|
@@ -148,4 +155,6 @@ or a new error type needs a test that exercises it.
 | 403 where success was expected | The role or claim type does not match the policy. |
 | `Blocked outbound HTTP call` | A dependency points at a real URL; map it to a local substitute. |
 | `'db-init' ended … exit code 1` | The schema failed: reproduce with `aspire logs db-init`. |
+| PostgreSQL image changed or the reused volume is stale | Run with `TESTCONTAINERS_REUSE=0`, or remove the `clean-webapi-postgres-*` container and volume. |
+| Two runs of the same mode interfere | They share the persistent PostgreSQL container: set `TESTCONTAINERS_REUSE=0` in one of them. |
 | `CS0433: 'Program' exists in both …` | The AppHost reference must use `Aliases="apphost"` and `extern alias apphost;`. |

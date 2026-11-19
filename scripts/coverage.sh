@@ -22,16 +22,35 @@ mkdir -p "$OUT_DIR"
 collect() {
     local name=$1
     local project=$2
-    echo "Collecting coverage: $name"
     dotnet tool run dotnet-coverage collect \
         -f cobertura \
         -o "$OUT_DIR/$name.xml" \
-        dotnet test --project "$project" --no-build
+        dotnet test --project "$project" --no-build >"$OUT_DIR/$name.log" 2>&1
 }
 
-collect unit tests/CleanWebApiTemplate.UnitTests/CleanWebApiTemplate.UnitTests.csproj
-collect component tests/CleanWebApiTemplate.Api.ComponentTests/CleanWebApiTemplate.Api.ComponentTests.csproj
-collect functional tests/CleanWebApiTemplate.Api.FunctionalTests/CleanWebApiTemplate.Api.FunctionalTests.csproj
+# The three collections own separate output files and test projects, so they
+# run concurrently; the wall-clock time is the slowest suite instead of the sum.
+collect unit tests/CleanWebApiTemplate.UnitTests/CleanWebApiTemplate.UnitTests.csproj &
+unit_pid=$!
+collect component tests/CleanWebApiTemplate.Api.ComponentTests/CleanWebApiTemplate.Api.ComponentTests.csproj &
+component_pid=$!
+collect functional tests/CleanWebApiTemplate.Api.FunctionalTests/CleanWebApiTemplate.Api.FunctionalTests.csproj &
+functional_pid=$!
+
+status=0
+wait "$unit_pid" || status=1
+wait "$component_pid" || status=1
+wait "$functional_pid" || status=1
+
+for name in unit component functional; do
+    echo "Collecting coverage: $name"
+    cat "$OUT_DIR/$name.log"
+done
+
+if [ "$status" -ne 0 ]; then
+    echo "Coverage collection failed." >&2
+    exit "$status"
+fi
 
 dotnet tool run dotnet-coverage merge \
     -f cobertura \

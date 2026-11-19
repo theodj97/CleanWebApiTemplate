@@ -8,6 +8,12 @@
     "format:check": "dotnet format whitespace CleanWebApiTemplate.slnx --verify-no-changes && dotnet format style CleanWebApiTemplate.slnx --verify-no-changes",
     "coverage": "bash scripts/coverage.sh",
     "test": "dotnet test --solution CleanWebApiTemplate.slnx",
+    "test:fast": "bash scripts/test-fast.sh",
+    "test:unit": "dotnet test --project tests/CleanWebApiTemplate.UnitTests/CleanWebApiTemplate.UnitTests.csproj",
+    "test:architecture": "dotnet test --project tests/CleanWebApiTemplate.ArchitectureTests/CleanWebApiTemplate.ArchitectureTests.csproj",
+    "test:openapi": "dotnet test --project local/openapi/CleanWebApiTemplate.OpenApiExamples.UnitTests/CleanWebApiTemplate.OpenApiExamples.UnitTests.csproj",
+    "test:component": "dotnet test --project tests/CleanWebApiTemplate.Api.ComponentTests/CleanWebApiTemplate.Api.ComponentTests.csproj",
+    "test:functional": "dotnet test --project tests/CleanWebApiTemplate.Api.FunctionalTests/CleanWebApiTemplate.Api.FunctionalTests.csproj",
     "verify": "bash scripts/pre-push.sh",
     "hooks:install": "dotnet tool restore && dotnet husky install",
     "gitleaks:install": "bash scripts/install-gitleaks.sh"

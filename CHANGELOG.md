@@ -7,6 +7,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Fast test commands: `npm run test:fast` (unit, architecture and OpenAPI, no Docker) and the per-suite
+  `test:unit`, `test:architecture`, `test:openapi`, `test:component` and `test:functional` scripts.
+
+### Changed
+
+- `npm run verify` runs the independent gates (format/style/analyzers in one `dotnet format` pass, every test and
+  the vulnerable-package check) concurrently after the build and replays their output: ~78 s to ~25 s on an
+  8-core Linux machine, with the same gates and no output hidden.
+- Test modes reuse one PostgreSQL container per mode and checkout (stable name, volume and derived local
+  credential; `TESTCONTAINERS_REUSE=0` opts out). The idempotent schema still runs on every start and the fixture
+  resets rows once at startup; the full test suite drops from ~18 s to ~12 s when the containers are warm.
+- `npm run coverage` collects the unit, component and functional suites in parallel.
+- The vulnerable-package gate uses one JSON query instead of running `dotnet list` twice.
+- `docs/adr/0010` records the reused test database; `0006` notes the exception for test modes.
+
 ## [2.0.0] - 2026-11-12
 
 ### Added

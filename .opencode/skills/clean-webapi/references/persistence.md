@@ -153,7 +153,8 @@ fields in the response; the projection is the contract.
 - Names: `0001__initial_schema.sql`, `0002__projects_schema.sql`, `0001__todos.sql`, `0002__projects.sql`.
 - Schema scripts use `IF NOT EXISTS` and are safe to re-run.
 - Forward-only: never edit a deployed script. A change to an existing table is a new higher-numbered script.
-- The local database is ephemeral (no volume): every `aspire start` recreates it from scratch.
+- The local database is ephemeral (no volume): every `aspire start` recreates it from scratch. Test modes reuse
+  one PostgreSQL container per mode and checkout; see `references/testing.md`.
 - `db-init` exits 0 when at least one table exists in `public`; it does not name a feature table.
 - The seed runs only when the AppHost passes `Seed__Path`, which happens in Local mode only. Tests start from
   the schema with no rows.
